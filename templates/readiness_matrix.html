@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block page_title %}Readiness Matrix{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-table"></i> Technical Capability Readiness Matrix</h5>
+        <p class="mb-0 text-muted">Overview of readiness levels across different configurations</p>
+    </div>
+    <div class="card-body">
+        {% if matrix_data %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Technical Capability</th>
+                        <th>Vehicle Platform</th>
+                        <th>ODD</th>
+                        <th>Environment</th>
+                        <th>TRL</th>
+                        <th>Confidence</th>
+                        <th>Assessment Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in matrix_data %}
+                    <tr class="confidence-{{ item.confidence }}">
+                        <td>
+                            <strong>{{ item.technical_capability }}</strong>
+                        </td>
+                        <td>
+                            <i class="fas fa-truck text-muted"></i>
+                            {{ item.vehicle_platform }}
+                        </td>
+                        <td>
+                            <i class="fas fa-road text-muted"></i>
+                            {{ item.odd }}
+                        </td>
+                        <td>
+                            <i class="fas fa-globe text-muted"></i>
+                            {{ item.environment }}
+                        </td>
+                        <td>
+                            <span class="badge {% if item.trl_level >= 7 %}trl-high{% elif item.trl_level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
+                                TRL {{ item.trl_level }}
+                            </span>
+                            <br><small class="text-muted">{{ item.trl_name }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if item.confidence == 'high' %}success{% elif item.confidence == 'medium' %}warning{% else %}danger{% endif %}">
+                                {{ item.confidence|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ item.assessment_date.strftime('%Y-%m-%d') }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Summary Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>Matrix Summary</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Total Configurations:</strong> {{ matrix_data|length }}
+                            </div>
+                            <div class="col-md-3">
+                                <strong>High Readiness (TRL 7-9):</strong> 
+                                {{ matrix_data | selectattr('trl_level', '>=', 7) | list | length }}
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Medium Readiness (TRL 4-6):</strong> 
+                                {{ matrix_data | selectattr('trl_level', '>=', 4) | selectattr('trl_level', '<', 7) | list | length }}
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Low Readiness (TRL 1-3):</strong> 
+                                {{ matrix_data | selectattr('trl_level', '<', 4) | list | length }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-table fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Assessment Data Available</h4>
+            <p class="text-muted">Create some readiness assessments to populate the matrix view.</p>
+            <a href="{{ url_for('add_assessment') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Assessment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if matrix_data %}
+<!-- Interactive Heatmap -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5><i class="fas fa-chart-area"></i> Readiness Heatmap</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="heatmapChart" width="800" height="400"></canvas>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if matrix_data %}
+<script>
+// Create a simplified heatmap showing average TRL by technical capability and platform
+const ctx = document.getElementById('heatmapChart').getContext('2d');
+
+// Group data by technical capability and platform
+const groupedData = {};
+const matrixData = {{ matrix_data | tojson }};
+
+matrixData.forEach(item => {
+    const key = `${item.technical_capability}|${item.vehicle_platform}`;
+    if (!groupedData[key]) {
+        groupedData[key] = {
+            technical_capability: item.technical_capability,
+            vehicle_platform: item.vehicle_platform,
+            trl_levels: []
+        };
+    }
+    groupedData[key].trl_levels.push(item.trl_level);
+});
+
+// Calculate averages and create chart data
+const capabilities = [...new Set(matrixData.map(item => item.technical_capability))];
+const platforms = [...new Set(matrixData.map(item => item.vehicle_platform))];
+
+const chartData = [];
+capabilities.forEach((cap, capIndex) => {
+    platforms.forEach((platform, platIndex) => {
+        const key = `${cap}|${platform}`;
+        if (groupedData[key]) {
+            const avgTrl = groupedData[key].trl_levels.reduce((sum, trl) => sum + trl, 0) / groupedData[key].trl_levels.length;
+            chartData.push({
+                x: platIndex,
+                y: capIndex,
+                v: avgTrl
+            });
+        }
+    });
+});
+
+new Chart(ctx, {
+    type: 'scatter',
+    data: {
+        datasets: [{
+            label: 'Average TRL',
+            data: chartData,
+            backgroundColor: function(context) {
+                const value = context.parsed.v;
+                if (value >= 7) return 'rgba(40, 167, 69, 0.8)';
+                if (value >= 4) return 'rgba(255, 193, 7, 0.8)';
+                return 'rgba(220, 53, 69, 0.8)';
+            },
+            pointRadius: function(context) {
+                return Math.max(5, context.parsed.v * 2);
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                type: 'linear',
+                position: 'bottom',
+                min: -0.5,
+                max: platforms.length - 0.5,
+                ticks: {
+                    callback: function(value, index) {
+                        return platforms[Math.round(value)] || '';
+                    },
+                    stepSize: 1
+                },
+                title: {
+                    display: true,
+                    text: 'Vehicle Platforms'
+                }
+            },
+            y: {
+                type: 'linear',
+                min: -0.5,
+                max: capabilities.length - 0.5,
+                ticks: {
+                    callback: function(value, index) {
+                        return capabilities[Math.round(value)] || '';
+                    },
+                    stepSize: 1
+                },
+                title: {
+                    display: true,
+                    text: 'Technical Capabilities'
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: function(context) {
+                        const point = context[0];
+                        return `${capabilities[Math.round(point.parsed.y)]} on ${platforms[Math.round(point.parsed.x)]}`;
+                    },
+                    label: function(context) {
+                        return `Average TRL: ${context.parsed.v.toFixed(1)}`;
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

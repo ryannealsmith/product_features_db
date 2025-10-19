@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block page_title %}Product Capabilities{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% for capability in capabilities %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs"></i> {{ capability.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ capability.description }}</p>
+                
+                <h6 class="mt-3 mb-2">Technical Capabilities:</h6>
+                {% if capability.technical_capabilities %}
+                <div class="list-group list-group-flush">
+                    {% for tech_cap in capability.technical_capabilities %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ tech_cap.name }}</strong>
+                                <br><small class="text-muted">{{ tech_cap.description }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% set assessment_count = tech_cap.readiness_assessments|length %}
+                                {% if assessment_count > 0 %}
+                                    {% set avg_trl = (tech_cap.readiness_assessments | map(attribute='readiness_level.level') | sum / assessment_count) | round(1) %}
+                                    <span class="badge {% if avg_trl >= 7 %}trl-high{% elif avg_trl >= 4 %}trl-medium{% else %}trl-low{% endif %}">
+                                        TRL {{ avg_trl }}
+                                    </span>
+                                    <br><small class="text-muted">{{ assessment_count }} assessments</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">No Data</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No technical capabilities defined yet.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">Created: {{ capability.created_at.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not capabilities %}
+<div class="text-center py-5">
+    <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">No Product Capabilities Found</h4>
+    <p class="text-muted">Product capabilities define the features that can be delivered to customers.</p>
+</div>
+{% endif %}
+{% endblock %}

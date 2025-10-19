@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Summary Statistics -->
+    <div class="col-md-3">
+        <div class="card stats-card border-primary">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ readiness_stats.total }}</h3>
+                <p class="card-text">Total Assessments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card border-success">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ readiness_stats.high }}</h3>
+                <p class="card-text">High Readiness (TRL 7-9)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card border-warning">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ readiness_stats.medium }}</h3>
+                <p class="card-text">Medium Readiness (TRL 4-6)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card border-danger">
+            <div class="card-body text-center">
+                <h3 class="text-danger">{{ readiness_stats.low }}</h3>
+                <p class="card-text">Low Readiness (TRL 1-3)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Product Capabilities Overview -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cogs"></i> Product Capabilities Overview</h5>
+            </div>
+            <div class="card-body">
+                {% for capability in product_capabilities %}
+                <div class="mb-3 p-3 border rounded">
+                    <h6 class="fw-bold">{{ capability.name }}</h6>
+                    <p class="text-muted mb-2">{{ capability.description }}</p>
+                    
+                    <div class="row">
+                        {% for tech_cap in capability.technical_capabilities %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small">{{ tech_cap.name }}</span>
+                                {% set assessment_count = tech_cap.readiness_assessments|length %}
+                                {% if assessment_count > 0 %}
+                                    {% set avg_trl = (tech_cap.readiness_assessments | map(attribute='readiness_level.level') | sum / assessment_count) | round(1) %}
+                                    <span class="badge {% if avg_trl >= 7 %}trl-high{% elif avg_trl >= 4 %}trl-medium{% else %}trl-low{% endif %}">
+                                        TRL {{ avg_trl }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No Data</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Readiness Distribution Chart -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> TRL Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trlChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line"></i> Product Readiness Trends</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendsChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fetch readiness data and create charts
+fetch('/api/readiness_data')
+    .then(response => response.json())
+    .then(data => {
+        // TRL Distribution Pie Chart
+        const trlCtx = document.getElementById('trlChart').getContext('2d');
+        const trlChart = new Chart(trlCtx, {
+            type: 'pie',
+            data: {
+                labels: data.trl_distribution.map(item => `TRL ${item.level}: ${item.name}`),
+                datasets: [{
+                    data: data.trl_distribution.map(item => item.count),
+                    backgroundColor: [
+                        '#dc3545', '#dc3545', '#dc3545',  // TRL 1-3 (Low)
+                        '#ffc107', '#ffc107', '#ffc107',  // TRL 4-6 (Medium)
+                        '#28a745', '#28a745', '#28a745'   // TRL 7-9 (High)
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Product Readiness Bar Chart
+        const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+        const trendsChart = new Chart(trendsCtx, {
+            type: 'bar',
+            data: {
+                labels: data.product_readiness.map(item => item.name),
+                datasets: [{
+                    label: 'Average TRL',
+                    data: data.product_readiness.map(item => item.avg_trl),
+                    backgroundColor: data.product_readiness.map(item => {
+                        if (item.avg_trl >= 7) return '#28a745';
+                        if (item.avg_trl >= 4) return '#ffc107';
+                        return '#dc3545';
+                    }),
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 9,
+                        title: {
+                            display: true,
+                            text: 'Technical Readiness Level'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Product Capabilities'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => console.error('Error fetching readiness data:', error));
+</script>
+{% endblock %}

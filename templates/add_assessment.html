@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add Readiness Assessment{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-plus"></i> New Readiness Assessment</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="technical_capability_id" class="form-label">Technical Capability *</label>
+                        <select name="technical_capability_id" id="technical_capability_id" class="form-select" required>
+                            <option value="">Select Technical Capability</option>
+                            {% for tech_cap in technical_capabilities %}
+                            <option value="{{ tech_cap.id }}">
+                                {{ tech_cap.name }} ({{ tech_cap.product_capability.name }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="readiness_level_id" class="form-label">Technical Readiness Level *</label>
+                        <select name="readiness_level_id" id="readiness_level_id" class="form-select" required>
+                            <option value="">Select TRL</option>
+                            {% for trl in readiness_levels %}
+                            <option value="{{ trl.id }}">
+                                TRL {{ trl.level }}: {{ trl.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="vehicle_platform_id" class="form-label">Vehicle Platform *</label>
+                        <select name="vehicle_platform_id" id="vehicle_platform_id" class="form-select" required>
+                            <option value="">Select Platform</option>
+                            {% for platform in vehicle_platforms %}
+                            <option value="{{ platform.id }}">
+                                {{ platform.name }} ({{ platform.vehicle_type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="odd_id" class="form-label">Operational Design Domain *</label>
+                        <select name="odd_id" id="odd_id" class="form-select" required>
+                            <option value="">Select ODD</option>
+                            {% for odd in odds %}
+                            <option value="{{ odd.id }}">
+                                {{ odd.name }} (Max {{ odd.max_speed }} km/h)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="environment_id" class="form-label">Environment *</label>
+                        <select name="environment_id" id="environment_id" class="form-select" required>
+                            <option value="">Select Environment</option>
+                            {% for env in environments %}
+                            <option value="{{ env.id }}">
+                                {{ env.name }} ({{ env.climate }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="trailer_id" class="form-label">Trailer (Optional)</label>
+                        <select name="trailer_id" id="trailer_id" class="form-select">
+                            <option value="">No Trailer</option>
+                            {% for trailer in trailers %}
+                            <option value="{{ trailer.id }}">
+                                {{ trailer.name }} ({{ trailer.trailer_type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="assessor" class="form-label">Assessor *</label>
+                        <input type="text" name="assessor" id="assessor" class="form-control" required
+                               placeholder="Enter assessor name">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="confidence_level" class="form-label">Confidence Level *</label>
+                        <select name="confidence_level" id="confidence_level" class="form-select" required>
+                            <option value="">Select Confidence</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">Assessment Notes</label>
+                <textarea name="notes" id="notes" class="form-control" rows="4"
+                          placeholder="Enter any notes about this assessment..."></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('readiness_assessments') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Assessments
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Assessment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- TRL Information Panel -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Technical Readiness Level Guidelines</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <h6 class="text-danger">Research Phase (TRL 1-3)</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>TRL 1:</strong> Basic principles observed</li>
+                    <li><strong>TRL 2:</strong> Technology concept formulated</li>
+                    <li><strong>TRL 3:</strong> Experimental proof of concept</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-warning">Development Phase (TRL 4-6)</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>TRL 4:</strong> Technology validated in lab</li>
+                    <li><strong>TRL 5:</strong> Technology validated in environment</li>
+                    <li><strong>TRL 6:</strong> Technology demonstrated in environment</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-success">Deployment Phase (TRL 7-9)</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>TRL 7:</strong> System prototype demonstrated</li>
+                    <li><strong>TRL 8:</strong> System complete and qualified</li>
+                    <li><strong>TRL 9:</strong> Actual system proven in operations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

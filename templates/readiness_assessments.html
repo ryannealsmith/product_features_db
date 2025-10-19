@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block page_title %}Readiness Assessments{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('add_assessment') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> New Assessment
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6><i class="fas fa-filter"></i> Filters</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Product Capability</label>
+                <select name="product_id" class="form-select">
+                    <option value="">All Products</option>
+                    {% for product in product_capabilities %}
+                    <option value="{{ product.id }}" {% if request.args.get('product_id')|int == product.id %}selected{% endif %}>
+                        {{ product.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Technical Capability</label>
+                <select name="technical_id" class="form-select">
+                    <option value="">All Technical</option>
+                    {% for tech in technical_capabilities %}
+                    <option value="{{ tech.id }}" {% if request.args.get('technical_id')|int == tech.id %}selected{% endif %}>
+                        {{ tech.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Vehicle Platform</label>
+                <select name="platform_id" class="form-select">
+                    <option value="">All Platforms</option>
+                    {% for platform in vehicle_platforms %}
+                    <option value="{{ platform.id }}" {% if request.args.get('platform_id')|int == platform.id %}selected{% endif %}>
+                        {{ platform.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Min TRL</label>
+                <select name="min_trl" class="form-select">
+                    <option value="">Any TRL</option>
+                    {% for i in range(1, 10) %}
+                    <option value="{{ i }}" {% if request.args.get('min_trl')|int == i %}selected{% endif %}>
+                        TRL {{ i }}+
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-outline-primary d-block">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assessments Table -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-clipboard-check"></i> Readiness Assessments ({{ assessments|length }} results)</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Technical Capability</th>
+                        <th>Product Capability</th>
+                        <th>TRL</th>
+                        <th>Platform</th>
+                        <th>ODD</th>
+                        <th>Environment</th>
+                        <th>Trailer</th>
+                        <th>Confidence</th>
+                        <th>Assessor</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assessment in assessments %}
+                    <tr class="confidence-{{ assessment.confidence_level }}">
+                        <td>
+                            <strong>{{ assessment.technical_capability.name }}</strong>
+                            {% if assessment.notes %}
+                            <br><small class="text-muted">{{ assessment.notes[:50] }}{% if assessment.notes|length > 50 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ assessment.technical_capability.product_capability.name }}</td>
+                        <td>
+                            <span class="badge {% if assessment.readiness_level.level >= 7 %}trl-high{% elif assessment.readiness_level.level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
+                                TRL {{ assessment.readiness_level.level }}
+                            </span>
+                            <br><small class="text-muted">{{ assessment.readiness_level.name }}</small>
+                        </td>
+                        <td>{{ assessment.vehicle_platform.name }}</td>
+                        <td>{{ assessment.odd.name }}</td>
+                        <td>{{ assessment.environment.name }}</td>
+                        <td>{{ assessment.trailer.name if assessment.trailer else 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-{% if assessment.confidence_level == 'high' %}success{% elif assessment.confidence_level == 'medium' %}warning{% else %}danger{% endif %}">
+                                {{ assessment.confidence_level|title }}
+                            </span>
+                        </td>
+                        <td>{{ assessment.assessor }}</td>
+                        <td>{{ assessment.assessment_date.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted">No assessments found matching the filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
