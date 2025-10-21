@@ -1,250 +1,332 @@
-# JSON Update System for Product Feature Readiness Database
+# Enhanced JSON Update System
 
-This system allows you to update due dates and Technical Readiness Levels (TRL) for both product capabilities and technical capabilities using structured JSON files.
+This enhanced JSON update script provides comprehensive CRUD (Create, Read, Update, Delete) operations for the Product Feature Readiness Database. You can manage **Product Features**, **Capabilities**, and **Technical Functions** through structured JSON files.
 
-## Files
+## Features
 
-- `update_from_json.py` - Main script for updating from JSON files
-- `capability_updates_template.json` - Template JSON file with comprehensive examples
+- ✅ **Create** new entities with full relationship mapping
+- ✅ **Update** existing entities and their relationships  
+- ✅ **Delete** entities with dependency checking
+- ✅ **Export** current database state to JSON
+- ✅ **Template generation** for easy JSON creation
+- ✅ **Comprehensive validation** with detailed error reporting
+- ✅ **Relationship management** between all entity types
+
+## Quick Start
+
+### 1. Generate a Template
+```bash
+python update_from_json.py --template
+```
+This creates `template_updates.json` with examples of all operations.
+
+### 2. Export Current Data
+```bash
+python update_from_json.py --export current_data.json
+```
+This exports the complete current database state for reference.
+
+### 3. Update from JSON
+```bash
+python update_from_json.py my_updates.json
+```
+
+### 4. Get Help
+```bash
+python update_from_json.py --help
+```
 
 ## JSON Structure
 
-### Root Level
-```json
-{
-  "metadata": { ... },
-  "updates": [ ... ]
-}
-```
-
-### Metadata Section (Optional)
+### Basic Structure
 ```json
 {
   "metadata": {
-    "version": "1.0",
-    "description": "Description of this update batch",
+    "version": "2.0",
+    "description": "Description of your updates",
     "created_by": "Your Name",
-    "created_date": "2025-10-21T00:00:00Z",
-    "notes": "Additional information"
-  }
-}
-```
-
-### Updates Section (Required)
-```json
-{
-  "updates": [
+    "created_date": "2025-10-21"
+  },
+  "entities": [
     {
-      "capability_type": "product",           // Required: "product" or "technical"
-      "capability_name": "Exact Name",        // Required: must match database exactly
-      "due_date": "2025-12-31",              // Optional: YYYY-MM-DD format
-      "target_trl": 7,                       // Optional: 1-9
-      "assessor": "Dr. Smith",               // Optional: assessor name
-      "notes": "Assessment notes"            // Optional: detailed notes
+      "entity_type": "product_feature|capability|technical_function",
+      "operation": "create|update|delete",
+      "name": "Entity Name",
+      // Additional fields based on entity type and operation
     }
   ]
 }
 ```
 
-### Field Details
+## Entity Types and Fields
 
-**Required Fields:**
-- `capability_type` - Must be either "product" or "technical"
-- `capability_name` - Exact name of the capability as it appears in the database
+### Product Features
 
-**Optional Fields:**
-- `due_date` - Target completion date (multiple formats supported)
-- `target_trl` - Target Technical Readiness Level (1-9)
-- `assessor` - Name of the person making the assessment
-- `notes` - Additional notes for the assessment
-
-### Date Formats Supported
-- `YYYY-MM-DD` (2025-12-31)
-- `MM/DD/YYYY` (12/31/2025)
-- `DD/MM/YYYY` (31/12/2025)
-- `YYYY/MM/DD` (2025/12/31)
-- `MM-DD-YYYY` (12-31-2025)
-- `DD-MM-YYYY` (31-12-2025)
-- `YYYY-MM-DDTHH:MM:SS` (2025-12-31T23:59:59)
-- `YYYY-MM-DDTHH:MM:SSZ` (2025-12-31T23:59:59Z)
-
-## Usage
-
-### 1. Update from JSON File
-```bash
-python update_from_json.py your_updates.json
+#### Create/Update Operations
+```json
+{
+  "entity_type": "product_feature",
+  "operation": "create",
+  "name": "Highway Autonomous Driving",
+  "description": "Full autonomous driving capability on highways",
+  "vehicle_type": "truck",
+  "swimlane_decorators": "ADAS",
+  "label": "PF-ADAS-1.1",
+  "tmos": "Achieve 99.9% successful highway navigation",
+  "status_relative_to_tmos": 75.0,
+  "planned_start_date": "2025-01-15",
+  "planned_end_date": "2025-12-31",
+  "active_flag": "next",
+  "capabilities_required": ["Highway Navigation", "Lane Keeping"],
+  "dependencies": ["Basic Navigation System"]
+}
 ```
 
-### 2. Export Current Data
-```bash
-# Export to default file (current_capabilities.json)
-python update_from_json.py --export
+**Available Fields:**
+- `name` *(required)*: Unique name for the product feature
+- `description`: Detailed description
+- `vehicle_type`: "truck", "van", or "car"
+- `swimlane_decorators`: Swimlane categorization
+- `label`: Product feature label (e.g., "PF-ADAS-1.1")
+- `tmos`: Target Measure of Success
+- `status_relative_to_tmos`: Progress percentage (0.0-100.0)
+- `planned_start_date`: Start date (YYYY-MM-DD)
+- `planned_end_date`: End date (YYYY-MM-DD)
+- `active_flag`: Status flag (default: "next")
+- `capabilities_required`: List of capability names
+- `dependencies`: List of dependent product feature names
 
-# Export to specific file
-python update_from_json.py --export my_export.json
+### Capabilities
+
+#### Create/Update Operations
+```json
+{
+  "entity_type": "capability",
+  "operation": "create",
+  "name": "Highway Navigation",
+  "success_criteria": "Navigate highways with 99.9% accuracy and safety",
+  "vehicle_type": "truck",
+  "planned_start_date": "2025-01-01",
+  "planned_end_date": "2025-11-30",
+  "tmos": "Complete highway navigation capability",
+  "progress_relative_to_tmos": 60.0,
+  "technical_functions": ["Path Planning", "Lane Detection"],
+  "product_features": ["Highway Autonomous Driving"]
+}
 ```
 
-### 3. Get Help
-```bash
-python update_from_json.py --help
+**Available Fields:**
+- `name` *(required)*: Unique name for the capability
+- `success_criteria`: Detailed success criteria
+- `vehicle_type`: "truck", "van", or "car"
+- `planned_start_date`: Start date (YYYY-MM-DD)
+- `planned_end_date`: End date (YYYY-MM-DD)
+- `tmos`: Target Measure of Success
+- `progress_relative_to_tmos`: Progress percentage (0.0-100.0)
+- `technical_functions`: List of technical function names
+- `product_features`: List of product feature names
+
+### Technical Functions
+
+#### Create/Update Operations
+```json
+{
+  "entity_type": "technical_function",
+  "operation": "create",
+  "name": "Path Planning",
+  "description": "Generate optimal navigation paths",
+  "success_criteria": "Generate paths within 100ms with 99% success rate",
+  "vehicle_type": "truck",
+  "tmos": "Real-time path planning for navigation",
+  "status_relative_to_tmos": 80.0,
+  "planned_start_date": "2025-01-01",
+  "planned_end_date": "2025-08-31",
+  "product_feature": "Highway Autonomous Driving",
+  "capabilities": ["Highway Navigation"],
+  "product_feature_dependencies": ["Basic Navigation System"],
+  "capability_dependencies": ["Sensor Fusion"]
+}
 ```
 
-## How It Works
+**Available Fields:**
+- `name` *(required)*: Unique name for the technical function
+- `description`: Detailed description
+- `success_criteria`: Technical success criteria
+- `vehicle_type`: "truck", "van", or "car"
+- `tmos`: Target Measure of Success
+- `status_relative_to_tmos`: Progress percentage (0.0-100.0)
+- `planned_start_date`: Start date (YYYY-MM-DD)
+- `planned_end_date`: End date (YYYY-MM-DD)
+- `product_feature` *(required for create)*: Parent product feature name
+- `capabilities`: List of related capability names
+- `product_feature_dependencies`: List of dependent product feature names
+- `capability_dependencies`: List of dependent capability names
 
-### For Product Capabilities
-When you update a product capability:
-- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of ALL technical capabilities under that product capability
-- **Target TRL**: Updates the TRL for ALL readiness assessments of ALL technical capabilities under that product capability
+## Operations
 
-### For Technical Capabilities
-When you update a technical capability:
-- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of that specific technical capability
-- **Target TRL**: Updates the TRL for ALL readiness assessments of that specific technical capability
+### Create Operation
+Creates a new entity. Will skip if entity with same name already exists.
 
-### Assessment Updates
-When TRL is updated, the script also:
-- Sets the `assessment_date` to the current timestamp
-- Updates the `assessor` if provided in JSON
-- Updates the `notes` if provided in JSON
-
-## Example Workflow
-
-1. **Export current data** to see what capabilities exist:
-   ```bash
-   python update_from_json.py --export current_status.json
-   ```
-
-2. **Create your update file** based on the template:
-   ```bash
-   cp capability_updates_template.json my_updates.json
-   # Edit my_updates.json with your changes
-   ```
-
-3. **Apply the updates**:
-   ```bash
-   python update_from_json.py my_updates.json
-   ```
-
-4. **Verify changes** in the web application or export again to check
-
-## Validation and Error Handling
-
-The script provides comprehensive validation:
-
-### Pre-processing Validation
-- ✅ JSON format validation
-- ✅ Required field presence
-- ✅ Capability type validation (product/technical)
-- ✅ TRL range validation (1-9)
-- ✅ Date format validation
-- ✅ Capability name existence in database
-
-### Processing Feedback
-- 📊 Detailed progress reporting
-- ⚠️ Warnings for missing capabilities or invalid data
-- ❌ Clear error messages with specific issues
-- 📈 Summary statistics at completion
-
-### Example Output
-```
-Processing JSON file: my_updates.json
-Version: 1.0
-Description: Q4 2025 capability updates
-Created by: Project Manager
-Created: 2025-10-21T00:00:00Z
-Found 12 updates to process
-------------------------------------------------------------
-Processing 12 valid updates...
-------------------------------------------------------------
-Update 1: Updated Terberg: Driver-in operations (semi-trailer) - due date to 2025-12-31 for 8 related assessments, TRL to 7 for 8 related assessments
-Update 2: Updated Perception System - due date to 2025-11-15 for 4 assessments, TRL to 8 for 4 assessments
-...
-------------------------------------------------------------
-Update completed!
-Successfully updated: 12 capabilities
-Errors encountered: 0
-Total processed: 12
+```json
+{
+  "entity_type": "product_feature",
+  "operation": "create",
+  "name": "New Feature",
+  // ... other fields
+}
 ```
 
-## Advantages of JSON Format
+### Update Operation
+Updates an existing entity. Only updates fields that are specified.
 
-### Over CSV:
-- **Structured Data**: Better organization with metadata and validation
-- **Nested Information**: Support for complex data structures
-- **Comments**: Metadata section for documentation
-- **Type Safety**: Native support for numbers, booleans, dates
-- **Validation**: Built-in JSON schema validation capabilities
+```json
+{
+  "entity_type": "product_feature", 
+  "operation": "update",
+  "name": "Existing Feature",
+  "status_relative_to_tmos": 85.0,
+  "description": "Updated description"
+}
+```
 
-### Rich Metadata:
-- Version tracking
-- Creation timestamps
-- Batch descriptions
-- Processing history
+### Delete Operation
+Deletes an entity. Includes dependency checking for safety.
 
-### Better Error Handling:
-- Line-by-line validation before processing
-- Detailed error reporting with context
-- Rollback capability on errors
+```json
+{
+  "entity_type": "capability",
+  "operation": "delete", 
+  "name": "Obsolete Capability",
+  "force_delete": false
+}
+```
 
-## Current Capabilities in Database
+**Delete Options:**
+- `force_delete: false` (default): Prevents deletion if dependencies exist
+- `force_delete: true`: Forces deletion despite dependencies
 
-### Product Capabilities
-- Terberg: Driver-in operations (semi-trailer)
-- Terberg: Driver-Out, AV only, FWD
-- Platooning
-- Remote Vehicle Operation
-- Cargo Handling Automation
-- Fleet Management
+## Examples
 
-### Technical Capabilities
-- Perception System
-- Path Planning
-- Vehicle Control
-- Localization
-- Detect proximal humans
-- Traffic Light Recognition
-- Pedestrian Detection
-- Intersection Handling
-- Parking Space Detection
-- Low-Speed Maneuvering
-- Vehicle-to-Vehicle Communication
-- Convoy Formation
-- Teleoperation Interface
-- Low-Latency Communication
-- Robotic Loading System
-- Cargo Tracking
-- Route Optimization
-- Vehicle Health Monitoring
+### Example 1: Create Complete Feature Set
+```json
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Add new autonomous parking feature",
+    "created_by": "Development Team",
+    "created_date": "2025-10-21"
+  },
+  "entities": [
+    {
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Autonomous Parking",
+      "success_criteria": "Park vehicle in standard spots with 99% success rate",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-06-30",
+      "tmos": "Fully automated parking capability",
+      "progress_relative_to_tmos": 0.0
+    },
+    {
+      "entity_type": "product_feature",
+      "operation": "create",
+      "name": "Automated Parking System",
+      "description": "Complete automated parking solution for urban environments",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "PARKING",
+      "label": "PF-PARK-1.0",
+      "tmos": "Enable hands-free parking in urban areas",
+      "status_relative_to_tmos": 25.0,
+      "planned_start_date": "2025-01-15",
+      "planned_end_date": "2025-08-31",
+      "active_flag": "next",
+      "capabilities_required": ["Autonomous Parking"]
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Parking Space Detection",
+      "description": "Detect and analyze available parking spaces",
+      "success_criteria": "Detect parking spaces with 95% accuracy in various lighting conditions",
+      "vehicle_type": "truck",
+      "tmos": "Real-time parking space detection",
+      "status_relative_to_tmos": 40.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-05-31",
+      "product_feature": "Automated Parking System",
+      "capabilities": ["Autonomous Parking"]
+    }
+  ]
+}
+```
 
-## Template Examples
-
-The template includes realistic update scenarios:
-- **Q4 2025 Production Targets**: High TRL goals for core systems
-- **Safety-Critical Systems**: Enhanced requirements for human detection
-- **Research Phase Capabilities**: Early TRL for experimental features
-- **Milestone-Based Updates**: Specific due dates tied to project phases
+### Example 2: Update Progress
+```json
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Monthly progress update",
+    "created_by": "Project Manager",
+    "created_date": "2025-10-21"
+  },
+  "entities": [
+    {
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Automated Parking System",
+      "status_relative_to_tmos": 65.0
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "update", 
+      "name": "Parking Space Detection",
+      "status_relative_to_tmos": 80.0,
+      "description": "Enhanced with machine learning algorithms"
+    }
+  ]
+}
+```
 
 ## Best Practices
 
-1. **Use Metadata**: Always include version and description for tracking
-2. **Batch Updates**: Group related updates in single JSON files
-3. **Validate First**: Use the export feature to verify capability names
-4. **Backup Data**: Export current state before major updates
-5. **Incremental Updates**: Process small batches to isolate issues
-6. **Documentation**: Use notes fields to explain TRL changes
+1. **Start with Template**: Use `--template` to generate example JSON
+2. **Export Before Major Changes**: Use `--export` to backup current state
+3. **Incremental Updates**: Process changes in small batches for easier debugging
+4. **Validate Relationships**: Ensure referenced entities exist before creating relationships
+5. **Use Descriptive Metadata**: Include clear descriptions and attribution
+6. **Test Deletions**: Use `force_delete: false` first to check dependencies
 
 ## Troubleshooting
 
-1. **"JSON decode error"** - Check JSON syntax with a validator
-2. **"Capability not found"** - Verify exact spelling and case
-3. **"Invalid date format"** - Use supported date formats
-4. **"Invalid TRL"** - Ensure TRL is a number between 1 and 9
-5. **"Module not found"** - Activate virtual environment and check directory
+### Common Issues
+
+**Entity Not Found**
+```
+Warning: Referenced capability 'Missing Capability' not found, skipping
+```
+*Solution*: Create the referenced entity first or check the spelling
+
+**Validation Errors**
+```
+Validation errors for entity 1:
+  - Invalid status_relative_to_tmos '150.0'. Must be 0.0-100.0
+```
+*Solution*: Fix the validation error in your JSON file
+
+**Dependency Conflicts**
+```
+Cannot delete technical_function 'Path Planning': has 3 readiness assessments
+Use 'force_delete': true to override
+```
+*Solution*: Use `force_delete: true` or clean up dependencies first
 
 ## Integration
 
-The JSON update system integrates seamlessly with:
-- **Web Application**: Changes reflect immediately in the UI
-- **CSV System**: Can be used alongside CSV updates
-- **Export Features**: JSON exports can be modified and re-imported
-- **Version Control**: JSON files work well with Git for change tracking
+This system integrates with:
+- Flask web application for real-time updates
+- Database models with full relationship support
+- Sample data system for testing
+- Web interface for visualization
+
+The JSON update system provides a powerful, flexible way to manage your autonomous vehicle capability database programmatically while maintaining data integrity and relationships.
