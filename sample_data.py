@@ -60,43 +60,102 @@ def initialize_sample_data():
     
     db.session.commit()  # Commit to get IDs
     
-    # Technical Capabilities
+    # Technical Functions (formerly Technical Capabilities)
     technical_capabilities = [
         # Terberg: Driver-in operations (semi-trailer)
-        ("Perception System", "Camera, LiDAR, and radar sensor fusion for environment perception", 1),
-        ("Path Planning", "Real-time trajectory planning and optimization", 1),
-        ("Vehicle Control", "Precise control of steering, acceleration, and braking", 1),
-        ("Localization", "High-precision vehicle positioning and mapping", 1),
-        ("Detect proximal humans", "Switch to SAFESTATE when a human violates buffer", 1),
+        ("Perception System", "Camera, LiDAR, and radar sensor fusion for environment perception", 
+         "Successfully detect and classify 99.9% of relevant objects within 100m range in all weather conditions", 
+         "truck", "Achieve 360-degree environmental awareness with <50ms latency", 85.0, "2024-01-01", "2024-10-31", 1),
+        
+        ("Path Planning", "Real-time trajectory planning and optimization", 
+         "Generate collision-free paths in real-time for complex terminal environments", 
+         "truck", "Plan optimal paths with <100ms computation time for 95% of scenarios", 75.0, "2024-02-01", "2024-11-30", 1),
+        
+        ("Vehicle Control", "Precise control of steering, acceleration, and braking", 
+         "Maintain vehicle trajectory within 10cm accuracy at all operational speeds", 
+         "truck", "Execute control commands with <20ms response time and ±5cm precision", 90.0, "2024-01-01", "2024-09-30", 1),
+        
+        ("Localization", "High-precision vehicle positioning and mapping", 
+         "Achieve centimeter-level positioning accuracy in GPS-denied environments", 
+         "truck", "Maintain <5cm positioning accuracy 99% of the time", 70.0, "2024-03-01", "2024-12-31", 1),
+        
+        ("Detect proximal humans", "Switch to SAFESTATE when a human violates buffer", 
+         "Detect humans within 5m safety buffer and trigger emergency stops within 200ms", 
+         "truck", "100% detection rate for humans in safety zones with <200ms response", 65.0, "2024-04-01", "2025-01-31", 1),
         
         # Urban Autonomous Navigation
-        ("Traffic Light Recognition", "Detection and interpretation of traffic signals", 2),
-        ("Pedestrian Detection", "Detection and tracking of pedestrians", 2),
-        ("Intersection Handling", "Safe navigation through complex intersections", 2),
+        ("Traffic Light Recognition", "Detection and interpretation of traffic signals", 
+         "Accurately identify and respond to all standard traffic signals from 50m distance", 
+         "truck", "99.5% accuracy in traffic signal detection and classification", 55.0, "2024-05-01", "2025-03-31", 2),
+        
+        ("Pedestrian Detection", "Detection and tracking of pedestrians", 
+         "Detect and track pedestrians in all lighting and weather conditions", 
+         "truck", "99.9% pedestrian detection rate with <1% false positives", 60.0, "2024-04-01", "2025-02-28", 2),
+        
+        ("Intersection Handling", "Safe navigation through complex intersections", 
+         "Navigate intersections with mixed traffic including pedestrians and cyclists", 
+         "truck", "Complete intersection traversals with 100% safety record", 40.0, "2024-06-01", "2025-06-30", 2),
         
         # Automated Parking
-        ("Parking Space Detection", "Identification of suitable parking spaces", 3),
-        ("Low-Speed Maneuvering", "Precise control for parking maneuvers", 3),
+        ("Parking Space Detection", "Identification of suitable parking spaces", 
+         "Identify and evaluate parking spaces suitable for vehicle dimensions", 
+         "truck", "Detect 95% of available parking spaces with accurate size assessment", 70.0, "2024-03-01", "2024-12-31", 3),
+        
+        ("Low-Speed Maneuvering", "Precise control for parking maneuvers", 
+         "Execute complex parking maneuvers in tight spaces with centimeter precision", 
+         "truck", "Successfully park in spaces with <50cm clearance on each side", 80.0, "2024-02-01", "2024-11-30", 3),
         
         # Platooning
-        ("Vehicle-to-Vehicle Communication", "V2V communication for coordination", 4),
-        ("Convoy Formation", "Automatic formation and maintenance of vehicle convoys", 4),
+        ("Vehicle-to-Vehicle Communication", "V2V communication for coordination", 
+         "Maintain reliable communication between vehicles in platoon formation", 
+         "truck", "99.9% communication reliability with <50ms latency between vehicles", 35.0, "2024-07-01", "2025-08-31", 4),
+        
+        ("Convoy Formation", "Automatic formation and maintenance of vehicle convoys", 
+         "Form and maintain multi-vehicle convoys with automated spacing control", 
+         "truck", "Maintain 10m spacing ±1m in 3-vehicle convoys for 100km", 30.0, "2024-08-01", "2025-10-31", 4),
         
         # Remote Vehicle Operation
-        ("Teleoperation Interface", "Human-machine interface for remote operation", 5),
-        ("Low-Latency Communication", "Real-time communication with remote operators", 5),
+        ("Teleoperation Interface", "Human-machine interface for remote operation", 
+         "Provide intuitive control interface for remote vehicle operation", 
+         "truck", "Enable remote operation with <200ms control latency", 45.0, "2024-09-01", "2025-07-31", 5),
+        
+        ("Low-Latency Communication", "Real-time communication with remote operators", 
+         "Maintain stable communication link between vehicle and operations center", 
+         "truck", "Achieve 99.5% uptime with <150ms average latency", 50.0, "2024-08-01", "2025-06-30", 5),
         
         # Cargo Handling Automation
-        ("Robotic Loading System", "Automated cargo loading and securing", 6),
-        ("Cargo Tracking", "Real-time monitoring of cargo status", 6),
+        ("Robotic Loading System", "Automated cargo loading and securing", 
+         "Automate cargo loading and securing processes without human intervention", 
+         "truck", "Load 95% of standard cargo types autonomously in <10 minutes", 20.0, "2025-01-01", "2026-06-30", 6),
+        
+        ("Cargo Tracking", "Real-time monitoring of cargo status", 
+         "Monitor cargo location, condition, and security throughout transport", 
+         "truck", "Provide real-time cargo status with 99% accuracy", 75.0, "2024-01-01", "2024-12-31", 7),
         
         # Fleet Management
-        ("Route Optimization", "Dynamic route planning for multiple vehicles", 7),
-        ("Vehicle Health Monitoring", "Real-time monitoring of vehicle systems", 7)
+        ("Route Optimization", "Dynamic route planning for multiple vehicles", 
+         "Optimize routes for fleet efficiency considering traffic and cargo priorities", 
+         "truck", "Reduce total fleet travel time by 15% compared to manual planning", 85.0, "2024-01-01", "2024-11-30", 7),
+        
+        ("Vehicle Health Monitoring", "Real-time monitoring of vehicle systems", 
+         "Monitor vehicle health and predict maintenance needs", 
+         "truck", "Predict 90% of maintenance needs 48 hours in advance", 70.0, "2024-02-01", "2024-12-31", 7)
     ]
     
-    for name, description, product_id in technical_capabilities:
-        capability = TechnicalFunction(name=name, description=description, product_feature_id=product_id)
+    from datetime import datetime
+    for (name, description, success_criteria, vehicle_type, tmos, status, 
+         start_date, end_date, product_id) in technical_capabilities:
+        capability = TechnicalFunction(
+            name=name, 
+            description=description,
+            success_criteria=success_criteria,
+            vehicle_type=vehicle_type,
+            tmos=tmos,
+            status_relative_to_tmos=status,
+            planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
+            planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
+            product_feature_id=product_id
+        )
         db.session.add(capability)
     
     # Vehicle Platforms
@@ -329,6 +388,33 @@ def initialize_sample_data():
     if cargo_automation and terberg_driver_out and fleet_mgmt:
         cargo_automation.dependencies.append(terberg_driver_out)
         cargo_automation.dependencies.append(fleet_mgmt)
+    
+    # Add sample technical function dependencies
+    # Get technical functions for creating dependencies
+    perception = TechnicalFunction.query.filter_by(name="Perception System").first()
+    path_planning = TechnicalFunction.query.filter_by(name="Path Planning").first()
+    vehicle_control = TechnicalFunction.query.filter_by(name="Vehicle Control").first()
+    localization = TechnicalFunction.query.filter_by(name="Localization").first()
+    v2v_comm = TechnicalFunction.query.filter_by(name="Vehicle-to-Vehicle Communication").first()
+    convoy_formation = TechnicalFunction.query.filter_by(name="Convoy Formation").first()
+    teleoperation = TechnicalFunction.query.filter_by(name="Teleoperation Interface").first()
+    
+    # Path Planning depends on Perception System and Localization product features
+    if path_planning and terberg_driver_in:
+        path_planning.product_feature_dependencies.append(terberg_driver_in)
+    
+    # Vehicle Control depends on multiple basic functions via product features
+    if vehicle_control and terberg_driver_in:
+        vehicle_control.product_feature_dependencies.append(terberg_driver_in)
+    
+    # Convoy Formation depends on V2V Communication
+    if convoy_formation and v2v_comm:
+        # These would need product feature dependencies if we had more complex relationships
+        pass
+    
+    # Teleoperation depends on Remote Vehicle Operation capability
+    if teleoperation and platooning:  # Using platooning capability as example
+        teleoperation.capability_dependencies.append(platooning)
     
     db.session.commit()
     print("Sample data initialized successfully!")

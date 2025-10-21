@@ -49,6 +49,11 @@ class ProductFeature(db.Model):
                                        primaryjoin='ProductFeature.id == product_feature_dependencies.c.dependency_id',
                                        secondaryjoin='ProductFeature.id == product_feature_dependencies.c.product_feature_id',
                                        back_populates='dependencies')
+    
+    # Technical functions that depend on this product feature
+    dependent_technical_functions = db.relationship('TechnicalFunction',
+                                                   secondary='technical_function_product_dependencies',
+                                                   back_populates='product_feature_dependencies')
 
     def __repr__(self):
         return f'<ProductFeature {self.name}>'
@@ -61,15 +66,35 @@ class TechnicalFunction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
+    success_criteria = db.Column(db.Text)  # Success criteria for this technical function
+    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    tmos = db.Column(db.Text)  # Target Measure of Success
+    status_relative_to_tmos = db.Column(db.Float, default=0.0)  # Percentage (0.0 to 100.0)
+    planned_start_date = db.Column(db.Date, nullable=True)
+    planned_end_date = db.Column(db.Date, nullable=True)
     product_feature_id = db.Column(db.Integer, db.ForeignKey('product_features.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     product_feature = db.relationship('ProductFeature', back_populates='technical_capabilities')
     readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_function')
+    
+    # Many-to-many relationship with Capabilities
     capabilities = db.relationship('Capabilities',
                                   secondary='capability_technical_functions',
                                   back_populates='technical_functions')
+    
+    # Co-dependencies on other product features (many-to-many)
+    product_feature_dependencies = db.relationship('ProductFeature',
+                                                  secondary='technical_function_product_dependencies',
+                                                  back_populates='dependent_technical_functions')
+    
+    # Co-dependencies on other capabilities (many-to-many)
+    capability_dependencies = db.relationship('Capabilities',
+                                            secondary='technical_function_capability_dependencies',
+                                            primaryjoin='TechnicalFunction.id == technical_function_capability_dependencies.c.technical_function_id',
+                                            secondaryjoin='Capabilities.id == technical_function_capability_dependencies.c.capability_id',
+                                            back_populates='dependent_technical_functions')
 
     def __repr__(self):
         return f'<TechnicalFunction {self.name}>'
@@ -198,6 +223,11 @@ class Capabilities(db.Model):
     product_features = db.relationship('ProductFeature',
                                      secondary='capability_product_features', 
                                      back_populates='capabilities_required')
+    
+    # Technical functions that depend on this capability
+    dependent_technical_functions = db.relationship('TechnicalFunction',
+                                                   secondary='technical_function_capability_dependencies',
+                                                   back_populates='capability_dependencies')
 
     def __repr__(self):
         return f'<Capabilities {self.name}>'
@@ -217,6 +247,16 @@ capability_product_features = db.Table('capability_product_features',
 product_feature_dependencies = db.Table('product_feature_dependencies',
     db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True),
     db.Column('dependency_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True)
+)
+
+technical_function_product_dependencies = db.Table('technical_function_product_dependencies',
+    db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_capabilities.id'), primary_key=True),
+    db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True)
+)
+
+technical_function_capability_dependencies = db.Table('technical_function_capability_dependencies',
+    db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_capabilities.id'), primary_key=True),
+    db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True)
 )
 
 
