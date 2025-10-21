@@ -1,0 +1,187 @@
+Swimlane,Label,Product Feature,Platform,ODD,Environment,Trailer,Details,Next,Capabilities,,,,,
+Operational Environment,PF-ODD-1.1,Port: baseline,N/A,N/A,N/A,N/A,"* Speed: <=25 kph
+* Forward towing of a semi-trailer
+* Lanes
+  ** Nominal lanes width (+1m - +2.0m buffer)
+  ** Queueing lanes width (+0.5m buffer)
+  ** Lane change
+  ** Lane borrow
+* Intersections: 
+  ** Accommodate trailers (if needed) without lane exit
+  ** T junctions
+* Infra:
+  ** Pseudo-static container stacks
+* Hazards: 
+  ** NONE
+* Actors + Objects
+  ** Static objects
+    *** Low objects: >20cm (TBC)
+  ** Voids (e.g. potholes)
+    *** NONE
+  ** VRUs
+    *** NONE
+  ** Vehicles
+    *** Tractors
+    *** Articulated vehicle
+  ** CHEs
+    *** Crane (STS)
+    *** Reach Stacker
+    *** Gantry (Mobile ?)
+    *** Gantry (Tracked?)
+* Incline
+  ** <5 degrees
+* Traction: 
+  ** Dry asphalt
+  ** Wet asphalt
+* GPS
+  ** Available
+* Ground coverage:
+  ** Clear",Y,"CA-CHE-1.1 CHE Perc: Reach Stacker detection, tracking (PF-ENV-1.1)
+CA-CHE-1.2 CHE Perc: Mobile Gantry detection, tracking (PF-ENV-1.1)
+CA-CHE-2.1 CHE Perc: STS position estimation (PF-ENV-1.1)
+CA-CHE-2.2 CHE Perc: Tracked Gantry position estimation (PF-ENV-1.1)","CA-PRC-1.1 Obj Perc: Detect, classify, track, and predict articulated actors (PF-ENV-1.1)","CA-LOC-1.1 Loc: Make localisation robust to psuedo-static infra (cranes, container stacks, etc.) (PF-ENV-1.1)
+CA-LOC-2.1 Loc: Make localisation robust to ego trailer towing (PF-ENV-1.1)",,,
+,PF-ODD-1.2,Port: AV-Ped interaction,N/A,N/A,N/A,N/A,"* PF-ODD-1.1
+* Actors + Objects
+  ** VRUs
+    *** Peds approach + interact with AV
+    *** Bicycles",Y,"CA-PRC-2.1 Obj Perc: Detect, classify, track, and predict pedestrians in port environments (PF-ENV-1.1)
+CA-PRC-3.1 Obj Perc: Detect, classify, track, and predict cyclists in port environments (PF-ENV-1.1)",,,,,
+,PF-ODD-1.3,Port: Movable pinning stations,N/A,N/A,N/A,N/A,"* PF-ODD-1.1
+* Infra
+  ** Movable pinning stations with Human-robot-interaction",Y,"CA-INF-1.1 Infra: Detect, classify, and track pinning station in prescribed region of interest (PF-ENV-1.1)",CA-HRI-1.1 HRI: External HMI interface to switch out of SAFESTATE and continue mission (PF-ENV-1.1),"CA-MSN-1.1 Set target mission task completion waypoint relative to a tracked object
+CA-MSN-2.1 Switch to SAFESTATE during mission tasks",,,
+,PF-ODD-2.1,Factory: baseline,N/A,N/A,N/A,N/A,,,,,,,,
+,,,,,,,,,,,,,,
+Environmental conditions,PF-ENV-1.1,Baseline: fair weather,All,N/A,N/A,N/A,"* Temp: 
+  ** Min: 5C
+  ** Max: 40C
+* Sand/ Dust: 
+  ** Visibility: >100m
+  ** Precipitation: N/A
+  ** Accumulation: N/A
+* Illumination: 
+  ** Day time
+  ** Night time (>12 LUX)
+* Rain
+  ** Precipitation rate: Moderate (<x mm/hr)
+  ** Visibility: >100m visibility
+  ** Accumulation: N/A
+* Wind: <50kph
+* Fog/ smoke: 
+  ** Visibility: >100m
+* Snow: 
+  ** Precipitation: None
+  ** Visibility: 100m
+  ** Accumulation: N/A
+* Ground cover: Dry, Wet",Y,"CA-WEAT-1.1 Rain: detect and classify rain percipitation rate online
+CA-WEAT-1.2 Rain: Estimate visibility online
+CA-WEAT-2.1 Wind: Track conditions in real time
+CA-WEAT-3.1 Temp: Track ambient temp in real time
+CA-WEAT-4.1 Sand: Estimate visibility online
+CA-SURF-1.1 Standing water: detect",,,,,
+,PF-ENV-2.1,Temperature: <=55C,Terberg,N/A,N/A,N/A,"PF-ENV-1
+* Temp: T < 55C",Y,CA-HW-1.1 HW: Harden Terberg HW for ambient temp up to 55C,CA-PRC-4.1 Perc: Evaluate the effects of mirages during perception algs,CA-LOC-3.1 Loc: Evaluate the effects of mirages during localisation algs,,,
+,PF-ENV-3.1,Sand: Moderate sandstorm,Terberg,N/A,N/A,N/A,"PF-ENV-2
+* Sand: moderate sand storm
+  ** Wind: <50kph
+  ** Visibility: >100m",Y,"CA-HW-2.1 HW: Mitigate sand penetration, damage to sensors during sand storms","CA-PRC-5.1 Perc: Evaluate the effects of dust and sand storms on perception algs
+CA-PRC-5.2 Perc: Mitigate the effects of dust and sand storms on perception algs","CA-LOC-4.1 Loc: Evaluate the effects of dust and sand storms on Loc algs
+CA-LOC-4.2 Loc: Mitigate the effects of dust and sand storms on Loc algs",,,
+,PF-ENV-4.1,Rain: Heavy,Terberg,N/A,N/A,N/A,"PF-ENV-3
+* Rain: Heavy (x mm/hr)",Y,"CA-PRC-6.1 Perc: Evaluate the effects of heavy rain on perception algorithms
+CA-PRC-6.2 Perc: Mitigate the effects of heavy rain on perception algorithms","CA-LOC-5.1 Perc: Evaluate the effects of heavy rain on localisation algorithms
+CA-LOC-5.2 Perc: Mitigate the effects of heavy rain on localisation algorithms",,,,
+,,,,,,,,,,,,,,
+Cargo,PF-CRG-1.1.1,Semi-trailer: Boxcar; Vantec model; variable weight,Terberg,N/A,N/A,N/A,,,,,,,,
+,PF-CRG-1.2.1,Semi-trailer: Chassis; City Terminal model; chassis + container (variable weight),Terberg,N/A,N/A,N/A,,Y,"CA-TRL-1.1 Estimate trailer state for City Terminals trailers (pose, weight, config)",CA-TRL-1.2 Support Towing with City Terminals trailer,CA-TRL-1.3 Support Reversing with City Terminals trailer,,,
+,PF-CRG-1.2.2,Semi-trailer: Chassis; Jebel Ali model; chassis + container (variable weight),Terberg,N/A,N/A,N/A,Weight: 10-40 tons Representative example,Y,"CA-TRL-2.1 Estimate trailer state for Jebel Ali trailers (pose, weight, config)",CA-TRL-2.2 Support Towing with Jebel Ali trailer,CA-TRL-2.3 Support Reversing with Jebel Ali trailer,,,
+,PF-CRG-1.3.1,Semi-trailer: Boat; Robotraz model; chassis + container (variable weight),T800,N/A,N/A,N/A,,,,,,,,
+,PF-CRG-2.1.1,"Drawbar trailer: XX model, single, variable weight",T800,N/A,N/A,N/A,,,,,,,,
+,PF-CRG-2.1.2,Drawbar trailer: XX model; train (up to 6 trailers); variable weight,T800,N/A,N/A,N/A,,,,,,,,
+,,,,,,,,,,,,,,
+Features,PF-SC,Safety Concept,,,,,,,,,,,,
+,PF-SC-1.1.1,Terberg: Driver-in operations (SDIC) (),Terberg,PF-ODD-1,PF-ENV-4.1,N/A,Capabilities folding into CE Marking? ,Y,SDIC updates?,,,,,
+,PF-SC-1.2.1,"Terberg: Driver-Out, AV only, FWD",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,"CA-SC-1.1 SafetyPath validation for AV only FWD driving in PF-ODD-1, PF-ENV-1
+CA-SC-1.2 SafetyPath validation for AV only FWD driving in PF-ODD-1, PF-ENV-2
+CA-SC-1.3 SafetyPath validation for AV only FWD driving in PF-ODD-1, PF-ENV-3
+CA-SC-1.4 SafetyPath validation for AV only FWD driving in PF-ODD-1, PF-ENV-4",,,,,
+,PF-SC-1.2.2,"Terberg: Driver-Out, AV only, REV",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,"CA-SC-2.1 SafetyPath validation for AV only REV driving in PF-ODD-1, PF-ENV-1
+CA-SC-2.2 SafetyPath validation for AV only REV driving in PF-ODD-1, PF-ENV-2
+CA-SC-2.3 SafetyPath validation for AV only REV driving in PF-ODD-1, PF-ENV-3
+CA-SC-2.4 SafetyPath validation for AV only REV driving in PF-ODD-1, PF-ENV-4",,,,,
+,PF-SC-1.3.1,Terberg: Driver-Out; AV + Semi-Trailer; FWD,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,TBD,,,,,
+,PF-SC-1.3.2,Terberg: Driver-Out; AV + Semi-Trailer; REV,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,TBD,,,,,
+,,,,,,,,,,,,,,
+,PF-SV,Supervision,,,,,,,,,,,,
+,PF-SV-1.1,Internal Supervision (SDIC),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,TBD,,,,,
+,PF-SV-2.1,External Supervision (Line-of-Sight),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,TBD,,,,,
+,PF-SV-3.1,Remote Monitoring: M0,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,"CA-SV-1.1 Stream situational awareness info to single monitoring station with max latency of Xms
+CA-SV-1.2 Stream situational to an N monitoring stations with a max latency of Yms",,,,,
+,PF-SV-4.1,Remote Supervision: Remote Intervention,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,CA-SV-2.1 Remotely intervene (bring AV to a controlled stop along current path) from a remote assistance station.,"CA-SV-3.1 Remote Drive (M4) the AV using an appropriate Remote Assistance Station (single station)
+CA-SV-3.2 Switch Remote Driving command between stations (?)",,,,
+,,,,,,,,,,,,,,
+,PF-HRI,Human-Robot Interactions,,,,,,,,,,,,
+,PF-HRI-2.1,Proximal human: Switch into and out of SAFESTATE when human close to AV,Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,"CA-HRI-1.1 Detect proximal humans, and switch to SAFESTATE when a human violates buffer",,,,,
+,PF-HRI-3.1,External HMI: HMI to continue mission (and switch out of SAFESTATE),Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,CA-HRI-2.1 Provide an interface (remote? offboard? onboard?) to allow a human to switch the AV out of SAFESTATE to continue the mission,,,,,
+,,,,,,,,,,,,,,
+,PF-TOW,Towing,,,,,,,,,,,,
+,PF-TOW-1.1,"Tow a semi-trailer while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,"CA-TOW-1.1 Tow semi-trailers (PF-TRL-1.2) along prescribed drivelines (e.g., exemplars, path pre-planning) while accounting for kinematics 
+CA-TOW-1.2 Tow semi-trailers (PF-TRL-1.2) along learned drivelines (ml path hints) while accounting for kinematics ",CA-TOW-2.1 Tow semi-trailers (PF-TRL-1.2) with variable weights,"CA-TOW-3.1 Tow semi-trailers (single model per operation) with variable configs (eg chassis only, chassis + container)
+CA-TOW-3.2 Terberg: support multiple trailer models per platform",,,
+,PF-TOW-2.1,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,CA-TOW-4.1 Borrow adjacent lanes when required (incl in intersections) when the tractor-trailer cannot fit inside the lane,,,,,
+,PF-TOW-3.1,"Change lanes while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,"CA-TOW-5.1 Change lanes for navigation purposes while accounting for trailer kinematics, dynamics",,,,,
+,,,N/A,,,,,,,,,,,
+,PF-REV,Reversing,,,,,,,,,,,,
+,PF-REV-1.1,Reverse the AV (Terberg),Terberg,PF-ODD-1,PF-ENV-1,N/A,,Y,CA-REV-1.1 Support reversing with the Terberg (AV only),,,,,
+,PF-REV-2.1,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,"CA-REV-2.1 Reverse a semi-trailer into an unobscured, numbered parking bay (mapped corridor)",,,,,
+,PF-REV-3.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,"CA-REV-3.1 Reverse a semi-trailer into a prescribed, numbered parking bay with adjacent obstacles (min 0.6m clearance) (mapped corridor)",,,,,
+,PF-REV-4.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,,,,,,
+,,,,,,,,,,,,,,
+,PF-DCK,Docking,,,,,,,,,,,,
+,PF-DCK-1.1,Initial approach of a prescribed isolated dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,,,,,,
+,PF-DCK-2.1,Initial approach of a prescribed isolated dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,,,,,,
+,PF-DCK-3.1,Final approach of a prescribed crowded dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,,,,,,
+,PF-DCK-4.1,Final approach of a prescribed crowded dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,,,,,,
+,,,,,,,,,,,,,,
+,PF-CHE,CHE Interactions,,,,,,,,,,,,
+,PF-CHE-1.1,"Rendevous with a mobile Reach Stacker at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,CA-CHE-1.1 Interact with a CHE at a pre-defined location (incl switch into/ out of SAFESTATE),"CA-CHE-2.1 RA loading/ unloading task completion determination
+CA-CHE-2.2 TOS loading/ unloading task completion emission",,,,
+,PF-CHE-2.1,"Rendevous with a mobile Gantry at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,"CA-CHE-1.1
+CA-CHE-2.1
+CA-CHE-2.2",,,,,
+,PF-CHE-3.1,"Rendevous with an STS crane at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,"CA-CHE-1.1
+CA-CHE-2.1
+CA-CHE-2.2",,,,,
+,PF-CHE-3.2,"Rendevous with an STS crane at a location relative to the crane, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,CA-CHE-1.2 Detect STS and execute relative navigation tasks,,,,,
+,,,,,,,,,,,,,,
+,PF-HCH,Hinching/ Unhitching,,,,,,,,,,,,
+,PF-HCH-1.1,Hitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,CA-HCH-1.1 Object-relative navigation,CA-HCH-2.1 BeeHive complex navigation and custom task interweaving and execution,CA-HCH-3.1 5th wheel control and task execution (height and jaw),CA-HCH-4.1 PP: Selective collission avoidance/ checking suppression,CA-HCH-5.1 SP: Selective collission avoidance/ checking suppression,CA-HCH-6.1 Trailer gooseneck height estimation
+,PF-HCH-2.1,Unhitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,"CA-HCH-2.1
+CA-HCH-3.1
+CA-HCH-4.1
+CA-CHC-5.1",,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+CE Marking,,CE Marking,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,"Technical conformity file is complete, and includes results from manditory testing (EMC), and validation evidence of safety functions.",,"* EMC testing;
+* Technical Conformity File completed;
+* Safety function: Avoid collision;
+* Safety function: Avoid Hazards
+* Safety function: Prevent motion during interaction",,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+Fleet management,PF-XMS-1.1,xMS interactions: dispatch to mapped location and communicate completion,Terberg,N/A,N/A,N/A,,,,,,,,
+,PF-XMS-2.1,API: Support XYZ MS at Jebel Ali,Terberg,N/A,N/A,N/A,,,,,,,,
+,,,,,,,,,,,,,,
+Operations,PF-OPS-1.1,Boot: Remote boot and mode control,,,,,,,,,,,,
+,PF-OPS-2.1,Mission: Automatic launch of driving operations,,,,,,,,,,,,
+,PF-OPS-2.2,Mission: Automatic retire at end of shift,,,,,,,,,,,,
+,PF-OPS-2.3,Mission: Automatic fuel assistance request,,,,,,,,,,,,
+,PF-OPS-3.1,Update: Remote update support,,,,,,,,,,,,
+,PF-OPS-4.1,Monitor: Telemetry data available for all modes (locale-specific?),,,,,,,,,,,,
+,PF-OPS-5.1,Data: Live data snipping and uploading,,,,,,,,,,,,
+,PF-OPS-5.2,Data: Remote viewing of data status,,,,,,,,,,,,

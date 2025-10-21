@@ -157,7 +157,7 @@ def create_product_feature(data):
         
         if existing:
             print(f"Product feature '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
-            return False
+            return update_product_feature(data)
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
@@ -300,7 +300,7 @@ def create_capability(data):
         
         if existing:
             print(f"Capability '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
-            return False
+            return update_capability(data)
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
