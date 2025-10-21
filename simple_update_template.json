@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Simple Update Template - Common Operations",
+    "created_by": "Your Name",
+    "created_date": "2025-10-21",
+    "notes": "Quick template for common update operations"
+  },
+  "entities": [
+    {
+      "_comment": "=== UPDATE PROGRESS ON PRODUCT FEATURE ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "REPLACE_WITH_ACTUAL_PRODUCT_FEATURE_NAME",
+      "status_relative_to_tmos": 85.0,
+      "description": "Updated description with current progress"
+    },
+    {
+      "_comment": "=== UPDATE PROGRESS ON CAPABILITY ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "REPLACE_WITH_ACTUAL_CAPABILITY_NAME",
+      "progress_relative_to_tmos": 70.0,
+      "success_criteria": "Updated success criteria"
+    },
+    {
+      "_comment": "=== UPDATE PROGRESS ON TECHNICAL FUNCTION ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "REPLACE_WITH_ACTUAL_TECHNICAL_FUNCTION_NAME",
+      "status_relative_to_tmos": 90.0,
+      "description": "Updated with latest improvements"
+    },
+    {
+      "_comment": "=== CREATE NEW CAPABILITY ===",
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Your New Capability Name",
+      "success_criteria": "Define clear success criteria here",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "tmos": "Target measure of success",
+      "progress_relative_to_tmos": 0.0
+    },
+    {
+      "_comment": "=== CREATE NEW PRODUCT FEATURE ===",
+      "entity_type": "product_feature",
+      "operation": "create",
+      "name": "Your New Product Feature",
+      "description": "Detailed description of the product feature",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "CATEGORY",
+      "label": "PF-CAT-1.0",
+      "tmos": "Target measure of success",
+      "status_relative_to_tmos": 0.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "active_flag": "next",
+      "capabilities_required": ["Your New Capability Name"],
+      "dependencies": []
+    },
+    {
+      "_comment": "=== CREATE NEW TECHNICAL FUNCTION ===",
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Your New Technical Function",
+      "description": "Technical implementation details",
+      "success_criteria": "Specific technical success criteria",
+      "vehicle_type": "truck",
+      "tmos": "Technical target measure",
+      "status_relative_to_tmos": 0.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "product_feature": "Your New Product Feature",
+      "capabilities": ["Your New Capability Name"],
+      "product_feature_dependencies": [],
+      "capability_dependencies": []
+    }
+  ]
+}

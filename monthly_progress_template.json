@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Monthly Progress Update Template - October 2025",
+    "created_by": "Project Manager",
+    "created_date": "2025-10-21",
+    "notes": "Template for monthly progress reporting and milestone updates"
+  },
+  "entities": [
+    {
+      "_comment": "=== TERBERG OPERATIONS UPDATE ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Terberg: Driver-in operations (semi-trailer)",
+      "status_relative_to_tmos": 88.0,
+      "description": "Monthly update: Completed additional safety testing, refined driver assistance protocols"
+    },
+    {
+      "_comment": "=== HIGHWAY AUTOMATION PROGRESS ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Highway Automation Package",
+      "status_relative_to_tmos": 72.0,
+      "planned_end_date": "2025-12-15"
+    },
+    {
+      "_comment": "=== URBAN DRIVING MILESTONE ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Urban Driving Package",
+      "status_relative_to_tmos": 78.0,
+      "description": "Milestone achieved: Successfully completed urban intersection testing phase"
+    },
+    {
+      "_comment": "=== SENSOR FUSION ADVANCEMENT ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Sensor Fusion",
+      "progress_relative_to_tmos": 82.0,
+      "success_criteria": "Updated: Multi-sensor integration with 99.8% accuracy, improved weather performance"
+    },
+    {
+      "_comment": "=== COMPUTER VISION ENHANCEMENT ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Computer Vision",
+      "progress_relative_to_tmos": 89.0,
+      "success_criteria": "Enhanced: Object detection and classification with improved night vision capabilities"
+    },
+    {
+      "_comment": "=== TECHNICAL FUNCTION UPDATES ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Path Planning",
+      "status_relative_to_tmos": 85.0,
+      "description": "Optimized algorithms for complex urban scenarios, reduced computation time by 15%"
+    },
+    {
+      "_comment": "=== LANE DETECTION COMPLETION ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Lane Detection",
+      "status_relative_to_tmos": 96.0,
+      "description": "Near completion: Final testing in adverse weather conditions"
+    },
+    {
+      "_comment": "=== OBSTACLE DETECTION PROGRESS ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Obstacle Detection",
+      "status_relative_to_tmos": 91.0,
+      "description": "Completed pedestrian detection enhancements, improved small object recognition"
+    },
+    {
+      "_comment": "=== VEHICLE CONTROL REFINEMENT ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Vehicle Control",
+      "status_relative_to_tmos": 87.0,
+      "description": "Refined control algorithms for smoother operation in varying load conditions"
+    },
+    {
+      "_comment": "=== NEW MILESTONE TRACKING ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Route Planning",
+      "progress_relative_to_tmos": 76.0,
+      "planned_end_date": "2025-11-30"
+    }
+  ]
+}

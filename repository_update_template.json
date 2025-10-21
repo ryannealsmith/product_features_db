@@ -1,0 +1,189 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Comprehensive Repository Update Template for Product Feature Readiness Database",
+    "created_by": "Development Team",
+    "created_date": "2025-10-21",
+    "notes": "This template demonstrates all CRUD operations for autonomous vehicle capability management"
+  },
+  "entities": [
+    {
+      "_comment": "=== CREATING NEW CAPABILITIES ===",
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Autonomous Emergency Braking",
+      "success_criteria": "Detect and respond to emergency situations with <200ms reaction time and 99.9% collision avoidance rate",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-08-31",
+      "tmos": "Achieve Level 4 autonomous emergency response capability",
+      "progress_relative_to_tmos": 25.0,
+      "technical_functions": [],
+      "product_features": []
+    },
+    {
+      "_comment": "=== CREATING NEW PRODUCT FEATURES ===",
+      "entity_type": "product_feature",
+      "operation": "create",
+      "name": "Emergency Response System",
+      "description": "Comprehensive emergency detection and response system for autonomous vehicles",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "SAFETY",
+      "label": "PF-SAFETY-2.1",
+      "tmos": "Enable fully autonomous emergency response with zero human intervention",
+      "status_relative_to_tmos": 35.0,
+      "planned_start_date": "2025-01-15",
+      "planned_end_date": "2025-09-30",
+      "active_flag": "next",
+      "capabilities_required": ["Autonomous Emergency Braking"],
+      "dependencies": []
+    },
+    {
+      "_comment": "=== CREATING NEW TECHNICAL FUNCTIONS ===",
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Collision Prediction Algorithm",
+      "description": "Advanced ML algorithm for predicting potential collision scenarios",
+      "success_criteria": "Predict collisions with 99.8% accuracy at least 2 seconds before impact",
+      "vehicle_type": "truck",
+      "tmos": "Real-time collision prediction with sub-second response",
+      "status_relative_to_tmos": 60.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-06-30",
+      "product_feature": "Emergency Response System",
+      "capabilities": ["Autonomous Emergency Braking"],
+      "product_feature_dependencies": [],
+      "capability_dependencies": []
+    },
+    {
+      "_comment": "=== CREATING RELATED TECHNICAL FUNCTION ===",
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Emergency Brake Controller",
+      "description": "Hardware controller for executing emergency braking maneuvers",
+      "success_criteria": "Execute emergency braking within 150ms of trigger signal",
+      "vehicle_type": "truck",
+      "tmos": "Instantaneous emergency brake response",
+      "status_relative_to_tmos": 40.0,
+      "planned_start_date": "2025-02-01",
+      "planned_end_date": "2025-07-31",
+      "product_feature": "Emergency Response System",
+      "capabilities": ["Autonomous Emergency Braking"],
+      "product_feature_dependencies": [],
+      "capability_dependencies": []
+    },
+    {
+      "_comment": "=== UPDATING EXISTING PRODUCT FEATURES ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Terberg: Driver-in operations (semi-trailer)",
+      "status_relative_to_tmos": 90.0,
+      "description": "Updated: Enhanced forward operations with improved safety protocols and driver assistance features"
+    },
+    {
+      "_comment": "=== UPDATING EXISTING CAPABILITIES ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Sensor Fusion",
+      "progress_relative_to_tmos": 85.0,
+      "success_criteria": "Updated: Integrate LiDAR, camera, and radar data with 99.7% accuracy and <50ms latency"
+    },
+    {
+      "_comment": "=== UPDATING EXISTING TECHNICAL FUNCTIONS ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Lane Detection",
+      "status_relative_to_tmos": 95.0,
+      "description": "Updated: Enhanced lane detection with improved performance in adverse weather conditions",
+      "success_criteria": "Updated: Detect lane markings with 99.9% accuracy in all weather conditions including rain, snow, and fog"
+    },
+    {
+      "_comment": "=== ADDING RELATIONSHIPS ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Emergency Response System",
+      "dependencies": ["Terberg: Driver-in operations (semi-trailer)"],
+      "capabilities_required": ["Autonomous Emergency Braking", "Sensor Fusion"]
+    },
+    {
+      "_comment": "=== UPDATING TECHNICAL FUNCTION WITH DEPENDENCIES ===",
+      "entity_type": "technical_function",
+      "operation": "update",
+      "name": "Collision Prediction Algorithm",
+      "capability_dependencies": ["Sensor Fusion"],
+      "product_feature_dependencies": ["Terberg: Driver-in operations (semi-trailer)"]
+    },
+    {
+      "_comment": "=== CREATING ADVANCED CAPABILITY ===",
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Predictive Maintenance",
+      "success_criteria": "Predict vehicle maintenance needs with 95% accuracy and 30-day advance notice",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-03-01",
+      "planned_end_date": "2025-12-31",
+      "tmos": "Fully autonomous predictive maintenance system",
+      "progress_relative_to_tmos": 15.0,
+      "technical_functions": [],
+      "product_features": []
+    },
+    {
+      "_comment": "=== CREATING PRODUCT FEATURE WITH COMPLEX RELATIONSHIPS ===",
+      "entity_type": "product_feature",
+      "operation": "create",
+      "name": "Fleet Management System",
+      "description": "Comprehensive fleet monitoring and management system with predictive capabilities",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "FLEET",
+      "label": "PF-FLEET-1.0",
+      "tmos": "Enable autonomous fleet operations with 99.5% uptime",
+      "status_relative_to_tmos": 20.0,
+      "planned_start_date": "2025-03-15",
+      "planned_end_date": "2026-01-31",
+      "active_flag": "next",
+      "capabilities_required": ["Predictive Maintenance", "Sensor Fusion"],
+      "dependencies": ["Emergency Response System"]
+    },
+    {
+      "_comment": "=== UPDATING PROGRESS ON MULTIPLE ENTITIES ===",
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Urban Driving Package",
+      "status_relative_to_tmos": 75.0,
+      "planned_end_date": "2025-11-30"
+    },
+    {
+      "_comment": "=== EXAMPLE OF SAFE DELETE (will show dependency warning) ===",
+      "entity_type": "capability",
+      "operation": "delete",
+      "name": "Non-existent Capability",
+      "force_delete": false
+    },
+    {
+      "_comment": "=== CREATING TECHNICAL FUNCTION WITH MULTIPLE DEPENDENCIES ===",
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Fleet Analytics Engine",
+      "description": "Advanced analytics engine for fleet performance optimization",
+      "success_criteria": "Process fleet data in real-time with <100ms latency and generate actionable insights",
+      "vehicle_type": "truck",
+      "tmos": "Real-time fleet optimization analytics",
+      "status_relative_to_tmos": 30.0,
+      "planned_start_date": "2025-04-01",
+      "planned_end_date": "2025-10-31",
+      "product_feature": "Fleet Management System",
+      "capabilities": ["Predictive Maintenance"],
+      "product_feature_dependencies": ["Emergency Response System"],
+      "capability_dependencies": ["Sensor Fusion"]
+    },
+    {
+      "_comment": "=== FINAL UPDATE WITH COMPREHENSIVE PROGRESS ===",
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Autonomous Emergency Braking",
+      "progress_relative_to_tmos": 45.0,
+      "technical_functions": ["Collision Prediction Algorithm", "Emergency Brake Controller"],
+      "product_features": ["Emergency Response System"]
+    }
+  ]
+}
