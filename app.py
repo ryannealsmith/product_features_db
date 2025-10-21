@@ -23,6 +23,9 @@ class ProductFeature(db.Model):
     
     # Relationships
     technical_capabilities = db.relationship('TechnicalFunction', back_populates='product_feature')
+    capabilities = db.relationship('Capabilities',
+                                  secondary='capability_product_features',
+                                  back_populates='product_features')
 
     def __repr__(self):
         return f'<ProductFeature {self.name}>'
@@ -41,6 +44,9 @@ class TechnicalFunction(db.Model):
     # Relationships
     product_feature = db.relationship('ProductFeature', back_populates='technical_capabilities')
     readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_function')
+    capabilities = db.relationship('Capabilities',
+                                  secondary='capability_technical_functions',
+                                  back_populates='technical_functions')
 
     def __repr__(self):
         return f'<TechnicalFunction {self.name}>'
@@ -143,6 +149,47 @@ class Trailer(db.Model):
 
     def __repr__(self):
         return f'<Trailer {self.name}>'
+
+
+class Capabilities(db.Model):
+    """High-level capabilities that combine technical functions and product features"""
+    __tablename__ = 'capabilities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    success_criteria = db.Column(db.Text, nullable=False)
+    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    planned_start_date = db.Column(db.Date, nullable=True)
+    planned_end_date = db.Column(db.Date, nullable=True)
+    tmos = db.Column(db.Text)  # Target Measure of Success
+    progress_relative_to_tmos = db.Column(db.Float, default=0.0)  # Percentage (0.0 to 100.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships - many-to-many with technical functions and product features
+    # Technical functions required for this capability
+    technical_functions = db.relationship('TechnicalFunction', 
+                                        secondary='capability_technical_functions',
+                                        back_populates='capabilities')
+    
+    # Related product feature items
+    product_features = db.relationship('ProductFeature',
+                                     secondary='capability_product_features', 
+                                     back_populates='capabilities')
+
+    def __repr__(self):
+        return f'<Capabilities {self.name}>'
+
+
+# Association tables for many-to-many relationships
+capability_technical_functions = db.Table('capability_technical_functions',
+    db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True),
+    db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_capabilities.id'), primary_key=True)
+)
+
+capability_product_features = db.Table('capability_product_features',
+    db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True),
+    db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True)
+)
 
 
 class ReadinessAssessment(db.Model):

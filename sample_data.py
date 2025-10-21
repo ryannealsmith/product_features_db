@@ -1,4 +1,4 @@
-from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities
 
 def initialize_sample_data():
     """Initialize the database with sample data"""
@@ -178,6 +178,108 @@ def initialize_sample_data():
                         next_review_date=date.today() + timedelta(days=random.randint(30, 180))
                     )
                     db.session.add(assessment)
+    
+    # Create sample Capabilities
+    capabilities_data = [
+        (
+            "Autonomous Terminal Operations",
+            "Vehicle can perform fully autonomous operations in terminal environment including navigation, cargo handling coordination, and safe interaction with infrastructure and personnel",
+            "truck",
+            "2024-01-01",
+            "2025-06-30",
+            "Successfully complete 100 consecutive autonomous terminal operations with 99.9% safety record and 95% efficiency compared to human operators",
+            75.0
+        ),
+        (
+            "Highway Platooning",
+            "Multiple vehicles can operate in close formation on highways with automated following and coordination",
+            "truck", 
+            "2024-03-01",
+            "2025-12-31",
+            "Demonstrate stable 3-vehicle platoon maintaining 10m spacing at 80km/h for 100km duration with 15% fuel savings",
+            45.0
+        ),
+        (
+            "Urban Delivery Operations", 
+            "Autonomous vehicle can navigate urban environments and complete delivery tasks including parking, cargo access, and pedestrian interaction",
+            "van",
+            "2024-06-01", 
+            "2026-03-31",
+            "Complete 50 urban delivery routes with 98% on-time delivery rate and zero safety incidents involving pedestrians or cyclists",
+            25.0
+        ),
+        (
+            "Remote Monitoring and Control",
+            "Human operators can monitor and control autonomous vehicles from remote operations center with full situational awareness",
+            "truck",
+            "2024-02-01",
+            "2025-09-30", 
+            "Achieve 200ms maximum latency for control commands and 99.5% uptime for monitoring systems across 50 vehicle fleet",
+            60.0
+        )
+    ]
+    
+    from datetime import datetime
+    for name, criteria, vehicle_type, start_date, end_date, tmos, progress in capabilities_data:
+        capability = Capabilities(
+            name=name,
+            success_criteria=criteria,
+            vehicle_type=vehicle_type,
+            planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
+            planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
+            tmos=tmos,
+            progress_relative_to_tmos=progress
+        )
+        db.session.add(capability)
+    
+    db.session.commit()
+    
+    # Associate capabilities with technical functions and product features
+    capabilities = Capabilities.query.all()
+    product_features = ProductFeature.query.all()
+    technical_functions = TechnicalFunction.query.all()
+    
+    # Associate "Autonomous Terminal Operations" with relevant functions and features
+    terminal_ops = Capabilities.query.filter_by(name="Autonomous Terminal Operations").first()
+    if terminal_ops:
+        # Add technical functions
+        perception = TechnicalFunction.query.filter_by(name="Perception System").first()
+        path_planning = TechnicalFunction.query.filter_by(name="Path Planning").first()
+        vehicle_control = TechnicalFunction.query.filter_by(name="Vehicle Control").first()
+        localization = TechnicalFunction.query.filter_by(name="Localization").first()
+        
+        if perception:
+            terminal_ops.technical_functions.append(perception)
+        if path_planning:
+            terminal_ops.technical_functions.append(path_planning)
+        if vehicle_control:
+            terminal_ops.technical_functions.append(vehicle_control)
+        if localization:
+            terminal_ops.technical_functions.append(localization)
+            
+        # Add product features
+        terberg_ops = ProductFeature.query.filter_by(name="Terberg: Driver-in operations (semi-trailer)").first()
+        if terberg_ops:
+            terminal_ops.product_features.append(terberg_ops)
+    
+    # Associate "Highway Platooning" with relevant functions and features
+    platooning = Capabilities.query.filter_by(name="Highway Platooning").first()
+    if platooning:
+        # Add technical functions
+        v2v_comm = TechnicalFunction.query.filter_by(name="Vehicle-to-Vehicle Communication").first()
+        convoy_formation = TechnicalFunction.query.filter_by(name="Convoy Formation").first()
+        
+        if v2v_comm:
+            platooning.technical_functions.append(v2v_comm)
+        if convoy_formation:
+            platooning.technical_functions.append(convoy_formation)
+        if vehicle_control:
+            platooning.technical_functions.append(vehicle_control)
+            
+        # Add product features  
+        platooning_feature = ProductFeature.query.filter_by(name="Platooning").first()
+        if platooning_feature:
+            platooning.product_features.append(platooning_feature)
     
     db.session.commit()
     print("Sample data initialized successfully!")
