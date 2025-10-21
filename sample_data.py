@@ -22,16 +22,40 @@ def initialize_sample_data():
     
     # Product Features
     product_features = [
-        ("Terberg: Driver-in operations (semi-trailer)", "Forward only operations with driver in vehicle towing a trailer."),
-        ("Terberg: Driver-Out, AV only, FWD", "Forward only operations with no driver in vehicle, towing a trailer"),
-        ("Platooning", "Multiple vehicles can follow each other closely in automated convoy"),
-        ("Remote Vehicle Operation", "Vehicle can be operated remotely by a human operator"),
-        ("Cargo Handling Automation", "Automated loading and unloading of cargo"),
-        ("Fleet Management", "Centralized management and coordination of vehicle fleets")
+        ("Terberg: Driver-in operations (semi-trailer)", 
+         "Forward only operations with driver in vehicle towing a trailer.", 
+         "truck", "Baseline", "baseline", "Complete 500 consecutive operations with 99.5% safety record", 85.0, "2024-01-01", "2024-12-31", "active"),
+        ("Terberg: Driver-Out, AV only, FWD", 
+         "Forward only operations with no driver in vehicle, towing a trailer", 
+         "truck", "Autonomous", "PF-AUTO-1.1", "Achieve 1000 hours autonomous operation with <0.1 disengagement rate", 65.0, "2024-03-01", "2025-08-31", "next"),
+        ("Platooning", 
+         "Multiple vehicles can follow each other closely in automated convoy", 
+         "truck", "Advanced", "PF-ADV-2.1", "Demonstrate 3-vehicle platoon for 100km with 15% fuel savings", 45.0, "2024-06-01", "2025-12-31", "next"),
+        ("Remote Vehicle Operation", 
+         "Vehicle can be operated remotely by a human operator", 
+         "truck", "Remote", "PF-REM-1.0", "Control vehicle remotely with <200ms latency for 8-hour shifts", 30.0, "2024-09-01", "2025-06-30", "next"),
+        ("Cargo Handling Automation", 
+         "Automated loading and unloading of cargo", 
+         "truck", "Automation", "PF-AUTO-3.0", "Automate 95% of cargo handling operations without human intervention", 15.0, "2025-01-01", "2026-12-31", "future"),
+        ("Fleet Management", 
+         "Centralized management and coordination of vehicle fleets", 
+         "truck", "Management", "PF-MGMT-1.0", "Manage 50+ vehicle fleet with 99% uptime and optimal routing", 75.0, "2024-01-01", "2024-11-30", "active")
     ]
     
-    for name, description in product_features:
-        feature = ProductFeature(name=name, description=description)
+    from datetime import datetime
+    for name, description, vehicle_type, swimlane, label, tmos, status, start_date, end_date, active_flag in product_features:
+        feature = ProductFeature(
+            name=name, 
+            description=description,
+            vehicle_type=vehicle_type,
+            swimlane_decorators=swimlane,
+            label=label,
+            tmos=tmos,
+            status_relative_to_tmos=status,
+            planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
+            planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
+            active_flag=active_flag
+        )
         db.session.add(feature)
     
     db.session.commit()  # Commit to get IDs
@@ -280,6 +304,31 @@ def initialize_sample_data():
         platooning_feature = ProductFeature.query.filter_by(name="Platooning").first()
         if platooning_feature:
             platooning.product_features.append(platooning_feature)
+    
+    # Add sample product feature dependencies
+    terberg_driver_in = ProductFeature.query.filter_by(name="Terberg: Driver-in operations (semi-trailer)").first()
+    terberg_driver_out = ProductFeature.query.filter_by(name="Terberg: Driver-Out, AV only, FWD").first()
+    platooning_pf = ProductFeature.query.filter_by(name="Platooning").first()
+    remote_ops = ProductFeature.query.filter_by(name="Remote Vehicle Operation").first()
+    fleet_mgmt = ProductFeature.query.filter_by(name="Fleet Management").first()
+    cargo_automation = ProductFeature.query.filter_by(name="Cargo Handling Automation").first()
+    
+    # Set up dependencies: Driver-Out depends on Driver-in
+    if terberg_driver_out and terberg_driver_in:
+        terberg_driver_out.dependencies.append(terberg_driver_in)
+    
+    # Platooning depends on Driver-Out operations
+    if platooning_pf and terberg_driver_out:
+        platooning_pf.dependencies.append(terberg_driver_out)
+    
+    # Fleet Management depends on Remote Vehicle Operation
+    if fleet_mgmt and remote_ops:
+        fleet_mgmt.dependencies.append(remote_ops)
+    
+    # Cargo Automation depends on both Driver-Out and Fleet Management
+    if cargo_automation and terberg_driver_out and fleet_mgmt:
+        cargo_automation.dependencies.append(terberg_driver_out)
+        cargo_automation.dependencies.append(fleet_mgmt)
     
     db.session.commit()
     print("Sample data initialized successfully!")

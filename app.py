@@ -13,19 +13,42 @@ db = SQLAlchemy(app)
 # Database Models
 
 class ProductFeature(db.Model):
-    """Product capabilities that can be delivered to customers"""
+    """Product features that can be delivered to customers"""
     __tablename__ = 'product_features'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
+    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    swimlane_decorators = db.Column(db.String(200))  # Swimlane categorization
+    label = db.Column(db.String(50))  # e.g., "baseline" or "PF-<SWIM_LANE>-1.1"
+    tmos = db.Column(db.Text)  # Target Measure of Success
+    status_relative_to_tmos = db.Column(db.Float, default=0.0)  # Percentage (0.0 to 100.0)
+    planned_start_date = db.Column(db.Date, nullable=True)
+    planned_end_date = db.Column(db.Date, nullable=True)
+    active_flag = db.Column(db.String(10), default="next")  # "next" or other status
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     technical_capabilities = db.relationship('TechnicalFunction', back_populates='product_feature')
-    capabilities = db.relationship('Capabilities',
-                                  secondary='capability_product_features',
-                                  back_populates='product_features')
+    
+    # Many-to-many relationship with Capabilities (list of capabilities required)
+    capabilities_required = db.relationship('Capabilities',
+                                          secondary='capability_product_features',
+                                          back_populates='product_features')
+    
+    # Self-referential many-to-many for co-dependencies on other product features
+    dependencies = db.relationship('ProductFeature',
+                                 secondary='product_feature_dependencies',
+                                 primaryjoin='ProductFeature.id == product_feature_dependencies.c.product_feature_id',
+                                 secondaryjoin='ProductFeature.id == product_feature_dependencies.c.dependency_id',
+                                 back_populates='dependent_features')
+    
+    dependent_features = db.relationship('ProductFeature',
+                                       secondary='product_feature_dependencies',
+                                       primaryjoin='ProductFeature.id == product_feature_dependencies.c.dependency_id',
+                                       secondaryjoin='ProductFeature.id == product_feature_dependencies.c.product_feature_id',
+                                       back_populates='dependencies')
 
     def __repr__(self):
         return f'<ProductFeature {self.name}>'
@@ -174,7 +197,7 @@ class Capabilities(db.Model):
     # Related product feature items
     product_features = db.relationship('ProductFeature',
                                      secondary='capability_product_features', 
-                                     back_populates='capabilities')
+                                     back_populates='capabilities_required')
 
     def __repr__(self):
         return f'<Capabilities {self.name}>'
@@ -189,6 +212,11 @@ capability_technical_functions = db.Table('capability_technical_functions',
 capability_product_features = db.Table('capability_product_features',
     db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True),
     db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True)
+)
+
+product_feature_dependencies = db.Table('product_feature_dependencies',
+    db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True),
+    db.Column('dependency_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True)
 )
 
 
