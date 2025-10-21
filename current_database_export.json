@@ -1,0 +1,545 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "Complete database export from Product Feature Readiness Database",
+    "exported_by": "update_from_json.py",
+    "export_date": "2025-10-21T13:54:57.189542",
+    "total_product_features": 8,
+    "total_capabilities": 6,
+    "total_technical_functions": 19,
+    "total_assessments": 80
+  },
+  "product_features": [
+    {
+      "name": "Terberg: Driver-in operations (semi-trailer)",
+      "description": "Forward only operations with driver in vehicle towing a trailer.",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Baseline",
+      "label": "baseline",
+      "tmos": "Complete 500 consecutive operations with 99.5% safety record",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-12-31",
+      "active_flag": "active",
+      "capabilities_required": [
+        "Autonomous Terminal Operations"
+      ],
+      "dependencies": [],
+      "technical_functions_count": 5
+    },
+    {
+      "name": "Terberg: Driver-Out, AV only, FWD",
+      "description": "Forward only operations with no driver in vehicle, towing a trailer",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Autonomous",
+      "label": "PF-AUTO-1.1",
+      "tmos": "Achieve 1000 hours autonomous operation with <0.1 disengagement rate",
+      "status_relative_to_tmos": 65.0,
+      "planned_start_date": "2024-03-01",
+      "planned_end_date": "2025-08-31",
+      "active_flag": "next",
+      "capabilities_required": [],
+      "dependencies": [
+        "Terberg: Driver-in operations (semi-trailer)"
+      ],
+      "technical_functions_count": 3
+    },
+    {
+      "name": "Platooning",
+      "description": "Multiple vehicles can follow each other closely in automated convoy",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Advanced",
+      "label": "PF-ADV-2.1",
+      "tmos": "Demonstrate 3-vehicle platoon for 100km with 15% fuel savings",
+      "status_relative_to_tmos": 45.0,
+      "planned_start_date": "2024-06-01",
+      "planned_end_date": "2025-12-31",
+      "active_flag": "next",
+      "capabilities_required": [
+        "Highway Platooning"
+      ],
+      "dependencies": [
+        "Terberg: Driver-Out, AV only, FWD"
+      ],
+      "technical_functions_count": 2
+    },
+    {
+      "name": "Remote Vehicle Operation",
+      "description": "Vehicle can be operated remotely by a human operator",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Remote",
+      "label": "PF-REM-1.0",
+      "tmos": "Control vehicle remotely with <200ms latency for 8-hour shifts",
+      "status_relative_to_tmos": 30.0,
+      "planned_start_date": "2024-09-01",
+      "planned_end_date": "2025-06-30",
+      "active_flag": "next",
+      "capabilities_required": [],
+      "dependencies": [],
+      "technical_functions_count": 2
+    },
+    {
+      "name": "Cargo Handling Automation",
+      "description": "Automated loading and unloading of cargo",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Automation",
+      "label": "PF-AUTO-3.0",
+      "tmos": "Automate 95% of cargo handling operations without human intervention",
+      "status_relative_to_tmos": 15.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2026-12-31",
+      "active_flag": "future",
+      "capabilities_required": [],
+      "dependencies": [
+        "Terberg: Driver-Out, AV only, FWD",
+        "Fleet Management"
+      ],
+      "technical_functions_count": 2
+    },
+    {
+      "name": "Fleet Management",
+      "description": "Centralized management and coordination of vehicle fleets",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "Management",
+      "label": "PF-MGMT-1.0",
+      "tmos": "Manage 50+ vehicle fleet with 99% uptime and optimal routing",
+      "status_relative_to_tmos": 75.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-11-30",
+      "active_flag": "active",
+      "capabilities_required": [],
+      "dependencies": [
+        "Remote Vehicle Operation"
+      ],
+      "technical_functions_count": 1
+    },
+    {
+      "name": "Example Product Feature",
+      "description": "Updated description for the product feature",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "ADAS",
+      "label": "PF-ADAS-1.1",
+      "tmos": "Achieve 99.9% uptime in highway conditions",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2025-01-15",
+      "planned_end_date": "2025-12-31",
+      "active_flag": "next",
+      "capabilities_required": [],
+      "dependencies": [],
+      "technical_functions_count": 3
+    },
+    {
+      "name": "Your New Product Feature",
+      "description": "Detailed description of the product feature",
+      "vehicle_type": "truck",
+      "swimlane_decorators": "CATEGORY",
+      "label": "PF-CAT-1.0",
+      "tmos": "Target measure of success",
+      "status_relative_to_tmos": 0.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "active_flag": "next",
+      "capabilities_required": [
+        "Your New Capability Name"
+      ],
+      "dependencies": [],
+      "technical_functions_count": 1
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "Autonomous Terminal Operations",
+      "success_criteria": "Vehicle can perform fully autonomous operations in terminal environment including navigation, cargo handling coordination, and safe interaction with infrastructure and personnel",
+      "vehicle_type": "truck",
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2025-06-30",
+      "tmos": "Successfully complete 100 consecutive autonomous terminal operations with 99.9% safety record and 95% efficiency compared to human operators",
+      "progress_relative_to_tmos": 75.0,
+      "technical_functions": [
+        "Perception System",
+        "Path Planning",
+        "Vehicle Control",
+        "Localization"
+      ],
+      "product_features": [
+        "Terberg: Driver-in operations (semi-trailer)"
+      ]
+    },
+    {
+      "name": "Highway Platooning",
+      "success_criteria": "Multiple vehicles can operate in close formation on highways with automated following and coordination",
+      "vehicle_type": "truck",
+      "planned_start_date": "2024-03-01",
+      "planned_end_date": "2025-12-31",
+      "tmos": "Demonstrate stable 3-vehicle platoon maintaining 10m spacing at 80km/h for 100km duration with 15% fuel savings",
+      "progress_relative_to_tmos": 45.0,
+      "technical_functions": [
+        "Vehicle Control",
+        "Vehicle-to-Vehicle Communication",
+        "Convoy Formation"
+      ],
+      "product_features": [
+        "Platooning"
+      ]
+    },
+    {
+      "name": "Urban Delivery Operations",
+      "success_criteria": "Autonomous vehicle can navigate urban environments and complete delivery tasks including parking, cargo access, and pedestrian interaction",
+      "vehicle_type": "van",
+      "planned_start_date": "2024-06-01",
+      "planned_end_date": "2026-03-31",
+      "tmos": "Complete 50 urban delivery routes with 98% on-time delivery rate and zero safety incidents involving pedestrians or cyclists",
+      "progress_relative_to_tmos": 25.0,
+      "technical_functions": [],
+      "product_features": []
+    },
+    {
+      "name": "Remote Monitoring and Control",
+      "success_criteria": "Human operators can monitor and control autonomous vehicles from remote operations center with full situational awareness",
+      "vehicle_type": "truck",
+      "planned_start_date": "2024-02-01",
+      "planned_end_date": "2025-09-30",
+      "tmos": "Achieve 200ms maximum latency for control commands and 99.5% uptime for monitoring systems across 50 vehicle fleet",
+      "progress_relative_to_tmos": 60.0,
+      "technical_functions": [],
+      "product_features": []
+    },
+    {
+      "name": "Highway Navigation",
+      "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-11-30",
+      "tmos": "Complete highway navigation capability",
+      "progress_relative_to_tmos": 60.0,
+      "technical_functions": [
+        "Path Planning"
+      ],
+      "product_features": []
+    },
+    {
+      "name": "Your New Capability Name",
+      "success_criteria": "Define clear success criteria here",
+      "vehicle_type": "truck",
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "tmos": "Target measure of success",
+      "progress_relative_to_tmos": 0.0,
+      "technical_functions": [
+        "Your New Technical Function"
+      ],
+      "product_features": [
+        "Your New Product Feature"
+      ]
+    }
+  ],
+  "technical_functions": [
+    {
+      "name": "Perception System",
+      "description": "Camera, LiDAR, and radar sensor fusion for environment perception",
+      "success_criteria": "Successfully detect and classify 99.9% of relevant objects within 100m range in all weather conditions",
+      "vehicle_type": "truck",
+      "tmos": "Achieve 360-degree environmental awareness with <50ms latency",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-10-31",
+      "product_feature": "Terberg: Driver-in operations (semi-trailer)",
+      "capabilities": [
+        "Autonomous Terminal Operations"
+      ],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Path Planning",
+      "description": "Real-time trajectory planning and optimization",
+      "success_criteria": "Generate collision-free paths in real-time for complex terminal environments",
+      "vehicle_type": "truck",
+      "tmos": "Plan optimal paths with <100ms computation time for 95% of scenarios",
+      "status_relative_to_tmos": 75.0,
+      "planned_start_date": "2024-02-01",
+      "planned_end_date": "2024-11-30",
+      "product_feature": "Terberg: Driver-in operations (semi-trailer)",
+      "capabilities": [
+        "Autonomous Terminal Operations",
+        "Highway Navigation"
+      ],
+      "product_feature_dependencies": [
+        "Terberg: Driver-in operations (semi-trailer)"
+      ],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Vehicle Control",
+      "description": "Precise control of steering, acceleration, and braking",
+      "success_criteria": "Maintain vehicle trajectory within 10cm accuracy at all operational speeds",
+      "vehicle_type": "truck",
+      "tmos": "Execute control commands with <20ms response time and ±5cm precision",
+      "status_relative_to_tmos": 90.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-09-30",
+      "product_feature": "Terberg: Driver-in operations (semi-trailer)",
+      "capabilities": [
+        "Autonomous Terminal Operations",
+        "Highway Platooning"
+      ],
+      "product_feature_dependencies": [
+        "Terberg: Driver-in operations (semi-trailer)"
+      ],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Localization",
+      "description": "High-precision vehicle positioning and mapping",
+      "success_criteria": "Achieve centimeter-level positioning accuracy in GPS-denied environments",
+      "vehicle_type": "truck",
+      "tmos": "Maintain <5cm positioning accuracy 99% of the time",
+      "status_relative_to_tmos": 70.0,
+      "planned_start_date": "2024-03-01",
+      "planned_end_date": "2024-12-31",
+      "product_feature": "Terberg: Driver-in operations (semi-trailer)",
+      "capabilities": [
+        "Autonomous Terminal Operations"
+      ],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Detect proximal humans",
+      "description": "Switch to SAFESTATE when a human violates buffer",
+      "success_criteria": "Detect humans within 5m safety buffer and trigger emergency stops within 200ms",
+      "vehicle_type": "truck",
+      "tmos": "100% detection rate for humans in safety zones with <200ms response",
+      "status_relative_to_tmos": 65.0,
+      "planned_start_date": "2024-04-01",
+      "planned_end_date": "2025-01-31",
+      "product_feature": "Terberg: Driver-in operations (semi-trailer)",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Traffic Light Recognition",
+      "description": "Detection and interpretation of traffic signals",
+      "success_criteria": "Accurately identify and respond to all standard traffic signals from 50m distance",
+      "vehicle_type": "truck",
+      "tmos": "99.5% accuracy in traffic signal detection and classification",
+      "status_relative_to_tmos": 55.0,
+      "planned_start_date": "2024-05-01",
+      "planned_end_date": "2025-03-31",
+      "product_feature": "Terberg: Driver-Out, AV only, FWD",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Pedestrian Detection",
+      "description": "Detection and tracking of pedestrians",
+      "success_criteria": "Detect and track pedestrians in all lighting and weather conditions",
+      "vehicle_type": "truck",
+      "tmos": "99.9% pedestrian detection rate with <1% false positives",
+      "status_relative_to_tmos": 60.0,
+      "planned_start_date": "2024-04-01",
+      "planned_end_date": "2025-02-28",
+      "product_feature": "Terberg: Driver-Out, AV only, FWD",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Intersection Handling",
+      "description": "Safe navigation through complex intersections",
+      "success_criteria": "Navigate intersections with mixed traffic including pedestrians and cyclists",
+      "vehicle_type": "truck",
+      "tmos": "Complete intersection traversals with 100% safety record",
+      "status_relative_to_tmos": 40.0,
+      "planned_start_date": "2024-06-01",
+      "planned_end_date": "2025-06-30",
+      "product_feature": "Terberg: Driver-Out, AV only, FWD",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Parking Space Detection",
+      "description": "Identification of suitable parking spaces",
+      "success_criteria": "Identify and evaluate parking spaces suitable for vehicle dimensions",
+      "vehicle_type": "truck",
+      "tmos": "Detect 95% of available parking spaces with accurate size assessment",
+      "status_relative_to_tmos": 70.0,
+      "planned_start_date": "2024-03-01",
+      "planned_end_date": "2024-12-31",
+      "product_feature": "Platooning",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Low-Speed Maneuvering",
+      "description": "Precise control for parking maneuvers",
+      "success_criteria": "Execute complex parking maneuvers in tight spaces with centimeter precision",
+      "vehicle_type": "truck",
+      "tmos": "Successfully park in spaces with <50cm clearance on each side",
+      "status_relative_to_tmos": 80.0,
+      "planned_start_date": "2024-02-01",
+      "planned_end_date": "2024-11-30",
+      "product_feature": "Platooning",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 8
+    },
+    {
+      "name": "Vehicle-to-Vehicle Communication",
+      "description": "V2V communication for coordination",
+      "success_criteria": "Maintain reliable communication between vehicles in platoon formation",
+      "vehicle_type": "truck",
+      "tmos": "99.9% communication reliability with <50ms latency between vehicles",
+      "status_relative_to_tmos": 35.0,
+      "planned_start_date": "2024-07-01",
+      "planned_end_date": "2025-08-31",
+      "product_feature": "Remote Vehicle Operation",
+      "capabilities": [
+        "Highway Platooning"
+      ],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Convoy Formation",
+      "description": "Automatic formation and maintenance of vehicle convoys",
+      "success_criteria": "Form and maintain multi-vehicle convoys with automated spacing control",
+      "vehicle_type": "truck",
+      "tmos": "Maintain 10m spacing ±1m in 3-vehicle convoys for 100km",
+      "status_relative_to_tmos": 30.0,
+      "planned_start_date": "2024-08-01",
+      "planned_end_date": "2025-10-31",
+      "product_feature": "Remote Vehicle Operation",
+      "capabilities": [
+        "Highway Platooning"
+      ],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Teleoperation Interface",
+      "description": "Human-machine interface for remote operation",
+      "success_criteria": "Provide intuitive control interface for remote vehicle operation",
+      "vehicle_type": "truck",
+      "tmos": "Enable remote operation with <200ms control latency",
+      "status_relative_to_tmos": 45.0,
+      "planned_start_date": "2024-09-01",
+      "planned_end_date": "2025-07-31",
+      "product_feature": "Cargo Handling Automation",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [
+        "Highway Platooning"
+      ],
+      "assessment_count": 0
+    },
+    {
+      "name": "Low-Latency Communication",
+      "description": "Real-time communication with remote operators",
+      "success_criteria": "Maintain stable communication link between vehicle and operations center",
+      "vehicle_type": "truck",
+      "tmos": "Achieve 99.5% uptime with <150ms average latency",
+      "status_relative_to_tmos": 50.0,
+      "planned_start_date": "2024-08-01",
+      "planned_end_date": "2025-06-30",
+      "product_feature": "Cargo Handling Automation",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Robotic Loading System",
+      "description": "Automated cargo loading and securing",
+      "success_criteria": "Automate cargo loading and securing processes without human intervention",
+      "vehicle_type": "truck",
+      "tmos": "Load 95% of standard cargo types autonomously in <10 minutes",
+      "status_relative_to_tmos": 20.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2026-06-30",
+      "product_feature": "Fleet Management",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Cargo Tracking",
+      "description": "Real-time monitoring of cargo status",
+      "success_criteria": "Monitor cargo location, condition, and security throughout transport",
+      "vehicle_type": "truck",
+      "tmos": "Provide real-time cargo status with 99% accuracy",
+      "status_relative_to_tmos": 75.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-12-31",
+      "product_feature": "Example Product Feature",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Route Optimization",
+      "description": "Dynamic route planning for multiple vehicles",
+      "success_criteria": "Optimize routes for fleet efficiency considering traffic and cargo priorities",
+      "vehicle_type": "truck",
+      "tmos": "Reduce total fleet travel time by 15% compared to manual planning",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2024-01-01",
+      "planned_end_date": "2024-11-30",
+      "product_feature": "Example Product Feature",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Vehicle Health Monitoring",
+      "description": "Real-time monitoring of vehicle systems",
+      "success_criteria": "Monitor vehicle health and predict maintenance needs",
+      "vehicle_type": "truck",
+      "tmos": "Predict 90% of maintenance needs 48 hours in advance",
+      "status_relative_to_tmos": 70.0,
+      "planned_start_date": "2024-02-01",
+      "planned_end_date": "2024-12-31",
+      "product_feature": "Example Product Feature",
+      "capabilities": [],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    },
+    {
+      "name": "Your New Technical Function",
+      "description": "Technical implementation details",
+      "success_criteria": "Specific technical success criteria",
+      "vehicle_type": "truck",
+      "tmos": "Technical target measure",
+      "status_relative_to_tmos": 0.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-12-31",
+      "product_feature": "Your New Product Feature",
+      "capabilities": [
+        "Your New Capability Name"
+      ],
+      "product_feature_dependencies": [],
+      "capability_dependencies": [],
+      "assessment_count": 0
+    }
+  ]
+}
