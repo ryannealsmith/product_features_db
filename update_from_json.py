@@ -7,7 +7,7 @@ This script updates due dates and TRL levels for capabilities from a JSON file.
 import json
 import sys
 from datetime import datetime, date
-from app import app, db, ProductFeature, TechnicalCapability, ReadinessAssessment, TechnicalReadinessLevel
+from app import app, db, ProductFeature, TechnicalFunction, ReadinessAssessment, TechnicalReadinessLevel
 
 def parse_date(date_string):
     """Parse date string in various formats"""
@@ -83,7 +83,7 @@ def update_capability(update_data, update_index):
             print(f"Update {update_index + 1}: Product feature '{capability_name}' not found")
             return False
     else:  # technical
-        capability = TechnicalCapability.query.filter_by(name=capability_name).first()
+        capability = TechnicalFunction.query.filter_by(name=capability_name).first()
         if not capability:
             print(f"Update {update_index + 1}: Technical capability '{capability_name}' not found")
             return False
@@ -100,7 +100,7 @@ def update_capability(update_data, update_index):
                     assessment.next_review_date = due_date
                 updates_made.append(f"due date to {due_date} for {len(assessments)} assessments")
             else:  # product
-                tech_caps = TechnicalCapability.query.filter_by(product_feature_id=capability.id).all()
+                tech_caps = TechnicalFunction.query.filter_by(product_feature_id=capability.id).all()
                 assessment_count = 0
                 for tech_cap in tech_caps:
                     assessments = ReadinessAssessment.query.filter_by(technical_capability_id=tech_cap.id).all()
@@ -126,7 +126,7 @@ def update_capability(update_data, update_index):
                         assessment.notes = update_data['notes']
                 updates_made.append(f"TRL to {target_trl} for {len(assessments)} assessments")
             else:  # product
-                tech_caps = TechnicalCapability.query.filter_by(product_feature_id=capability.id).all()
+                tech_caps = TechnicalFunction.query.filter_by(product_feature_id=capability.id).all()
                 assessment_count = 0
                 for tech_cap in tech_caps:
                     assessments = ReadinessAssessment.query.filter_by(technical_capability_id=tech_cap.id).all()
@@ -240,7 +240,7 @@ def export_current_data(output_file='current_capabilities.json'):
                     "exported_by": "update_from_json.py",
                     "export_date": datetime.now().isoformat(),
                     "total_product_features": ProductFeature.query.count(),
-                    "total_technical_capabilities": TechnicalCapability.query.count(),
+                    "total_technical_capabilities": TechnicalFunction.query.count(),
                     "total_assessments": ReadinessAssessment.query.count()
                 },
                 "product_features": [],
@@ -250,7 +250,7 @@ def export_current_data(output_file='current_capabilities.json'):
             # Export product features
             product_features = ProductFeature.query.all()
             for cap in product_features:
-                tech_caps = TechnicalCapability.query.filter_by(product_feature_id=cap.id).all()
+                tech_caps = TechnicalFunction.query.filter_by(product_feature_id=cap.id).all()
                 total_assessments = 0
                 total_trl = 0
                 last_updated = None
@@ -281,7 +281,7 @@ def export_current_data(output_file='current_capabilities.json'):
                 export_data["product_features"].append(product_data)
             
             # Export technical capabilities
-            tech_caps = TechnicalCapability.query.all()
+            tech_caps = TechnicalFunction.query.all()
             for cap in tech_caps:
                 assessments = ReadinessAssessment.query.filter_by(technical_capability_id=cap.id).all()
                 total_trl = sum(assessment.readiness_level.level for assessment in assessments)

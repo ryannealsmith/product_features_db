@@ -5,7 +5,7 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h5><i class="fas fa-table"></i> Technical Capability Readiness Matrix</h5>
+        <h5><i class="fas fa-table"></i> Technical Function Readiness Matrix</h5>
         <p class="mb-0 text-muted">Overview of readiness levels across different configurations</p>
     </div>
     <div class="card-body">
@@ -14,7 +14,7 @@
             <table class="table table-sm table-hover">
                 <thead class="table-dark">
                     <tr>
-                        <th>Technical Capability</th>
+                        <th>Technical Function</th>
                         <th>Vehicle Platform</th>
                         <th>ODD</th>
                         <th>Environment</th>
@@ -27,7 +27,7 @@
                     {% for item in matrix_data %}
                     <tr class="confidence-{{ item.confidence }}">
                         <td>
-                            <strong>{{ item.technical_capability }}</strong>
+                            <strong>{{ item.technical_function }}</strong>
                         </td>
                         <td>
                             <i class="fas fa-truck text-muted"></i>
@@ -118,18 +118,18 @@
 {% block scripts %}
 {% if matrix_data %}
 <script>
-// Create a simplified heatmap showing average TRL by technical capability and platform
+// Create a simplified heatmap showing average TRL by technical function and platform
 const ctx = document.getElementById('heatmapChart').getContext('2d');
 
-// Group data by technical capability and platform
+// Group data by technical function and platform
 const groupedData = {};
 const matrixData = {{ matrix_data | tojson }};
 
 matrixData.forEach(item => {
-    const key = `${item.technical_capability}|${item.vehicle_platform}`;
+    const key = `${item.technical_function}|${item.vehicle_platform}`;
     if (!groupedData[key]) {
         groupedData[key] = {
-            technical_capability: item.technical_capability,
+            technical_function: item.technical_function,
             vehicle_platform: item.vehicle_platform,
             trl_levels: []
         };
@@ -138,7 +138,7 @@ matrixData.forEach(item => {
 });
 
 // Calculate averages and create chart data
-const capabilities = [...new Set(matrixData.map(item => item.technical_capability))];
+const capabilities = [...new Set(matrixData.map(item => item.technical_function))];
 const platforms = [...new Set(matrixData.map(item => item.vehicle_platform))];
 
 const chartData = [];

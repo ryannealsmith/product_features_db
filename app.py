@@ -22,14 +22,14 @@ class ProductFeature(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    technical_capabilities = db.relationship('TechnicalCapability', back_populates='product_feature')
+    technical_capabilities = db.relationship('TechnicalFunction', back_populates='product_feature')
 
     def __repr__(self):
         return f'<ProductFeature {self.name}>'
 
 
-class TechnicalCapability(db.Model):
-    """Technical capabilities required to enable product capabilities"""
+class TechnicalFunction(db.Model):
+    """Technical functions required to enable product features"""
     __tablename__ = 'technical_capabilities'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -40,10 +40,10 @@ class TechnicalCapability(db.Model):
     
     # Relationships
     product_feature = db.relationship('ProductFeature', back_populates='technical_capabilities')
-    readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_capability')
+    readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_function')
 
     def __repr__(self):
-        return f'<TechnicalCapability {self.name}>'
+        return f'<TechnicalFunction {self.name}>'
 
 
 class TechnicalReadinessLevel(db.Model):
@@ -146,7 +146,7 @@ class Trailer(db.Model):
 
 
 class ReadinessAssessment(db.Model):
-    """Assessment of technical capability readiness for specific configurations"""
+    """Assessment of technical function readiness for specific configurations"""
     __tablename__ = 'readiness_assessments'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -165,7 +165,7 @@ class ReadinessAssessment(db.Model):
     next_review_date = db.Column(db.Date)
     
     # Relationships
-    technical_capability = db.relationship('TechnicalCapability', back_populates='readiness_assessments')
+    technical_function = db.relationship('TechnicalFunction', back_populates='readiness_assessments')
     readiness_level = db.relationship('TechnicalReadinessLevel', back_populates='readiness_assessments')
     vehicle_platform = db.relationship('VehiclePlatform', back_populates='readiness_assessments')
     odd = db.relationship('ODD', back_populates='readiness_assessments')
@@ -173,7 +173,7 @@ class ReadinessAssessment(db.Model):
     trailer = db.relationship('Trailer', back_populates='readiness_assessments')
 
     def __repr__(self):
-        return f'<ReadinessAssessment {self.technical_capability.name} - TRL{self.readiness_level.level}>'
+        return f'<ReadinessAssessment {self.technical_function.name} - TRL{self.readiness_level.level}>'
 
 
 # Import routes after models are defined

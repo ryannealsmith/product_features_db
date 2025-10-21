@@ -12,10 +12,10 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="technical_capability_id" class="form-label">Technical Capability *</label>
+                        <label for="technical_capability_id" class="form-label">Technical Function *</label>
                         <select name="technical_capability_id" id="technical_capability_id" class="form-select" required>
-                            <option value="">Select Technical Capability</option>
-                            {% for tech_cap in technical_capabilities %}
+                            <option value="">Select Technical Function</option>
+                            {% for tech_cap in technical_functions %}
                             <option value="{{ tech_cap.id }}">
                                 {{ tech_cap.name }} ({{ tech_cap.product_feature.name }})
                             </option>

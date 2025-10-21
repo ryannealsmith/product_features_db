@@ -28,10 +28,10 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Technical Capability</label>
+                <label class="form-label">Technical Function</label>
                 <select name="technical_id" class="form-select">
                     <option value="">All Technical</option>
-                    {% for tech in technical_capabilities %}
+                    {% for tech in technical_functions %}
                     <option value="{{ tech.id }}" {% if request.args.get('technical_id')|int == tech.id %}selected{% endif %}>
                         {{ tech.name }}
                     </option>
@@ -78,7 +78,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Technical Capability</th>
+                        <th>Technical Function</th>
                         <th>Product Capability</th>
                         <th>TRL</th>
                         <th>Platform</th>
@@ -94,12 +94,12 @@
                     {% for assessment in assessments %}
                     <tr class="confidence-{{ assessment.confidence_level }}">
                         <td>
-                            <strong>{{ assessment.technical_capability.name }}</strong>
+                            <strong>{{ assessment.technical_function.name }}</strong>
                             {% if assessment.notes %}
                             <br><small class="text-muted">{{ assessment.notes[:50] }}{% if assessment.notes|length > 50 %}...{% endif %}</small>
                             {% endif %}
                         </td>
-                        <td>{{ assessment.technical_capability.product_feature.name }}</td>
+                        <td>{{ assessment.technical_function.product_feature.name }}</td>
                         <td>
                             <span class="badge {% if assessment.readiness_level.level >= 7 %}trl-high{% elif assessment.readiness_level.level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
                                 TRL {{ assessment.readiness_level.level }}

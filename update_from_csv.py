@@ -7,7 +7,7 @@ This script updates due dates and TRL levels for capabilities from a CSV file.
 import csv
 import sys
 from datetime import datetime, date
-from app import app, db, ProductFeature, TechnicalCapability, ReadinessAssessment, TechnicalReadinessLevel
+from app import app, db, ProductFeature, TechnicalFunction, ReadinessAssessment, TechnicalReadinessLevel
 
 def parse_date(date_string):
     """Parse date string in various formats"""
@@ -72,9 +72,9 @@ def update_from_csv(csv_file_path):
                                 error_count += 1
                                 continue
                         elif capability_type == 'technical':
-                            capability = TechnicalCapability.query.filter_by(name=capability_name).first()
+                            capability = TechnicalFunction.query.filter_by(name=capability_name).first()
                             if not capability:
-                                print(f"Row {row_num}: Technical capability '{capability_name}' not found")
+                                print(f"Row {row_num}: Technical function '{capability_name}' not found")
                                 error_count += 1
                                 continue
                         else:
@@ -94,7 +94,7 @@ def update_from_csv(csv_file_path):
                                     print(f"Row {row_num}: Updated due date for '{capability_name}' and {len(assessments)} assessments")
                                 else:
                                     # For product features, update all related technical capability assessments
-                                    tech_caps = TechnicalCapability.query.filter_by(product_feature_id=capability.id).all()
+                                    tech_caps = TechnicalFunction.query.filter_by(product_feature_id=capability.id).all()
                                     assessment_count = 0
                                     for tech_cap in tech_caps:
                                         assessments = ReadinessAssessment.query.filter_by(technical_capability_id=tech_cap.id).all()
@@ -131,7 +131,7 @@ def update_from_csv(csv_file_path):
                                     print(f"Row {row_num}: Updated TRL to {target_trl} for '{capability_name}' and {len(assessments)} assessments")
                                 else:
                                     # For product features, update all related technical capability assessments
-                                    tech_caps = TechnicalCapability.query.filter_by(product_feature_id=capability.id).all()
+                                    tech_caps = TechnicalFunction.query.filter_by(product_feature_id=capability.id).all()
                                     assessment_count = 0
                                     for tech_cap in tech_caps:
                                         assessments = ReadinessAssessment.query.filter_by(technical_capability_id=tech_cap.id).all()
@@ -187,7 +187,7 @@ def export_current_data(output_file='current_capabilities.csv'):
                 # Export product features
                 product_features = ProductFeature.query.all()
                 for cap in product_features:
-                    tech_caps = TechnicalCapability.query.filter_by(product_feature_id=cap.id).all()
+                    tech_caps = TechnicalFunction.query.filter_by(product_feature_id=cap.id).all()
                     total_assessments = 0
                     total_trl = 0
                     last_updated = None
@@ -212,7 +212,7 @@ def export_current_data(output_file='current_capabilities.csv'):
                     })
                 
                 # Export technical capabilities
-                tech_caps = TechnicalCapability.query.all()
+                tech_caps = TechnicalFunction.query.all()
                 for cap in tech_caps:
                     assessments = ReadinessAssessment.query.filter_by(technical_capability_id=cap.id).all()
                     total_trl = sum(assessment.readiness_level.level for assessment in assessments)

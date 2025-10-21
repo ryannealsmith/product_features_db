@@ -1,4 +1,4 @@
-from app import app, db, ProductFeature, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
 
 def initialize_sample_data():
     """Initialize the database with sample data"""
@@ -72,7 +72,7 @@ def initialize_sample_data():
     ]
     
     for name, description, product_id in technical_capabilities:
-        capability = TechnicalCapability(name=name, description=description, product_feature_id=product_id)
+        capability = TechnicalFunction(name=name, description=description, product_feature_id=product_id)
         db.session.add(capability)
     
     # Vehicle Platforms
@@ -142,7 +142,7 @@ def initialize_sample_data():
     from datetime import date, timedelta
     
     # Get all entities for creating assessments
-    tech_caps = TechnicalCapability.query.all()
+    tech_caps = TechnicalFunction.query.all()
     platforms = VehiclePlatform.query.all()
     odds_list = ODD.query.all()
     envs = Environment.query.all()

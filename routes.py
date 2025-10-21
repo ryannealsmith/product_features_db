@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
-from app import app, db, ProductFeature, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
 from sqlalchemy import and_
 
 @app.route('/')
@@ -33,9 +33,9 @@ def product_features():
 
 @app.route('/technical_capabilities')
 def technical_capabilities():
-    """View all technical capabilities"""
-    capabilities = TechnicalCapability.query.all()
-    return render_template('technical_capabilities.html', capabilities=capabilities)
+    """Technical functions management page"""
+    capabilities = TechnicalFunction.query.all()
+    return render_template('technical_functions.html', capabilities=capabilities)
 
 @app.route('/readiness_assessments')
 def readiness_assessments():
@@ -50,7 +50,7 @@ def readiness_assessments():
     query = ReadinessAssessment.query
     
     if product_id:
-        query = query.join(TechnicalCapability).filter(TechnicalCapability.product_feature_id == product_id)
+        query = query.join(TechnicalFunction).filter(TechnicalFunction.product_feature_id == product_id)
     if technical_id:
         query = query.filter(ReadinessAssessment.technical_capability_id == technical_id)
     if platform_id:
@@ -62,7 +62,7 @@ def readiness_assessments():
     
     # Get data for filter dropdowns
     product_features = ProductFeature.query.all()
-    technical_capabilities = TechnicalCapability.query.all()
+    technical_functions = TechnicalFunction.query.all()
     vehicle_platforms = VehiclePlatform.query.all()
     
     return render_template('readiness_assessments.html', 
@@ -74,8 +74,8 @@ def readiness_assessments():
 @app.route('/readiness_matrix')
 def readiness_matrix():
     """Display readiness matrix view"""
-    # Get all combinations of technical capabilities and configurations
-    technical_capabilities = TechnicalCapability.query.all()
+    # Get all combinations of technical functions and configurations
+    technical_functions = TechnicalFunction.query.all()
     vehicle_platforms = VehiclePlatform.query.all()
     odds = ODD.query.all()
     environments = Environment.query.all()
@@ -145,7 +145,7 @@ def add_assessment():
         return redirect(url_for('readiness_assessments'))
     
     # GET request - show form
-    technical_capabilities = TechnicalCapability.query.all()
+    technical_functions = TechnicalFunction.query.all()
     readiness_levels = TechnicalReadinessLevel.query.order_by(TechnicalReadinessLevel.level).all()
     vehicle_platforms = VehiclePlatform.query.all()
     odds = ODD.query.all()
@@ -174,7 +174,7 @@ def api_readiness_data():
     product_readiness = db.session.query(
         ProductFeature.name,
         db.func.avg(TechnicalReadinessLevel.level).label('avg_trl')
-    ).join(TechnicalCapability).join(ReadinessAssessment).join(TechnicalReadinessLevel).group_by(ProductFeature.name).all()
+    ).join(TechnicalFunction).join(ReadinessAssessment).join(TechnicalReadinessLevel).group_by(ProductFeature.name).all()
     
     return jsonify({
         'trl_distribution': [{'level': t.level, 'name': t.name, 'count': t.count} for t in trl_distribution],
