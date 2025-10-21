@@ -141,7 +141,7 @@ def create_product_feature(data):
         existing = ProductFeature.query.filter_by(name=data['name']).first()
         if existing:
             print(f"Product feature '{data['name']}' already exists, skipping creation")
-            return False
+            return update_product_feature(data)
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
@@ -245,7 +245,7 @@ def create_capability(data):
         existing = Capabilities.query.filter_by(name=data['name']).first()
         if existing:
             print(f"Capability '{data['name']}' already exists, skipping creation")
-            return False
+            return update_capability(data)
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
