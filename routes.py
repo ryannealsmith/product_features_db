@@ -1,12 +1,12 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
-from app import app, db, ProductCapability, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
 from sqlalchemy import and_
 
 @app.route('/')
 def dashboard():
     """Main dashboard showing product feature readiness overview"""
-    # Get all product capabilities with their technical capabilities and readiness levels
-    product_capabilities = ProductCapability.query.all()
+    # Get all product features with their technical capabilities and readiness levels
+    product_features = ProductFeature.query.all()
     
     # Get readiness statistics
     total_assessments = ReadinessAssessment.query.count()
@@ -22,14 +22,14 @@ def dashboard():
     }
     
     return render_template('dashboard.html', 
-                         product_capabilities=product_capabilities,
+                         product_features=product_features,
                          readiness_stats=readiness_stats)
 
-@app.route('/product_capabilities')
-def product_capabilities():
-    """View all product capabilities"""
-    capabilities = ProductCapability.query.all()
-    return render_template('product_capabilities.html', capabilities=capabilities)
+@app.route('/product_features')
+def product_features():
+    """View all product features"""
+    features = ProductFeature.query.all()
+    return render_template('product_features.html', features=features)
 
 @app.route('/technical_capabilities')
 def technical_capabilities():
@@ -50,7 +50,7 @@ def readiness_assessments():
     query = ReadinessAssessment.query
     
     if product_id:
-        query = query.join(TechnicalCapability).filter(TechnicalCapability.product_capability_id == product_id)
+        query = query.join(TechnicalCapability).filter(TechnicalCapability.product_feature_id == product_id)
     if technical_id:
         query = query.filter(ReadinessAssessment.technical_capability_id == technical_id)
     if platform_id:
@@ -61,13 +61,13 @@ def readiness_assessments():
     assessments = query.all()
     
     # Get data for filter dropdowns
-    product_capabilities = ProductCapability.query.all()
+    product_features = ProductFeature.query.all()
     technical_capabilities = TechnicalCapability.query.all()
     vehicle_platforms = VehiclePlatform.query.all()
     
     return render_template('readiness_assessments.html', 
                          assessments=assessments,
-                         product_capabilities=product_capabilities,
+                         product_features=product_features,
                          technical_capabilities=technical_capabilities,
                          vehicle_platforms=vehicle_platforms)
 
@@ -170,11 +170,11 @@ def api_readiness_data():
         db.func.count(ReadinessAssessment.id).label('count')
     ).join(ReadinessAssessment).group_by(TechnicalReadinessLevel.level).all()
     
-    # Get readiness by product capability
+    # Get readiness by product feature
     product_readiness = db.session.query(
-        ProductCapability.name,
+        ProductFeature.name,
         db.func.avg(TechnicalReadinessLevel.level).label('avg_trl')
-    ).join(TechnicalCapability).join(ReadinessAssessment).join(TechnicalReadinessLevel).group_by(ProductCapability.name).all()
+    ).join(TechnicalCapability).join(ReadinessAssessment).join(TechnicalReadinessLevel).group_by(ProductFeature.name).all()
     
     return jsonify({
         'trl_distribution': [{'level': t.level, 'name': t.name, 'count': t.count} for t in trl_distribution],

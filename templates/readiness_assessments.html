@@ -20,7 +20,7 @@
                 <label class="form-label">Product Capability</label>
                 <select name="product_id" class="form-select">
                     <option value="">All Products</option>
-                    {% for product in product_capabilities %}
+                    {% for product in product_features %}
                     <option value="{{ product.id }}" {% if request.args.get('product_id')|int == product.id %}selected{% endif %}>
                         {{ product.name }}
                     </option>
@@ -99,7 +99,7 @@
                             <br><small class="text-muted">{{ assessment.notes[:50] }}{% if assessment.notes|length > 50 %}...{% endif %}</small>
                             {% endif %}
                         </td>
-                        <td>{{ assessment.technical_capability.product_capability.name }}</td>
+                        <td>{{ assessment.technical_capability.product_feature.name }}</td>
                         <td>
                             <span class="badge {% if assessment.readiness_level.level >= 7 %}trl-high{% elif assessment.readiness_level.level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
                                 TRL {{ assessment.readiness_level.level }}

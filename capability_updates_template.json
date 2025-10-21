@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Template for updating Product Feature Readiness Database capabilities",
+    "created_by": "System Administrator",
+    "created_date": "2025-10-21T00:00:00Z",
+    "notes": "This template shows various update scenarios for both product and technical capabilities"
+  },
+  "updates": [
+    {
+      "capability_type": "product",
+      "capability_name": "Terberg: Driver-in operations (semi-trailer)",
+      "due_date": "2025-12-31",
+      "target_trl": 7,
+      "assessor": "Dr. Smith",
+      "notes": "Updated target for Q4 delivery milestone"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Perception System",
+      "due_date": "2025-11-15",
+      "target_trl": 8,
+      "assessor": "Engineer Johnson",
+      "notes": "Enhanced sensor fusion requirements for production readiness"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Path Planning",
+      "due_date": "2025-12-01",
+      "target_trl": 6,
+      "assessor": "Tech Lead Davis",
+      "notes": "Real-time optimization improvements needed for complex scenarios"
+    },
+    {
+      "capability_type": "product",
+      "capability_name": "Platooning",
+      "due_date": "2026-03-31",
+      "target_trl": 5,
+      "assessor": "Manager Wilson",
+      "notes": "Phase 1 convoy formation in controlled environments"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Vehicle Control",
+      "due_date": "2025-10-30",
+      "target_trl": 9,
+      "assessor": "Dr. Smith",
+      "notes": "Production-ready control system for autonomous operations"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Localization",
+      "due_date": "2025-11-30",
+      "target_trl": 7,
+      "assessor": "Engineer Johnson",
+      "notes": "High-precision GPS integration with backup systems"
+    },
+    {
+      "capability_type": "product",
+      "capability_name": "Remote Vehicle Operation",
+      "target_trl": 4,
+      "assessor": "Tech Lead Davis",
+      "notes": "Early development phase - remote monitoring capabilities"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Traffic Light Recognition",
+      "due_date": "2026-01-15",
+      "target_trl": 6,
+      "assessor": "Manager Wilson",
+      "notes": "Urban deployment requirements for intersection navigation"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Pedestrian Detection",
+      "due_date": "2025-12-15",
+      "target_trl": 8,
+      "assessor": "Dr. Smith",
+      "notes": "Safety-critical system enhancement with 99.9% accuracy target"
+    },
+    {
+      "capability_type": "product",
+      "capability_name": "Cargo Handling Automation",
+      "due_date": "2026-06-30",
+      "target_trl": 3,
+      "assessor": "Engineer Johnson",
+      "notes": "Research and development phase for automated loading systems"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Detect proximal humans",
+      "due_date": "2025-11-01",
+      "target_trl": 8,
+      "assessor": "Safety Engineer",
+      "notes": "Critical safety system for human-robot interaction zones"
+    },
+    {
+      "capability_type": "technical",
+      "capability_name": "Vehicle-to-Vehicle Communication",
+      "due_date": "2026-02-28",
+      "target_trl": 5,
+      "assessor": "Comm Specialist",
+      "notes": "V2V protocol implementation for platooning operations"
+    }
+  ]
+}

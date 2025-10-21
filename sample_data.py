@@ -1,4 +1,4 @@
-from app import app, db, ProductCapability, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalCapability, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
 
 def initialize_sample_data():
     """Initialize the database with sample data"""
@@ -20,8 +20,8 @@ def initialize_sample_data():
         trl = TechnicalReadinessLevel(level=level, name=name, description=description)
         db.session.add(trl)
     
-    # Product Capabilities
-    product_capabilities = [
+    # Product Features
+    product_features = [
         ("Terberg: Driver-in operations (semi-trailer)", "Forward only operations with driver in vehicle towing a trailer."),
         ("Terberg: Driver-Out, AV only, FWD", "Forward only operations with no driver in vehicle, towing a trailer"),
         ("Platooning", "Multiple vehicles can follow each other closely in automated convoy"),
@@ -30,9 +30,9 @@ def initialize_sample_data():
         ("Fleet Management", "Centralized management and coordination of vehicle fleets")
     ]
     
-    for name, description in product_capabilities:
-        capability = ProductCapability(name=name, description=description)
-        db.session.add(capability)
+    for name, description in product_features:
+        feature = ProductFeature(name=name, description=description)
+        db.session.add(feature)
     
     db.session.commit()  # Commit to get IDs
     
@@ -72,7 +72,7 @@ def initialize_sample_data():
     ]
     
     for name, description, product_id in technical_capabilities:
-        capability = TechnicalCapability(name=name, description=description, product_capability_id=product_id)
+        capability = TechnicalCapability(name=name, description=description, product_feature_id=product_id)
         db.session.add(capability)
     
     # Vehicle Platforms

@@ -1,0 +1,25 @@
+capability_type,capability_name,description,current_avg_trl,assessment_count,last_updated
+product,Terberg: Driver-in operations (semi-trailer),Forward only operations with driver in vehicle towing a trailer.,6.0,40,2025-10-19
+product,"Terberg: Driver-Out, AV only, FWD","Forward only operations with no driver in vehicle, towing a trailer",4.6,24,2025-10-19
+product,Platooning,Multiple vehicles can follow each other closely in automated convoy,6.1,16,2025-10-19
+product,Remote Vehicle Operation,Vehicle can be operated remotely by a human operator,0,0,
+product,Cargo Handling Automation,Automated loading and unloading of cargo,0,0,
+product,Fleet Management,Centralized management and coordination of vehicle fleets,0,0,
+technical,Perception System,"Camera, LiDAR, and radar sensor fusion for environment perception",7.9,8,2025-10-19
+technical,Path Planning,Real-time trajectory planning and optimization,5.0,8,2025-10-19
+technical,Vehicle Control,"Precise control of steering, acceleration, and braking",7.5,8,2025-10-19
+technical,Localization,High-precision vehicle positioning and mapping,5.8,8,2025-10-19
+technical,Detect proximal humans,Switch to SAFESTATE when a human violates buffer,4.0,8,2025-10-19
+technical,Traffic Light Recognition,Detection and interpretation of traffic signals,5.0,8,2025-10-19
+technical,Pedestrian Detection,Detection and tracking of pedestrians,5.4,8,2025-10-19
+technical,Intersection Handling,Safe navigation through complex intersections,3.5,8,2025-10-19
+technical,Parking Space Detection,Identification of suitable parking spaces,5.6,8,2025-10-19
+technical,Low-Speed Maneuvering,Precise control for parking maneuvers,6.5,8,2025-10-19
+technical,Vehicle-to-Vehicle Communication,V2V communication for coordination,0,0,
+technical,Convoy Formation,Automatic formation and maintenance of vehicle convoys,0,0,
+technical,Teleoperation Interface,Human-machine interface for remote operation,0,0,
+technical,Low-Latency Communication,Real-time communication with remote operators,0,0,
+technical,Robotic Loading System,Automated cargo loading and securing,0,0,
+technical,Cargo Tracking,Real-time monitoring of cargo status,0,0,
+technical,Route Optimization,Dynamic route planning for multiple vehicles,0,0,
+technical,Vehicle Health Monitoring,Real-time monitoring of vehicle systems,0,0,

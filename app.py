@@ -12,9 +12,9 @@ db = SQLAlchemy(app)
 
 # Database Models
 
-class ProductCapability(db.Model):
+class ProductFeature(db.Model):
     """Product capabilities that can be delivered to customers"""
-    __tablename__ = 'product_capabilities'
+    __tablename__ = 'product_features'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
@@ -22,10 +22,10 @@ class ProductCapability(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    technical_capabilities = db.relationship('TechnicalCapability', back_populates='product_capability')
+    technical_capabilities = db.relationship('TechnicalCapability', back_populates='product_feature')
 
     def __repr__(self):
-        return f'<ProductCapability {self.name}>'
+        return f'<ProductFeature {self.name}>'
 
 
 class TechnicalCapability(db.Model):
@@ -35,11 +35,11 @@ class TechnicalCapability(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    product_capability_id = db.Column(db.Integer, db.ForeignKey('product_capabilities.id'), nullable=False)
+    product_feature_id = db.Column(db.Integer, db.ForeignKey('product_features.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    product_capability = db.relationship('ProductCapability', back_populates='technical_capabilities')
+    product_feature = db.relationship('ProductFeature', back_populates='technical_capabilities')
     readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_capability')
 
     def __repr__(self):
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         # Initialize with sample data if database is empty
-        if ProductCapability.query.count() == 0:
+        if ProductFeature.query.count() == 0:
             from sample_data import initialize_sample_data
             initialize_sample_data()
     

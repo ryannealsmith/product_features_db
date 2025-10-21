@@ -17,7 +17,7 @@
                             <option value="">Select Technical Capability</option>
                             {% for tech_cap in technical_capabilities %}
                             <option value="{{ tech_cap.id }}">
-                                {{ tech_cap.name }} ({{ tech_cap.product_capability.name }})
+                                {{ tech_cap.name }} ({{ tech_cap.product_feature.name }})
                             </option>
                             {% endfor %}
                         </select>

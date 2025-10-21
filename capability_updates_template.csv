@@ -1,0 +1,11 @@
+capability_type,capability_name,due_date,target_trl,assessor,notes
+product,Terberg: Driver-in operations (semi-trailer),2025-12-31,7,Dr. Smith,Updated target for Q4 delivery
+technical,Perception System,2025-11-15,8,Engineer Johnson,Enhanced sensor fusion requirements
+technical,Path Planning,2025-12-01,6,Tech Lead Davis,Real-time optimization improvements needed
+product,Platooning,2026-03-31,5,Manager Wilson,Phase 1 convoy formation
+technical,Vehicle Control,2025-10-30,9,Dr. Smith,Production-ready control system
+technical,Localization,2025-11-30,7,Engineer Johnson,High-precision GPS integration
+product,Remote Vehicle Operation,,4,Tech Lead Davis,Early development phase
+technical,Traffic Light Recognition,2026-01-15,6,Manager Wilson,Urban deployment requirements
+technical,Pedestrian Detection,2025-12-15,8,Dr. Smith,Safety-critical system enhancement
+product,Cargo Handling Automation,2026-06-30,3,Engineer Johnson,Research and development phase
