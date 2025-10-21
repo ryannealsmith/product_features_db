@@ -82,7 +82,7 @@ def readiness_matrix():
     
     # Create matrix data
     matrix_data = []
-    for tech_cap in technical_capabilities:
+    for tech_cap in technical_functions:
         for platform in vehicle_platforms:
             for odd in odds:
                 for env in environments:

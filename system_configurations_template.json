@@ -1,0 +1,176 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "description": "System Configurations Update Template for Product Feature Readiness Database",
+    "created_by": "System Administrator",
+    "created_date": "2025-10-21",
+    "notes": "Template for managing Vehicle Platforms, ODDs, Environments, Trailers, and Technical Readiness Levels"
+  },
+  "configurations": [
+    {
+      "_comment": "=== VEHICLE PLATFORMS ===",
+      "config_type": "vehicle_platform",
+      "operation": "create",
+      "name": "Terberg YT222 Heavy Duty Truck",
+      "description": "Heavy-duty terminal tractor for container handling operations",
+      "vehicle_type": "truck",
+      "max_payload": 45000.0
+    },
+    {
+      "config_type": "vehicle_platform",
+      "operation": "create",
+      "name": "Mercedes-Benz Actros 1845",
+      "description": "Long-haul highway truck with advanced driver assistance",
+      "vehicle_type": "truck",
+      "max_payload": 44000.0
+    },
+    {
+      "config_type": "vehicle_platform",
+      "operation": "update",
+      "name": "EXISTING_PLATFORM_NAME",
+      "description": "Updated description with new specifications",
+      "max_payload": 50000.0
+    },
+    {
+      "_comment": "=== OPERATIONAL DESIGN DOMAINS (ODDs) ===",
+      "config_type": "odd",
+      "operation": "create",
+      "name": "Port Terminal Operations",
+      "description": "Controlled port environment with structured container handling",
+      "max_speed": 25,
+      "direction": "forward, reverse, multi-directional",
+      "lanes": "Wide operational lanes (4m+), container stacking areas",
+      "intersections": "T-junctions, container yard intersections",
+      "infrastructure": "Gantry cranes, reach stackers, container guides",
+      "hazards": "Moving containers, crane operations, personnel",
+      "actors": "Port workers, crane operators, other terminal tractors",
+      "handling_equipment": "gantry cranes, reach stackers, container spreaders",
+      "traction": "dry concrete, wet conditions",
+      "inclines": "flat surface, minor ramps (max 5%)"
+    },
+    {
+      "config_type": "odd",
+      "operation": "create",
+      "name": "Highway Corridor - Controlled Access",
+      "description": "Limited access highway with minimal intersections",
+      "max_speed": 90,
+      "direction": "forward only, lane changes permitted",
+      "lanes": "Standard highway lanes (3.5m), emergency lanes available",
+      "intersections": "On/off ramps, minimal cross traffic",
+      "infrastructure": "Overpasses, guardrails, highway signs",
+      "hazards": "High-speed traffic, weather conditions, construction zones",
+      "actors": "Cars, trucks, motorcycles, emergency vehicles",
+      "handling_equipment": "none",
+      "traction": "dry asphalt, wet conditions, light snow",
+      "inclines": "grades up to 6%"
+    },
+    {
+      "config_type": "odd",
+      "operation": "update",
+      "name": "EXISTING_ODD_NAME",
+      "max_speed": 35,
+      "description": "Updated ODD with enhanced safety parameters"
+    },
+    {
+      "_comment": "=== ENVIRONMENTS ===",
+      "config_type": "environment",
+      "operation": "create",
+      "name": "Northern European Maritime",
+      "description": "Coastal port environment with variable weather conditions",
+      "region": "Northern Europe",
+      "climate": "temperate maritime",
+      "terrain": "flat coastal plains"
+    },
+    {
+      "config_type": "environment",
+      "operation": "create",
+      "name": "Continental Highway Network",
+      "description": "Major highway corridors across continental regions",
+      "region": "Continental Europe",
+      "climate": "temperate continental",
+      "terrain": "varied - flat to rolling hills"
+    },
+    {
+      "config_type": "environment",
+      "operation": "create",
+      "name": "Mediterranean Logistics Hub",
+      "description": "Southern European port and logistics centers",
+      "region": "Mediterranean",
+      "climate": "Mediterranean",
+      "terrain": "coastal with moderate elevation"
+    },
+    {
+      "config_type": "environment",
+      "operation": "update",
+      "name": "EXISTING_ENVIRONMENT_NAME",
+      "description": "Updated environmental parameters",
+      "climate": "temperate with seasonal variations"
+    },
+    {
+      "_comment": "=== TRAILERS ===",
+      "config_type": "trailer",
+      "operation": "create",
+      "name": "40ft Container Chassis",
+      "description": "Standard 40-foot container transport chassis",
+      "trailer_type": "container chassis",
+      "length": 12.2,
+      "max_weight": 32500.0,
+      "axle_count": 2
+    },
+    {
+      "config_type": "trailer",
+      "operation": "create",
+      "name": "53ft Dry Van Trailer",
+      "description": "Standard North American dry van trailer",
+      "trailer_type": "dry van",
+      "length": 16.15,
+      "max_weight": 34000.0,
+      "axle_count": 2
+    },
+    {
+      "config_type": "trailer",
+      "operation": "create",
+      "name": "20ft Container Chassis",
+      "description": "Standard 20-foot container transport chassis",
+      "trailer_type": "container chassis",
+      "length": 6.1,
+      "max_weight": 24000.0,
+      "axle_count": 1
+    },
+    {
+      "config_type": "trailer",
+      "operation": "update",
+      "name": "EXISTING_TRAILER_NAME",
+      "max_weight": 35000.0,
+      "description": "Updated trailer specifications"
+    },
+    {
+      "_comment": "=== TECHNICAL READINESS LEVELS ===",
+      "config_type": "technical_readiness_level",
+      "operation": "update",
+      "level": 1,
+      "name": "Basic Principles Observed",
+      "description": "Updated: Basic principles observed and reported. Scientific research begins translation to applied research and development."
+    },
+    {
+      "config_type": "technical_readiness_level",
+      "operation": "update",
+      "level": 9,
+      "name": "System Proven in Operational Environment",
+      "description": "Updated: System proven through successful operations in operational environment. System is production-ready and fully deployed."
+    },
+    {
+      "_comment": "=== SAFE DELETE EXAMPLES ===",
+      "config_type": "vehicle_platform",
+      "operation": "delete",
+      "name": "Obsolete Platform Name",
+      "force_delete": false
+    },
+    {
+      "config_type": "trailer",
+      "operation": "delete",
+      "name": "Deprecated Trailer Configuration",
+      "force_delete": false
+    }
+  ]
+}

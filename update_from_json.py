@@ -466,8 +466,577 @@ def process_entity(entity_data, entity_index):
         print(f"Error processing entity {entity_index + 1}: {str(e)}")
         return False
 
+def create_technical_readiness_level(data):
+    """Create a new Technical Readiness Level"""
+    try:
+        level = data.get('level')
+        if level is None:
+            print("Error: 'level' is required for TRL creation")
+            return False
+        
+        # Check if TRL with this level already exists
+        existing = TechnicalReadinessLevel.query.filter_by(level=level).first()
+        if existing:
+            print(f"Error: Technical Readiness Level with level {level} already exists")
+            return False
+        
+        trl = TechnicalReadinessLevel(
+            level=level,
+            name=data.get('name', ''),
+            description=data.get('description', '')
+        )
+        
+        db.session.add(trl)
+        print(f"Created Technical Readiness Level: {trl.name}")
+        return True
+    except Exception as e:
+        print(f"Error creating Technical Readiness Level: {str(e)}")
+        return False
+
+
+def delete_vehicle_platform(data):
+    """Delete a Vehicle Platform"""
+    try:
+        name = data.get('name')
+        if not name:
+            print("Error: 'name' is required for vehicle platform deletion")
+            return False
+        
+        platform = VehiclePlatform.query.filter_by(name=name).first()
+        if not platform:
+            print(f"Error: Vehicle Platform '{name}' not found")
+            return False
+        
+        db.session.delete(platform)
+        print(f"Deleted Vehicle Platform: {name}")
+        return True
+    except Exception as e:
+        print(f"Error deleting Vehicle Platform: {str(e)}")
+        return False
+
+
+def delete_odd(data):
+    """Delete an ODD"""
+    try:
+        name = data.get('name')
+        if not name:
+            print("Error: 'name' is required for ODD deletion")
+            return False
+        
+        odd = ODD.query.filter_by(name=name).first()
+        if not odd:
+            print(f"Error: ODD '{name}' not found")
+            return False
+        
+        db.session.delete(odd)
+        print(f"Deleted ODD: {name}")
+        return True
+    except Exception as e:
+        print(f"Error deleting ODD: {str(e)}")
+        return False
+
+
+def delete_environment(data):
+    """Delete an Environment"""
+    try:
+        name = data.get('name')
+        if not name:
+            print("Error: 'name' is required for environment deletion")
+            return False
+        
+        environment = Environment.query.filter_by(name=name).first()
+        if not environment:
+            print(f"Error: Environment '{name}' not found")
+            return False
+        
+        db.session.delete(environment)
+        print(f"Deleted Environment: {name}")
+        return True
+    except Exception as e:
+        print(f"Error deleting Environment: {str(e)}")
+        return False
+
+
+def delete_trailer(data):
+    """Delete a Trailer"""
+    try:
+        name = data.get('name')
+        if not name:
+            print("Error: 'name' is required for trailer deletion")
+            return False
+        
+        trailer = Trailer.query.filter_by(name=name).first()
+        if not trailer:
+            print(f"Error: Trailer '{name}' not found")
+            return False
+        
+        db.session.delete(trailer)
+        print(f"Deleted Trailer: {name}")
+        return True
+    except Exception as e:
+        print(f"Error deleting Trailer: {str(e)}")
+        return False
+
+
+def delete_technical_readiness_level(data):
+    """Delete a Technical Readiness Level"""
+    try:
+        level = data.get('level')
+        if level is None:
+            print("Error: 'level' is required for TRL deletion")
+            return False
+        
+        trl = TechnicalReadinessLevel.query.filter_by(level=level).first()
+        if not trl:
+            print(f"Error: Technical Readiness Level with level {level} not found")
+            return False
+        
+        db.session.delete(trl)
+        print(f"Deleted Technical Readiness Level: {trl.name}")
+        return True
+    except Exception as e:
+        print(f"Error deleting Technical Readiness Level: {str(e)}")
+        return False
+
+
+def validate_configuration_data(config, config_index):
+    """Validate configuration data for system configurations"""
+    errors = []
+    
+    # Handle both old format (direct fields) and new format (type/data nested)
+    if 'config_type' in config:
+        # Old format compatibility
+        config_type = config.get('config_type', '').lower()
+        operation = config.get('operation', '').lower()
+        data = {k: v for k, v in config.items() if k not in ['config_type', 'operation', '_comment']}
+    elif 'type' in config:
+        # New format
+        config_type = config.get('type', '').lower()
+        operation = config.get('operation', '').lower()
+        data = config.get('data', {})
+    else:
+        errors.append("Missing required field 'config_type' or 'type'")
+        config_type = ''
+        operation = ''
+        data = {}
+    
+    # Validate config type
+    if not config_type:
+        errors.append("Missing configuration type")
+    elif config_type not in ['vehicle_platform', 'odd', 'environment', 'trailer', 'technical_readiness_level']:
+        errors.append(f"Invalid config type '{config_type}'. Must be 'vehicle_platform', 'odd', 'environment', 'trailer', or 'technical_readiness_level'")
+    
+    # Validate operation
+    if not operation:
+        errors.append("Missing required field 'operation'")
+    elif operation not in ['create', 'update', 'delete']:
+        errors.append(f"Invalid operation '{operation}'. Must be 'create', 'update', or 'delete'")
+    
+    # Validate data requirements
+    if config_type == 'technical_readiness_level':
+        if 'level' not in data:
+            errors.append("Missing required field 'level' for technical_readiness_level")
+        elif not isinstance(data['level'], int) or not (1 <= data['level'] <= 9):
+            errors.append("level must be an integer between 1 and 9 for technical_readiness_level")
+    else:
+        if 'name' not in data:
+            errors.append("Missing required field 'name'")
+        elif not data['name'].strip():
+            errors.append("name cannot be empty")
+    
+    # Validate numeric fields
+    numeric_fields = ['max_payload', 'max_speed', 'length', 'max_weight', 'axle_count']
+    for field in numeric_fields:
+        if field in data:
+            try:
+                float(data[field])
+            except (ValueError, TypeError):
+                errors.append(f"Invalid {field} '{data[field]}'. Must be a number")
+    
+    if errors:
+        print(f"Validation errors for configuration {config_index + 1}:")
+        for error in errors:
+            print(f"  - {error}")
+        return False
+    
+    return True
+
+def create_vehicle_platform(data):
+    """Create a new vehicle platform"""
+    try:
+        existing = VehiclePlatform.query.filter_by(name=data['name']).first()
+        if existing:
+            print(f"Vehicle platform '{data['name']}' already exists, skipping creation")
+            return False
+        
+        platform = VehiclePlatform(
+            name=data['name'],
+            description=data.get('description', ''),
+            vehicle_type=data.get('vehicle_type', ''),
+            max_payload=float(data['max_payload']) if 'max_payload' in data else None
+        )
+        
+        db.session.add(platform)
+        print(f"Created vehicle platform: {platform.name}")
+        return True
+        
+    except Exception as e:
+        print(f"Error creating vehicle platform: {str(e)}")
+        return False
+
+def update_vehicle_platform(data):
+    """Update an existing vehicle platform"""
+    try:
+        platform = VehiclePlatform.query.filter_by(name=data['name']).first()
+        if not platform:
+            print(f"Vehicle platform '{data['name']}' not found for update")
+            return False
+        
+        updates_made = []
+        fields_to_update = ['description', 'vehicle_type', 'max_payload']
+        
+        for field in fields_to_update:
+            if field in data:
+                if field == 'max_payload':
+                    setattr(platform, field, float(data[field]) if data[field] else None)
+                else:
+                    setattr(platform, field, data[field])
+                updates_made.append(field)
+        
+        print(f"Updated vehicle platform '{platform.name}': {', '.join(updates_made)}")
+        return True
+        
+    except Exception as e:
+        print(f"Error updating vehicle platform: {str(e)}")
+        return False
+
+def create_odd(data):
+    """Create a new ODD"""
+    try:
+        existing = ODD.query.filter_by(name=data['name']).first()
+        if existing:
+            print(f"ODD '{data['name']}' already exists, skipping creation")
+            return False
+        
+        odd = ODD(
+            name=data['name'],
+            description=data.get('description', ''),
+            max_speed=int(data['max_speed']) if 'max_speed' in data else None,
+            direction=data.get('direction', ''),
+            lanes=data.get('lanes', ''),
+            intersections=data.get('intersections', ''),
+            infrastructure=data.get('infrastructure', ''),
+            hazards=data.get('hazards', ''),
+            actors=data.get('actors', ''),
+            handling_equipment=data.get('handling_equipment', ''),
+            traction=data.get('traction', ''),
+            inclines=data.get('inclines', '')
+        )
+        
+        db.session.add(odd)
+        print(f"Created ODD: {odd.name}")
+        return True
+        
+    except Exception as e:
+        print(f"Error creating ODD: {str(e)}")
+        return False
+
+def update_odd(data):
+    """Update an existing ODD"""
+    try:
+        odd = ODD.query.filter_by(name=data['name']).first()
+        if not odd:
+            print(f"ODD '{data['name']}' not found for update")
+            return False
+        
+        updates_made = []
+        fields_to_update = ['description', 'max_speed', 'direction', 'lanes', 'intersections', 
+                           'infrastructure', 'hazards', 'actors', 'handling_equipment', 'traction', 'inclines']
+        
+        for field in fields_to_update:
+            if field in data:
+                if field == 'max_speed':
+                    setattr(odd, field, int(data[field]) if data[field] else None)
+                else:
+                    setattr(odd, field, data[field])
+                updates_made.append(field)
+        
+        print(f"Updated ODD '{odd.name}': {', '.join(updates_made)}")
+        return True
+        
+    except Exception as e:
+        print(f"Error updating ODD: {str(e)}")
+        return False
+
+def create_environment(data):
+    """Create a new environment"""
+    try:
+        existing = Environment.query.filter_by(name=data['name']).first()
+        if existing:
+            print(f"Environment '{data['name']}' already exists, skipping creation")
+            return False
+        
+        environment = Environment(
+            name=data['name'],
+            description=data.get('description', ''),
+            region=data.get('region', ''),
+            climate=data.get('climate', ''),
+            terrain=data.get('terrain', '')
+        )
+        
+        db.session.add(environment)
+        print(f"Created environment: {environment.name}")
+        return True
+        
+    except Exception as e:
+        print(f"Error creating environment: {str(e)}")
+        return False
+
+def update_environment(data):
+    """Update an existing environment"""
+    try:
+        environment = Environment.query.filter_by(name=data['name']).first()
+        if not environment:
+            print(f"Environment '{data['name']}' not found for update")
+            return False
+        
+        updates_made = []
+        fields_to_update = ['description', 'region', 'climate', 'terrain']
+        
+        for field in fields_to_update:
+            if field in data:
+                setattr(environment, field, data[field])
+                updates_made.append(field)
+        
+        print(f"Updated environment '{environment.name}': {', '.join(updates_made)}")
+        return True
+        
+    except Exception as e:
+        print(f"Error updating environment: {str(e)}")
+        return False
+
+def create_trailer(data):
+    """Create a new trailer"""
+    try:
+        existing = Trailer.query.filter_by(name=data['name']).first()
+        if existing:
+            print(f"Trailer '{data['name']}' already exists, skipping creation")
+            return False
+        
+        trailer = Trailer(
+            name=data['name'],
+            description=data.get('description', ''),
+            trailer_type=data.get('trailer_type', ''),
+            length=float(data['length']) if 'length' in data else None,
+            max_weight=float(data['max_weight']) if 'max_weight' in data else None,
+            axle_count=int(data['axle_count']) if 'axle_count' in data else None
+        )
+        
+        db.session.add(trailer)
+        print(f"Created trailer: {trailer.name}")
+        return True
+        
+    except Exception as e:
+        print(f"Error creating trailer: {str(e)}")
+        return False
+
+def update_trailer(data):
+    """Update an existing trailer"""
+    try:
+        trailer = Trailer.query.filter_by(name=data['name']).first()
+        if not trailer:
+            print(f"Trailer '{data['name']}' not found for update")
+            return False
+        
+        updates_made = []
+        fields_to_update = ['description', 'trailer_type', 'length', 'max_weight', 'axle_count']
+        
+        for field in fields_to_update:
+            if field in data:
+                if field in ['length', 'max_weight']:
+                    setattr(trailer, field, float(data[field]) if data[field] else None)
+                elif field == 'axle_count':
+                    setattr(trailer, field, int(data[field]) if data[field] else None)
+                else:
+                    setattr(trailer, field, data[field])
+                updates_made.append(field)
+        
+        print(f"Updated trailer '{trailer.name}': {', '.join(updates_made)}")
+        return True
+        
+    except Exception as e:
+        print(f"Error updating trailer: {str(e)}")
+        return False
+
+def update_technical_readiness_level(data):
+    """Update an existing technical readiness level"""
+    try:
+        trl = TechnicalReadinessLevel.query.filter_by(level=data['level']).first()
+        if not trl:
+            print(f"Technical Readiness Level {data['level']} not found for update")
+            return False
+        
+        updates_made = []
+        fields_to_update = ['name', 'description']
+        
+        for field in fields_to_update:
+            if field in data:
+                setattr(trl, field, data[field])
+                updates_made.append(field)
+        
+        print(f"Updated TRL {trl.level} '{trl.name}': {', '.join(updates_made)}")
+        return True
+        
+    except Exception as e:
+        print(f"Error updating technical readiness level: {str(e)}")
+        return False
+
+def delete_configuration(data):
+    """Delete a configuration entity"""
+    try:
+        config_type = data['config_type'].lower()
+        
+        if config_type == 'vehicle_platform':
+            entity = VehiclePlatform.query.filter_by(name=data['name']).first()
+        elif config_type == 'odd':
+            entity = ODD.query.filter_by(name=data['name']).first()
+        elif config_type == 'environment':
+            entity = Environment.query.filter_by(name=data['name']).first()
+        elif config_type == 'trailer':
+            entity = Trailer.query.filter_by(name=data['name']).first()
+        elif config_type == 'technical_readiness_level':
+            print("Cannot delete Technical Readiness Levels - they are system-defined")
+            return False
+        else:
+            print(f"Unknown configuration type: {config_type}")
+            return False
+        
+        if not entity:
+            identifier = data.get('name', data.get('level', 'unknown'))
+            print(f"{config_type.replace('_', ' ').title()} '{identifier}' not found for deletion")
+            return False
+        
+        # Check for dependencies
+        dependencies = []
+        if hasattr(entity, 'readiness_assessments'):
+            assessment_count = len(entity.readiness_assessments)
+            if assessment_count > 0:
+                dependencies.append(f"{assessment_count} readiness assessments")
+        
+        if dependencies and not data.get('force_delete', False):
+            print(f"Cannot delete {config_type.replace('_', ' ')} '{entity.name}': has {', '.join(dependencies)}")
+            print("Use 'force_delete': true to override")
+            return False
+        
+        db.session.delete(entity)
+        print(f"Deleted {config_type.replace('_', ' ')} '{entity.name}'")
+        return True
+        
+    except Exception as e:
+        print(f"Error deleting configuration: {str(e)}")
+        return False
+
+def process_configuration(config_data, config_index):
+    """Process a single configuration (create, update, or delete)"""
+    try:
+        config_type = config_data['config_type'].lower()
+        operation = config_data['operation'].lower()
+        
+        if operation == 'delete':
+            return delete_configuration(config_data)
+        elif operation == 'create':
+            if config_type == 'vehicle_platform':
+                return create_vehicle_platform(config_data)
+            elif config_type == 'odd':
+                return create_odd(config_data)
+            elif config_type == 'environment':
+                return create_environment(config_data)
+            elif config_type == 'trailer':
+                return create_trailer(config_data)
+            elif config_type == 'technical_readiness_level':
+                print("Cannot create new Technical Readiness Levels - use update operation instead")
+                return False
+        elif operation == 'update':
+            if config_type == 'vehicle_platform':
+                return update_vehicle_platform(config_data)
+            elif config_type == 'odd':
+                return update_odd(config_data)
+            elif config_type == 'environment':
+                return update_environment(config_data)
+            elif config_type == 'trailer':
+                return update_trailer(config_data)
+            elif config_type == 'technical_readiness_level':
+                return update_technical_readiness_level(config_data)
+        
+        print(f"Unknown operation or configuration type: {operation}, {config_type}")
+        return False
+        
+    except Exception as e:
+        print(f"Error processing configuration {config_index + 1}: {str(e)}")
+        return False
+
+def process_configuration(config_data, config_index):
+    """Process a single configuration based on its type and operation"""
+    try:
+        # Handle both old format (config_type) and new format (type)
+        if 'config_type' in config_data:
+            config_type = config_data['config_type']
+            operation = config_data['operation'].lower()
+            data = {k: v for k, v in config_data.items() if k not in ['config_type', 'operation', '_comment']}
+        else:
+            config_type = config_data['type']
+            operation = config_data['operation'].lower()
+            data = config_data['data']
+        
+        print(f"Configuration {config_index + 1}: {operation.upper()} {config_type}")
+        
+        # Route to appropriate function based on type and operation
+        if config_type == 'vehicle_platform':
+            if operation == 'create':
+                return create_vehicle_platform(data)
+            elif operation == 'update':
+                return update_vehicle_platform(data)
+            elif operation == 'delete':
+                return delete_vehicle_platform(data)
+        elif config_type == 'odd':
+            if operation == 'create':
+                return create_odd(data)
+            elif operation == 'update':
+                return update_odd(data)
+            elif operation == 'delete':
+                return delete_odd(data)
+        elif config_type == 'environment':
+            if operation == 'create':
+                return create_environment(data)
+            elif operation == 'update':
+                return update_environment(data)
+            elif operation == 'delete':
+                return delete_environment(data)
+        elif config_type == 'trailer':
+            if operation == 'create':
+                return create_trailer(data)
+            elif operation == 'update':
+                return update_trailer(data)
+            elif operation == 'delete':
+                return delete_trailer(data)
+        elif config_type == 'technical_readiness_level':
+            if operation == 'create':
+                return create_technical_readiness_level(data)
+            elif operation == 'update':
+                return update_technical_readiness_level(data)
+            elif operation == 'delete':
+                return delete_technical_readiness_level(data)
+        else:
+            print(f"Configuration {config_index + 1}: Unknown configuration type '{config_type}'")
+            return False
+            
+    except Exception as e:
+        print(f"Configuration {config_index + 1}: Error processing configuration - {str(e)}")
+        return False
+
+
 def update_from_json(json_file_path):
-    """Update capabilities and assessments from JSON file"""
+    """Update entities and configurations from JSON file"""
     
     with app.app_context():
         try:
@@ -487,65 +1056,104 @@ def update_from_json(json_file_path):
                 if 'created_date' in metadata:
                     print(f"Created: {metadata['created_date']}")
             
-            if 'entities' not in data:
-                print("Error: No 'entities' section found in JSON file")
+            # Check for entities or configurations
+            has_entities = 'entities' in data and data['entities']
+            has_configurations = 'configurations' in data and data['configurations']
+            
+            if not has_entities and not has_configurations:
+                print("Error: No 'entities' or 'configurations' section found in JSON file")
                 return False
             
-            entities = data['entities']
-            if not isinstance(entities, list):
-                print("Error: 'entities' must be a list")
-                return False
+            total_created = 0
+            total_updated = 0
+            total_deleted = 0
+            total_errors = 0
             
-            print(f"Found {len(entities)} entities to process")
-            print("-" * 60)
+            # Process entities if present
+            if has_entities:
+                entities = data['entities']
+                if not isinstance(entities, list):
+                    print("Error: 'entities' must be a list")
+                    return False
+                
+                print(f"Found {len(entities)} entities to process")
+                print("-" * 60)
+                
+                # Validate all entities first
+                valid_entities = []
+                for i, entity in enumerate(entities):
+                    if validate_entity_data(entity, i):
+                        valid_entities.append((i, entity))
+                
+                if valid_entities:
+                    print(f"Processing {len(valid_entities)} valid entities...")
+                    print("-" * 60)
+                    
+                    # Process valid entities
+                    for entity_index, entity_data in valid_entities:
+                        try:
+                            operation = entity_data['operation'].lower()
+                            if process_entity(entity_data, entity_index):
+                                if operation == 'create':
+                                    total_created += 1
+                                elif operation == 'update':
+                                    total_updated += 1
+                                elif operation == 'delete':
+                                    total_deleted += 1
+                            else:
+                                total_errors += 1
+                        except Exception as e:
+                            print(f"Entity {entity_index + 1}: Error processing entity - {str(e)}")
+                            total_errors += 1
             
-            # Validate all entities first
-            valid_entities = []
-            for i, entity in enumerate(entities):
-                if validate_entity_data(entity, i):
-                    valid_entities.append((i, entity))
-            
-            if not valid_entities:
-                print("No valid entities found. Please fix validation errors and try again.")
-                return False
-            
-            print(f"Processing {len(valid_entities)} valid entities...")
-            print("-" * 60)
-            
-            created_count = 0
-            updated_count = 0
-            deleted_count = 0
-            error_count = 0
-            
-            # Process valid entities
-            for entity_index, entity_data in valid_entities:
-                try:
-                    operation = entity_data['operation'].lower()
-                    if process_entity(entity_data, entity_index):
-                        if operation == 'create':
-                            created_count += 1
-                        elif operation == 'update':
-                            updated_count += 1
-                        elif operation == 'delete':
-                            deleted_count += 1
-                    else:
-                        error_count += 1
-                except Exception as e:
-                    print(f"Entity {entity_index + 1}: Error processing entity - {str(e)}")
-                    error_count += 1
+            # Process configurations if present
+            if has_configurations:
+                configurations = data['configurations']
+                if not isinstance(configurations, list):
+                    print("Error: 'configurations' must be a list")
+                    return False
+                
+                print(f"Found {len(configurations)} configurations to process")
+                print("-" * 60)
+                
+                # Validate all configurations first
+                valid_configurations = []
+                for i, config in enumerate(configurations):
+                    if validate_configuration_data(config, i):
+                        valid_configurations.append((i, config))
+                
+                if valid_configurations:
+                    print(f"Processing {len(valid_configurations)} valid configurations...")
+                    print("-" * 60)
+                    
+                    # Process valid configurations
+                    for config_index, config_data in valid_configurations:
+                        try:
+                            operation = config_data['operation'].lower()
+                            if process_configuration(config_data, config_index):
+                                if operation == 'create':
+                                    total_created += 1
+                                elif operation == 'update':
+                                    total_updated += 1
+                                elif operation == 'delete':
+                                    total_deleted += 1
+                            else:
+                                total_errors += 1
+                        except Exception as e:
+                            print(f"Configuration {config_index + 1}: Error processing configuration - {str(e)}")
+                            total_errors += 1
             
             # Commit all changes
             db.session.commit()
             
             print("-" * 60)
             print(f"Update completed!")
-            print(f"Created: {created_count} entities")
-            print(f"Updated: {updated_count} entities")
-            print(f"Deleted: {deleted_count} entities")
-            print(f"Errors encountered: {error_count}")
-            print(f"Total processed: {len(valid_entities)}")
+            print(f"Created: {total_created} items")
+            print(f"Updated: {total_updated} items")
+            print(f"Deleted: {total_deleted} items")
+            print(f"Errors encountered: {total_errors}")
             
-            return error_count == 0
+            return total_errors == 0
             
         except FileNotFoundError:
             print(f"Error: JSON file '{json_file_path}' not found")
