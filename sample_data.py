@@ -1,5 +1,20 @@
 from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities
 
+def get_vehicle_platform_id(vehicle_type_str):
+    """Map vehicle type string to platform ID"""
+    # Create mapping based on existing vehicle platform data
+    mapping = {
+        "truck": 5,      # Truck Platform
+        "van": 6,        # Van Platform  
+        "car": 7,        # Car Platform
+        "terberg": 1,    # Terberg ATT
+        "ca500": 2,      # CA500
+        "t800": 3,       # T800
+        "aev": 4,        # AEV
+        "generic": 8     # Generic Platform
+    }
+    return mapping.get(vehicle_type_str.lower(), 8)  # Default to Generic Platform
+
 def initialize_sample_data():
     """Initialize the database with sample data"""
     
@@ -47,7 +62,7 @@ def initialize_sample_data():
         feature = ProductFeature(
             name=name, 
             description=description,
-            vehicle_type=vehicle_type,
+            vehicle_platform_id=get_vehicle_platform_id(vehicle_type),
             swimlane_decorators=swimlane,
             label=label,
             tmos=tmos,
@@ -150,7 +165,7 @@ def initialize_sample_data():
             name=name, 
             description=description,
             success_criteria=success_criteria,
-            vehicle_type=vehicle_type,
+            vehicle_platform_id=get_vehicle_platform_id(vehicle_type),
             tmos=tmos,
             status_relative_to_tmos=status,
             planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
@@ -162,10 +177,14 @@ def initialize_sample_data():
     
     # Vehicle Platforms
     vehicle_platforms = [
-        ("Terberg ATT", "Autonomous Terminal Tractork", "ATT", 40000),
-        ("CA500", "Autonomous Asset Monitoring Vehicle", "CA500", 500),
-        ("T800", "Bradshaw T800 Towing Tractor", "T800", 800),
-        ("AEV", "Applied EV Skateboard Platform", "AEV", 1000)
+        ("Terberg ATT", "Autonomous Terminal Tractor", "truck", 40000),
+        ("CA500", "Autonomous Asset Monitoring Vehicle", "van", 500),
+        ("T800", "Bradshaw T800 Towing Tractor", "truck", 800),
+        ("AEV", "Applied EV Skateboard Platform", "car", 1000),
+        ("Truck Platform", "Heavy-duty truck platform for cargo transport", "truck", 45000),
+        ("Van Platform", "Light commercial vehicle platform", "van", 3500),
+        ("Car Platform", "Passenger car platform", "car", 500),
+        ("Generic Platform", "Generic vehicle platform", "generic", 2000)
     ]
     
     for name, description, vehicle_type, max_payload in vehicle_platforms:
@@ -313,7 +332,7 @@ def initialize_sample_data():
         capability = Capabilities(
             name=name,
             success_criteria=criteria,
-            vehicle_type=vehicle_type,
+            vehicle_platform_id=get_vehicle_platform_id(vehicle_type),
             planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
             planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
             tmos=tmos,
