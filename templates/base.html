@@ -82,6 +82,24 @@
                     
                     <hr>
                     
+                    <div class="mb-2">
+                        <small class="text-muted fw-bold">EXPORT</small>
+                    </div>
+                    
+                    <a href="{{ url_for('export_info') }}" class="nav-link {% if request.endpoint == 'export_info' %}active{% endif %}">
+                        <i class="fas fa-share-alt"></i> Export to Miro
+                    </a>
+                    
+                    <a href="{{ url_for('export_miro_roadmap') }}" class="nav-link" target="_blank">
+                        <i class="fas fa-download"></i> Download JSON
+                    </a>
+                    
+                    <a href="{{ url_for('export_miro_csv') }}" class="nav-link" target="_blank">
+                        <i class="fas fa-file-csv"></i> Download CSV
+                    </a>
+                    
+                    <hr>
+                    
                     <a href="{{ url_for('add_assessment') }}" class="nav-link btn btn-primary text-white">
                         <i class="fas fa-plus"></i> New Assessment
                     </a>

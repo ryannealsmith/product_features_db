@@ -25,9 +25,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="readiness_level_id" class="form-label">Technical Readiness Level *</label>
+                        <label for="readiness_level_id" class="form-label">Proposed TRL *</label>
                         <select name="readiness_level_id" id="readiness_level_id" class="form-select" required>
-                            <option value="">Select TRL</option>
+                            <option value="">Select Proposed TRL</option>
                             {% for trl in readiness_levels %}
                             <option value="{{ trl.id }}">
                                 TRL {{ trl.level }}: {{ trl.name }}
@@ -106,14 +106,26 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="confidence_level" class="form-label">Confidence Level *</label>
-                        <select name="confidence_level" id="confidence_level" class="form-select" required>
-                            <option value="">Select Confidence</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
+                        <label for="current_status" class="form-label">Current Status *</label>
+                        <select name="current_status" id="current_status" class="form-select" required>
+                            <option value="">Select Current Status</option>
+                            <option value="green">🟢 Green - On Track</option>
+                            <option value="yellow">🟡 Yellow - At Risk</option>
+                            <option value="red">🔴 Red - Behind Schedule</option>
                         </select>
                     </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="scheduled_completion_date" class="form-label">Scheduled Completion Date</label>
+                        <input type="date" name="scheduled_completion_date" id="scheduled_completion_date" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for spacing -->
                 </div>
             </div>
             

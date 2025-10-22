@@ -1,6 +1,111 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
 from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
 from sqlalchemy import and_
+from datetime import datetime, date
+
+# Helper functions for export
+def get_status_color(status):
+    """Get hex color code for status"""
+    colors = {
+        "green": "#4CAF50",
+        "yellow": "#FFC107", 
+        "red": "#F44336"
+    }
+    return colors.get(status, "#9E9E9E")
+
+def calculate_timeline_position(assessment):
+    """Calculate timeline position based on dates"""
+    now = date.today()
+    
+    if assessment.scheduled_completion_date:
+        # Position based on scheduled completion
+        days_from_now = (assessment.scheduled_completion_date - now).days
+        quarter = min(4, max(1, (days_from_now // 90) + 1))
+        return {
+            "quarter": quarter,
+            "relative_position": (days_from_now % 90) / 90.0,
+            "date": assessment.scheduled_completion_date.isoformat()
+        }
+    else:
+        # Position based on current TRL level (earlier for lower TRL)
+        trl_quarter_mapping = {
+            1: 4, 2: 4, 3: 3,  # Research phase - future quarters
+            4: 3, 5: 2, 6: 2,  # Development phase - mid-term
+            7: 1, 8: 1, 9: 1   # Deployment phase - near-term
+        }
+        quarter = trl_quarter_mapping.get(assessment.readiness_level.level, 2)
+        return {
+            "quarter": quarter,
+            "relative_position": 0.5,
+            "date": None
+        }
+
+def generate_quarters():
+    """Generate next 4 quarters from current date"""
+    from datetime import datetime, timedelta
+    import calendar
+    
+    quarters = []
+    current_date = datetime.now()
+    
+    # Determine current quarter
+    current_quarter = (current_date.month - 1) // 3 + 1
+    current_year = current_date.year
+    
+    for i in range(4):
+        quarter_num = ((current_quarter - 1 + i) % 4) + 1
+        year = current_year + ((current_quarter - 1 + i) // 4)
+        
+        # Calculate quarter start and end dates
+        start_month = (quarter_num - 1) * 3 + 1
+        end_month = quarter_num * 3
+        
+        start_date = datetime(year, start_month, 1)
+        end_date = datetime(year, end_month, calendar.monthrange(year, end_month)[1])
+        
+        quarters.append({
+            "id": f"Q{quarter_num}_{year}",
+            "name": f"Q{quarter_num} {year}",
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "quarter_number": quarter_num,
+            "year": year
+        })
+    
+    return quarters
+
+def generate_milestones(assessments):
+    """Generate milestones from assessment completion dates"""
+    milestones = []
+    
+    # Group by completion dates
+    completion_dates = {}
+    for assessment in assessments:
+        if assessment.scheduled_completion_date:
+            date_key = assessment.scheduled_completion_date.isoformat()
+            if date_key not in completion_dates:
+                completion_dates[date_key] = []
+            completion_dates[date_key].append(assessment)
+    
+    # Create milestones
+    for date_str, date_assessments in completion_dates.items():
+        if len(date_assessments) >= 2:  # Only create milestone if multiple items complete
+            milestone = {
+                "id": f"milestone_{date_str}",
+                "title": f"Milestone: {len(date_assessments)} capabilities complete",
+                "date": date_str,
+                "items": [f"assessment_{a.id}" for a in date_assessments],
+                "description": f"Completion of {', '.join([a.technical_function.name for a in date_assessments[:3]])}{'...' if len(date_assessments) > 3 else ''}",
+                "miro_properties": {
+                    "shape": "diamond",
+                    "width": 100,
+                    "height": 100,
+                    "background_color": "#2196F3"
+                }
+            }
+            milestones.append(milestone)
+    
+    return sorted(milestones, key=lambda x: x["date"])
 
 @app.route('/')
 def dashboard():
@@ -101,7 +206,7 @@ def readiness_matrix():
                             'environment': env.name,
                             'trl_level': assessment.readiness_level.level,
                             'trl_name': assessment.readiness_level.name,
-                            'confidence': assessment.confidence_level,
+                            'current_status': assessment.current_status,
                             'assessment_date': assessment.assessment_date
                         })
     
@@ -127,6 +232,12 @@ def configurations():
 def add_assessment():
     """Add new readiness assessment"""
     if request.method == 'POST':
+        # Handle scheduled_completion_date conversion
+        scheduled_completion_date = None
+        if request.form.get('scheduled_completion_date'):
+            from datetime import datetime
+            scheduled_completion_date = datetime.strptime(request.form['scheduled_completion_date'], '%Y-%m-%d').date()
+        
         assessment = ReadinessAssessment(
             technical_capability_id=request.form['technical_capability_id'],
             readiness_level_id=request.form['readiness_level_id'],
@@ -136,7 +247,8 @@ def add_assessment():
             trailer_id=request.form.get('trailer_id') or None,
             assessor=request.form['assessor'],
             notes=request.form['notes'],
-            confidence_level=request.form['confidence_level']
+            current_status=request.form['current_status'],
+            scheduled_completion_date=scheduled_completion_date
         )
         
         db.session.add(assessment)
@@ -153,7 +265,7 @@ def add_assessment():
     trailers = Trailer.query.all()
     
     return render_template('add_assessment.html',
-                         technical_capabilities=technical_functions,
+                         technical_functions=technical_functions,
                          readiness_levels=readiness_levels,
                          vehicle_platforms=vehicle_platforms,
                          odds=odds,
@@ -180,3 +292,186 @@ def api_readiness_data():
         'trl_distribution': [{'level': t.level, 'name': t.name, 'count': t.count} for t in trl_distribution],
         'product_readiness': [{'name': p.name, 'avg_trl': float(p.avg_trl)} for p in product_readiness]
     })
+
+@app.route('/export')
+def export_info():
+    """Show export options and statistics"""
+    # Get statistics for display
+    total_assessments = ReadinessAssessment.query.count()
+    product_features_count = ProductFeature.query.count()
+    
+    # Status distribution
+    status_counts = {}
+    for status in ['green', 'yellow', 'red']:
+        status_counts[status] = ReadinessAssessment.query.filter_by(current_status=status).count()
+    
+    # Completion date statistics
+    with_dates = ReadinessAssessment.query.filter(ReadinessAssessment.scheduled_completion_date.isnot(None)).count()
+    without_dates = total_assessments - with_dates
+    
+    completion_stats = {
+        'with_dates': with_dates,
+        'without_dates': without_dates
+    }
+    
+    return render_template('export_info.html',
+                         total_assessments=total_assessments,
+                         product_features_count=product_features_count,
+                         status_counts=status_counts,
+                         completion_stats=completion_stats)
+
+@app.route('/export/miro_roadmap')
+def export_miro_roadmap():
+    """Export assessment data in a format suitable for Miro roadmap visualization"""
+    from datetime import datetime, timedelta
+    import json
+    
+    # Get all assessments with related data
+    assessments = db.session.query(ReadinessAssessment).join(
+        TechnicalFunction
+    ).join(ProductFeature).join(TechnicalReadinessLevel).all()
+    
+    # Create roadmap structure
+    roadmap_data = {
+        "meta": {
+            "export_date": datetime.now().isoformat(),
+            "total_assessments": len(assessments),
+            "title": "Product Feature Readiness Roadmap",
+            "description": "Technical readiness assessment roadmap for autonomous vehicle capabilities"
+        },
+        "timeline": {
+            "quarters": generate_quarters(),
+            "milestones": []
+        },
+        "swim_lanes": {},
+        "items": []
+    }
+    
+    # Group assessments by product feature (swim lanes)
+    for assessment in assessments:
+        product_name = assessment.technical_function.product_feature.name
+        
+        if product_name not in roadmap_data["swim_lanes"]:
+            roadmap_data["swim_lanes"][product_name] = {
+                "name": product_name,
+                "description": assessment.technical_function.product_feature.description or "",
+                "vehicle_type": assessment.technical_function.product_feature.vehicle_type or "truck",
+                "items": []
+            }
+        
+        # Create roadmap item
+        item = {
+            "id": f"assessment_{assessment.id}",
+            "title": assessment.technical_function.name,
+            "description": assessment.notes or f"Assessment for {assessment.technical_function.name}",
+            "product_feature": product_name,
+            "current_trl": assessment.readiness_level.level,
+            "current_trl_name": assessment.readiness_level.name,
+            "status": assessment.current_status,
+            "status_color": get_status_color(assessment.current_status),
+            "assessor": assessment.assessor,
+            "platform": assessment.vehicle_platform.name,
+            "odd": assessment.odd.name,
+            "environment": assessment.environment.name,
+            "trailer": assessment.trailer.name if assessment.trailer else None,
+            "assessment_date": assessment.assessment_date.isoformat(),
+            "scheduled_completion": assessment.scheduled_completion_date.isoformat() if assessment.scheduled_completion_date else None,
+            "timeline_position": calculate_timeline_position(assessment),
+            "miro_properties": {
+                "shape": "sticky_note",
+                "width": 200,
+                "height": 150,
+                "text_color": "#000000",
+                "background_color": get_status_color(assessment.current_status)
+            }
+        }
+        
+        roadmap_data["items"].append(item)
+        roadmap_data["swim_lanes"][product_name]["items"].append(item["id"])
+    
+    # Add milestones based on scheduled completion dates
+    milestones = generate_milestones(assessments)
+    roadmap_data["timeline"]["milestones"] = milestones
+    
+    # Return as JSON with proper headers for download
+    response = app.response_class(
+        response=json.dumps(roadmap_data, indent=2),
+        status=200,
+        mimetype='application/json'
+    )
+    response.headers['Content-Disposition'] = f'attachment; filename="miro_roadmap_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'
+    
+    return response
+
+@app.route('/export/miro_csv')
+def export_miro_csv():
+    """Export assessment data as CSV for Miro import"""
+    import csv
+    import io
+    from datetime import datetime
+    
+    # Get all assessments with proper joins
+    assessments = db.session.query(ReadinessAssessment).join(
+        TechnicalFunction
+    ).join(ProductFeature).join(TechnicalReadinessLevel).join(
+        VehiclePlatform
+    ).join(ODD).join(Environment).all()
+    
+    # Create CSV content
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # CSV headers for Miro import
+    writer.writerow([
+        'Title', 'Description', 'Product Feature', 'Current TRL', 'Status', 
+        'Status Color', 'Assessor', 'Platform', 'ODD', 'Environment', 
+        'Assessment Date', 'Scheduled Completion', 'Timeline Quarter', 'Notes'
+    ])
+    
+    for assessment in assessments:
+        timeline_pos = calculate_timeline_position(assessment)
+        
+        writer.writerow([
+            assessment.technical_function.name,
+            assessment.technical_function.description or assessment.notes or "",
+            assessment.technical_function.product_feature.name,
+            f"TRL {assessment.readiness_level.level}: {assessment.readiness_level.name}",
+            assessment.current_status.upper() if assessment.current_status else "NOT_SET",
+            get_status_color(assessment.current_status),
+            assessment.assessor or "",
+            assessment.vehicle_platform.name,
+            assessment.odd.name,
+            assessment.environment.name,
+            assessment.assessment_date.strftime("%Y-%m-%d"),
+            assessment.scheduled_completion_date.strftime("%Y-%m-%d") if assessment.scheduled_completion_date else "",
+            f"Q{timeline_pos['quarter']}",
+            assessment.notes or ""
+        ])
+    
+    # Create temporary CSV file
+    import tempfile
+    import os
+    
+    # Create a temporary file
+    temp_fd, temp_path = tempfile.mkstemp(suffix='.csv', prefix='miro_roadmap_')
+    
+    try:
+        # Write CSV content to temporary file
+        with os.fdopen(temp_fd, 'w', encoding='utf-8', newline='') as temp_file:
+            temp_file.write(output.getvalue())
+        
+        # Generate filename with timestamp
+        filename = f"miro_roadmap_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        # Send file as download
+        return send_file(
+            temp_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='text/csv'
+        )
+    except Exception as e:
+        # Clean up temp file if error occurs
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+        raise e

@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block page_title %}Export to Miro{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-download"></i> Export Assessment Data for Miro Roadmap</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Export your readiness assessments to create visual roadmaps in Miro.</p>
+                
+                <h6>Available Export Formats:</h6>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6><i class="fas fa-file-code"></i> JSON Format</h6>
+                                <p class="small">Structured data with timeline positioning, swim lanes by product feature, and complete assessment details.</p>
+                                <a href="{{ url_for('export_miro_roadmap') }}" class="btn btn-primary btn-sm" target="_blank">
+                                    <i class="fas fa-download"></i> Download JSON
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6><i class="fas fa-file-csv"></i> CSV Format</h6>
+                                <p class="small">Tabular data suitable for spreadsheet import or direct import into Miro as sticky notes.</p>
+                                <a href="{{ url_for('export_miro_csv') }}" class="btn btn-success btn-sm" 
+                                   onclick="downloadCSV(event)" id="csvDownloadBtn">
+                                    <i class="fas fa-download"></i> Download CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h6>How to Use in Miro:</h6>
+                
+                <div class="accordion" id="miroInstructions">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingJSON">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJSON">
+                                Using JSON Export
+                            </button>
+                        </h2>
+                        <div id="collapseJSON" class="accordion-collapse collapse show" data-bs-parent="#miroInstructions">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>Download the JSON file using the button above</li>
+                                    <li>Open Miro and create a new board</li>
+                                    <li>The JSON contains structured roadmap data with:
+                                        <ul>
+                                            <li><strong>Swim lanes:</strong> Organized by product features</li>
+                                            <li><strong>Timeline:</strong> Quarterly view with positioning</li>
+                                            <li><strong>Status colors:</strong> Red/Yellow/Green for current status</li>
+                                            <li><strong>Milestones:</strong> Key completion dates</li>
+                                        </ul>
+                                    </li>
+                                    <li>Use the data to manually create or script the roadmap layout</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingCSV">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCSV">
+                                Using CSV Export
+                            </button>
+                        </h2>
+                        <div id="collapseCSV" class="accordion-collapse collapse" data-bs-parent="#miroInstructions">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>Download the CSV file using the button above</li>
+                                    <li>Open Miro and create a new board</li>
+                                    <li>Go to <strong>Import</strong> → <strong>Import from CSV</strong></li>
+                                    <li>Upload the CSV file</li>
+                                    <li>Map the CSV columns to Miro properties:
+                                        <ul>
+                                            <li><strong>Title:</strong> Sticky note title</li>
+                                            <li><strong>Description:</strong> Sticky note content</li>
+                                            <li><strong>Status Color:</strong> Background color</li>
+                                            <li><strong>Timeline Quarter:</strong> Use for positioning</li>
+                                        </ul>
+                                    </li>
+                                    <li>Arrange imported items into swim lanes by Product Feature</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Export Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h4>{{ total_assessments }}</h4>
+                                <small>Total Assessments</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h4>{{ product_features_count }}</h4>
+                                <small>Product Features</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Status Distribution:</h6>
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between">
+                        <span>🟢 Green</span>
+                        <span>{{ status_counts.green or 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>🟡 Yellow</span>
+                        <span>{{ status_counts.yellow or 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>🔴 Red</span>
+                        <span>{{ status_counts.red or 0 }}</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Completion Dates:</h6>
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between">
+                        <span>With Dates</span>
+                        <span>{{ completion_stats.with_dates }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>No Dates</span>
+                        <span>{{ completion_stats.without_dates }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-lightbulb"></i> Roadmap Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success"></i> Group items by product feature as swim lanes</li>
+                    <li><i class="fas fa-check text-success"></i> Use timeline quarters for horizontal positioning</li>
+                    <li><i class="fas fa-check text-success"></i> Color-code by current status (Red/Yellow/Green)</li>
+                    <li><i class="fas fa-check text-success"></i> Add milestones for major completion dates</li>
+                    <li><i class="fas fa-check text-success"></i> Include TRL levels in item descriptions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function downloadCSV(event) {
+    event.preventDefault();
+    
+    // Show loading state
+    const btn = document.getElementById('csvDownloadBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+    btn.disabled = true;
+    
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = "{{ url_for('export_miro_csv') }}";
+    link.download = `miro_roadmap_${new Date().toISOString().slice(0,19).replace(/[:-]/g, '').replace('T', '_')}.csv`;
+    
+    // Force download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Reset button after download
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'alert alert-success alert-dismissible fade show mt-2';
+        successMsg.innerHTML = `
+            <i class="fas fa-check-circle"></i> CSV file downloaded successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        btn.parentElement.appendChild(successMsg);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            if (successMsg.parentElement) {
+                successMsg.remove();
+            }
+        }, 3000);
+    }, 1000);
+}
+</script>
+{% endblock %}

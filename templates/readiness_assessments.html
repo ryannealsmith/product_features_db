@@ -50,7 +50,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Min TRL</label>
+                <label class="form-label">Min Proposed TRL</label>
                 <select name="min_trl" class="form-select">
                     <option value="">Any TRL</option>
                     {% for i in range(1, 10) %}
@@ -80,19 +80,20 @@
                     <tr>
                         <th>Technical Function</th>
                         <th>Product Capability</th>
-                        <th>TRL</th>
+                        <th>Proposed TRL</th>
                         <th>Platform</th>
                         <th>ODD</th>
                         <th>Environment</th>
                         <th>Trailer</th>
-                        <th>Confidence</th>
+                        <th>Current Status</th>
                         <th>Assessor</th>
-                        <th>Date</th>
+                        <th>Assessment Date</th>
+                        <th>Scheduled Completion</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for assessment in assessments %}
-                    <tr class="confidence-{{ assessment.confidence_level }}">
+                    <tr class="status-{{ assessment.current_status }}">
                         <td>
                             <strong>{{ assessment.technical_function.name }}</strong>
                             {% if assessment.notes %}
@@ -111,16 +112,29 @@
                         <td>{{ assessment.environment.name }}</td>
                         <td>{{ assessment.trailer.name if assessment.trailer else 'N/A' }}</td>
                         <td>
-                            <span class="badge bg-{% if assessment.confidence_level == 'high' %}success{% elif assessment.confidence_level == 'medium' %}warning{% else %}danger{% endif %}">
-                                {{ assessment.confidence_level|title }}
-                            </span>
+                            {% if assessment.current_status == 'green' %}
+                                <span class="badge bg-success">🟢 Green</span>
+                            {% elif assessment.current_status == 'yellow' %}
+                                <span class="badge bg-warning">🟡 Yellow</span>
+                            {% elif assessment.current_status == 'red' %}
+                                <span class="badge bg-danger">🔴 Red</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Not Set</span>
+                            {% endif %}
                         </td>
                         <td>{{ assessment.assessor }}</td>
                         <td>{{ assessment.assessment_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if assessment.scheduled_completion_date %}
+                                {{ assessment.scheduled_completion_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                <span class="text-muted">Not set</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="10" class="text-center text-muted">No assessments found matching the filters.</td>
+                        <td colspan="11" class="text-center text-muted">No assessments found matching the filters.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

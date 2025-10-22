@@ -24,26 +24,26 @@ def initialize_sample_data():
     product_features = [
         ("Terberg: Driver-in operations (semi-trailer)", 
          "Forward only operations with driver in vehicle towing a trailer.", 
-         "truck", "Baseline", "baseline", "Complete 500 consecutive operations with 99.5% safety record", 85.0, "2024-01-01", "2024-12-31", "active"),
+         "truck", "Baseline", "baseline", "Complete 500 consecutive operations with 99.5% safety record", 85.0, "2024-01-01", "2024-12-31", "active", "https://docs.terberg.com/driver-in-operations"),
         ("Terberg: Driver-Out, AV only, FWD", 
          "Forward only operations with no driver in vehicle, towing a trailer", 
-         "truck", "Autonomous", "PF-AUTO-1.1", "Achieve 1000 hours autonomous operation with <0.1 disengagement rate", 65.0, "2024-03-01", "2025-08-31", "next"),
+         "truck", "Autonomous", "PF-AUTO-1.1", "Achieve 1000 hours autonomous operation with <0.1 disengagement rate", 65.0, "2024-03-01", "2025-08-31", "next", "https://docs.terberg.com/autonomous-operations"),
         ("Platooning", 
          "Multiple vehicles can follow each other closely in automated convoy", 
-         "truck", "Advanced", "PF-ADV-2.1", "Demonstrate 3-vehicle platoon for 100km with 15% fuel savings", 45.0, "2024-06-01", "2025-12-31", "next"),
+         "truck", "Advanced", "PF-ADV-2.1", "Demonstrate 3-vehicle platoon for 100km with 15% fuel savings", 45.0, "2024-06-01", "2025-12-31", "next", None),
         ("Remote Vehicle Operation", 
          "Vehicle can be operated remotely by a human operator", 
-         "truck", "Remote", "PF-REM-1.0", "Control vehicle remotely with <200ms latency for 8-hour shifts", 30.0, "2024-09-01", "2025-06-30", "next"),
+         "truck", "Remote", "PF-REM-1.0", "Control vehicle remotely with <200ms latency for 8-hour shifts", 30.0, "2024-09-01", "2025-06-30", "next", "https://wiki.company.com/remote-operations"),
         ("Cargo Handling Automation", 
          "Automated loading and unloading of cargo", 
-         "truck", "Automation", "PF-AUTO-3.0", "Automate 95% of cargo handling operations without human intervention", 15.0, "2025-01-01", "2026-12-31", "future"),
+         "truck", "Automation", "PF-AUTO-3.0", "Automate 95% of cargo handling operations without human intervention", 15.0, "2025-01-01", "2026-12-31", "future", None),
         ("Fleet Management", 
          "Centralized management and coordination of vehicle fleets", 
-         "truck", "Management", "PF-MGMT-1.0", "Manage 50+ vehicle fleet with 99% uptime and optimal routing", 75.0, "2024-01-01", "2024-11-30", "active")
+         "truck", "Management", "PF-MGMT-1.0", "Manage 50+ vehicle fleet with 99% uptime and optimal routing", 75.0, "2024-01-01", "2024-11-30", "active", "https://confluence.company.com/fleet-management")
     ]
     
     from datetime import datetime
-    for name, description, vehicle_type, swimlane, label, tmos, status, start_date, end_date, active_flag in product_features:
+    for name, description, vehicle_type, swimlane, label, tmos, status, start_date, end_date, active_flag, document_url in product_features:
         feature = ProductFeature(
             name=name, 
             description=description,
@@ -54,7 +54,8 @@ def initialize_sample_data():
             status_relative_to_tmos=status,
             planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
             planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
-            active_flag=active_flag
+            active_flag=active_flag,
+            document_url=document_url
         )
         db.session.add(feature)
     
@@ -65,86 +66,86 @@ def initialize_sample_data():
         # Terberg: Driver-in operations (semi-trailer)
         ("Perception System", "Camera, LiDAR, and radar sensor fusion for environment perception", 
          "Successfully detect and classify 99.9% of relevant objects within 100m range in all weather conditions", 
-         "truck", "Achieve 360-degree environmental awareness with <50ms latency", 85.0, "2024-01-01", "2024-10-31", 1),
+         "truck", "Achieve 360-degree environmental awareness with <50ms latency", 85.0, "2024-01-01", "2024-10-31", 1, "https://docs.company.com/perception-system"),
         
         ("Path Planning", "Real-time trajectory planning and optimization", 
          "Generate collision-free paths in real-time for complex terminal environments", 
-         "truck", "Plan optimal paths with <100ms computation time for 95% of scenarios", 75.0, "2024-02-01", "2024-11-30", 1),
+         "truck", "Plan optimal paths with <100ms computation time for 95% of scenarios", 75.0, "2024-02-01", "2024-11-30", 1, None),
         
         ("Vehicle Control", "Precise control of steering, acceleration, and braking", 
          "Maintain vehicle trajectory within 10cm accuracy at all operational speeds", 
-         "truck", "Execute control commands with <20ms response time and ±5cm precision", 90.0, "2024-01-01", "2024-09-30", 1),
+         "truck", "Execute control commands with <20ms response time and ±5cm precision", 90.0, "2024-01-01", "2024-09-30", 1, "https://confluence.company.com/vehicle-control"),
         
         ("Localization", "High-precision vehicle positioning and mapping", 
          "Achieve centimeter-level positioning accuracy in GPS-denied environments", 
-         "truck", "Maintain <5cm positioning accuracy 99% of the time", 70.0, "2024-03-01", "2024-12-31", 1),
+         "truck", "Maintain <5cm positioning accuracy 99% of the time", 70.0, "2024-03-01", "2024-12-31", 1, None),
         
         ("Detect proximal humans", "Switch to SAFESTATE when a human violates buffer", 
          "Detect humans within 5m safety buffer and trigger emergency stops within 200ms", 
-         "truck", "100% detection rate for humans in safety zones with <200ms response", 65.0, "2024-04-01", "2025-01-31", 1),
+         "truck", "100% detection rate for humans in safety zones with <200ms response", 65.0, "2024-04-01", "2025-01-31", 1, None),
         
         # Urban Autonomous Navigation
         ("Traffic Light Recognition", "Detection and interpretation of traffic signals", 
          "Accurately identify and respond to all standard traffic signals from 50m distance", 
-         "truck", "99.5% accuracy in traffic signal detection and classification", 55.0, "2024-05-01", "2025-03-31", 2),
+         "truck", "99.5% accuracy in traffic signal detection and classification", 55.0, "2024-05-01", "2025-03-31", 2, None),
         
         ("Pedestrian Detection", "Detection and tracking of pedestrians", 
          "Detect and track pedestrians in all lighting and weather conditions", 
-         "truck", "99.9% pedestrian detection rate with <1% false positives", 60.0, "2024-04-01", "2025-02-28", 2),
+         "truck", "99.9% pedestrian detection rate with <1% false positives", 60.0, "2024-04-01", "2025-02-28", 2, None),
         
         ("Intersection Handling", "Safe navigation through complex intersections", 
          "Navigate intersections with mixed traffic including pedestrians and cyclists", 
-         "truck", "Complete intersection traversals with 100% safety record", 40.0, "2024-06-01", "2025-06-30", 2),
+         "truck", "Complete intersection traversals with 100% safety record", 40.0, "2024-06-01", "2025-06-30", 2, None),
         
         # Automated Parking
         ("Parking Space Detection", "Identification of suitable parking spaces", 
          "Identify and evaluate parking spaces suitable for vehicle dimensions", 
-         "truck", "Detect 95% of available parking spaces with accurate size assessment", 70.0, "2024-03-01", "2024-12-31", 3),
+         "truck", "Detect 95% of available parking spaces with accurate size assessment", 70.0, "2024-03-01", "2024-12-31", 3, None),
         
         ("Low-Speed Maneuvering", "Precise control for parking maneuvers", 
          "Execute complex parking maneuvers in tight spaces with centimeter precision", 
-         "truck", "Successfully park in spaces with <50cm clearance on each side", 80.0, "2024-02-01", "2024-11-30", 3),
+         "truck", "Successfully park in spaces with <50cm clearance on each side", 80.0, "2024-02-01", "2024-11-30", 3, None),
         
         # Platooning
         ("Vehicle-to-Vehicle Communication", "V2V communication for coordination", 
          "Maintain reliable communication between vehicles in platoon formation", 
-         "truck", "99.9% communication reliability with <50ms latency between vehicles", 35.0, "2024-07-01", "2025-08-31", 4),
+         "truck", "99.9% communication reliability with <50ms latency between vehicles", 35.0, "2024-07-01", "2025-08-31", 4, None),
         
         ("Convoy Formation", "Automatic formation and maintenance of vehicle convoys", 
          "Form and maintain multi-vehicle convoys with automated spacing control", 
-         "truck", "Maintain 10m spacing ±1m in 3-vehicle convoys for 100km", 30.0, "2024-08-01", "2025-10-31", 4),
+         "truck", "Maintain 10m spacing ±1m in 3-vehicle convoys for 100km", 30.0, "2024-08-01", "2025-10-31", 4, None),
         
         # Remote Vehicle Operation
         ("Teleoperation Interface", "Human-machine interface for remote operation", 
          "Provide intuitive control interface for remote vehicle operation", 
-         "truck", "Enable remote operation with <200ms control latency", 45.0, "2024-09-01", "2025-07-31", 5),
+         "truck", "Enable remote operation with <200ms control latency", 45.0, "2024-09-01", "2025-07-31", 5, None),
         
         ("Low-Latency Communication", "Real-time communication with remote operators", 
          "Maintain stable communication link between vehicle and operations center", 
-         "truck", "Achieve 99.5% uptime with <150ms average latency", 50.0, "2024-08-01", "2025-06-30", 5),
+         "truck", "Achieve 99.5% uptime with <150ms average latency", 50.0, "2024-08-01", "2025-06-30", 5, None),
         
         # Cargo Handling Automation
         ("Robotic Loading System", "Automated cargo loading and securing", 
          "Automate cargo loading and securing processes without human intervention", 
-         "truck", "Load 95% of standard cargo types autonomously in <10 minutes", 20.0, "2025-01-01", "2026-06-30", 6),
+         "truck", "Load 95% of standard cargo types autonomously in <10 minutes", 20.0, "2025-01-01", "2026-06-30", 6, None),
         
         ("Cargo Tracking", "Real-time monitoring of cargo status", 
          "Monitor cargo location, condition, and security throughout transport", 
-         "truck", "Provide real-time cargo status with 99% accuracy", 75.0, "2024-01-01", "2024-12-31", 7),
+         "truck", "Provide real-time cargo status with 99% accuracy", 75.0, "2024-01-01", "2024-12-31", 7, None),
         
         # Fleet Management
         ("Route Optimization", "Dynamic route planning for multiple vehicles", 
          "Optimize routes for fleet efficiency considering traffic and cargo priorities", 
-         "truck", "Reduce total fleet travel time by 15% compared to manual planning", 85.0, "2024-01-01", "2024-11-30", 7),
+         "truck", "Reduce total fleet travel time by 15% compared to manual planning", 85.0, "2024-01-01", "2024-11-30", 7, None),
         
         ("Vehicle Health Monitoring", "Real-time monitoring of vehicle systems", 
          "Monitor vehicle health and predict maintenance needs", 
-         "truck", "Predict 90% of maintenance needs 48 hours in advance", 70.0, "2024-02-01", "2024-12-31", 7)
+         "truck", "Predict 90% of maintenance needs 48 hours in advance", 70.0, "2024-02-01", "2024-12-31", 7, None)
     ]
     
     from datetime import datetime
     for (name, description, success_criteria, vehicle_type, tmos, status, 
-         start_date, end_date, product_id) in technical_capabilities:
+         start_date, end_date, product_id, document_url) in technical_capabilities:
         capability = TechnicalFunction(
             name=name, 
             description=description,
@@ -154,7 +155,8 @@ def initialize_sample_data():
             status_relative_to_tmos=status,
             planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
             planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
-            product_feature_id=product_id
+            product_feature_id=product_id,
+            document_url=document_url
         )
         db.session.add(capability)
     
@@ -233,7 +235,7 @@ def initialize_sample_data():
     trl_levels = TechnicalReadinessLevel.query.all()
     
     assessors = ["Dr. Smith", "Engineer Johnson", "Tech Lead Davis", "Manager Wilson"]
-    confidence_levels = ["high", "medium", "low"]
+    current_status_options = ["green", "yellow", "red"]
     
     # Create sample assessments
     for tech_cap in tech_caps[:10]:  # Limit to first 10 for demo
@@ -257,7 +259,7 @@ def initialize_sample_data():
                         trailer_id=random.choice(trailers_list).id if random.random() > 0.3 else None,
                         assessor=random.choice(assessors),
                         notes=f"Assessment for {tech_cap.name} on {platform.name}",
-                        confidence_level=random.choice(confidence_levels),
+                        current_status=random.choice(current_status_options),
                         next_review_date=date.today() + timedelta(days=random.randint(30, 180))
                     )
                     db.session.add(assessment)
@@ -271,7 +273,8 @@ def initialize_sample_data():
             "2024-01-01",
             "2025-06-30",
             "Successfully complete 100 consecutive autonomous terminal operations with 99.9% safety record and 95% efficiency compared to human operators",
-            75.0
+            75.0,
+            "https://docs.company.com/autonomous-terminal-ops"
         ),
         (
             "Highway Platooning",
@@ -280,7 +283,8 @@ def initialize_sample_data():
             "2024-03-01",
             "2025-12-31",
             "Demonstrate stable 3-vehicle platoon maintaining 10m spacing at 80km/h for 100km duration with 15% fuel savings",
-            45.0
+            45.0,
+            None
         ),
         (
             "Urban Delivery Operations", 
@@ -289,7 +293,8 @@ def initialize_sample_data():
             "2024-06-01", 
             "2026-03-31",
             "Complete 50 urban delivery routes with 98% on-time delivery rate and zero safety incidents involving pedestrians or cyclists",
-            25.0
+            25.0,
+            None
         ),
         (
             "Remote Monitoring and Control",
@@ -298,12 +303,13 @@ def initialize_sample_data():
             "2024-02-01",
             "2025-09-30", 
             "Achieve 200ms maximum latency for control commands and 99.5% uptime for monitoring systems across 50 vehicle fleet",
-            60.0
+            60.0,
+            "https://wiki.company.com/remote-operations-center"
         )
     ]
     
     from datetime import datetime
-    for name, criteria, vehicle_type, start_date, end_date, tmos, progress in capabilities_data:
+    for name, criteria, vehicle_type, start_date, end_date, tmos, progress, document_url in capabilities_data:
         capability = Capabilities(
             name=name,
             success_criteria=criteria,
@@ -311,7 +317,8 @@ def initialize_sample_data():
             planned_start_date=datetime.strptime(start_date, '%Y-%m-%d').date(),
             planned_end_date=datetime.strptime(end_date, '%Y-%m-%d').date(),
             tmos=tmos,
-            progress_relative_to_tmos=progress
+            progress_relative_to_tmos=progress,
+            document_url=document_url
         )
         db.session.add(capability)
     

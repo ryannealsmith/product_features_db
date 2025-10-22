@@ -27,6 +27,7 @@ class ProductFeature(db.Model):
     planned_start_date = db.Column(db.Date, nullable=True)
     planned_end_date = db.Column(db.Date, nullable=True)
     active_flag = db.Column(db.String(10), default="next")  # "next" or other status
+    document_url = db.Column(db.String(500), nullable=True)  # Optional web link to documentation
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -73,6 +74,7 @@ class TechnicalFunction(db.Model):
     planned_start_date = db.Column(db.Date, nullable=True)
     planned_end_date = db.Column(db.Date, nullable=True)
     product_feature_id = db.Column(db.Integer, db.ForeignKey('product_features.id'), nullable=False)
+    document_url = db.Column(db.String(500), nullable=True)  # Optional web link to documentation
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -211,6 +213,7 @@ class Capabilities(db.Model):
     planned_end_date = db.Column(db.Date, nullable=True)
     tmos = db.Column(db.Text)  # Target Measure of Success
     progress_relative_to_tmos = db.Column(db.Float, default=0.0)  # Percentage (0.0 to 100.0)
+    document_url = db.Column(db.String(500), nullable=True)  # Optional web link to documentation
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships - many-to-many with technical functions and product features
@@ -276,8 +279,9 @@ class ReadinessAssessment(db.Model):
     assessment_date = db.Column(db.DateTime, default=datetime.utcnow)
     assessor = db.Column(db.String(100))
     notes = db.Column(db.Text)
-    confidence_level = db.Column(db.String(20))  # high, medium, low
+    current_status = db.Column(db.String(20))  # red, yellow, green
     next_review_date = db.Column(db.Date)
+    scheduled_completion_date = db.Column(db.Date)
     
     # Relationships
     technical_function = db.relationship('TechnicalFunction', back_populates='readiness_assessments')
