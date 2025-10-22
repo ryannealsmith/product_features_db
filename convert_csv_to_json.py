@@ -1,672 +1,498 @@
 import csv
-import io
 import json
-import re
 import argparse
-import sys
-from datetime import date, datetime
 from collections import defaultdict
+from datetime import datetime
 
-def parse_date(date_string):
-    """
-    Parses date string in 'M/D/YYYY' format for TRL dates.
-    Returns date object or None.
-    """
-    if not date_string or date_string.strip() == '':
-        return None
-    try:
-        # Assuming the M/D/YYYY format based on the sample data
-        return datetime.strptime(date_string.strip(), '%m/%d/%Y').date().isoformat()
-    except ValueError:
-        print(f"Warning: Could not parse TRL date '{date_string}'. Skipping.")
-        return None
+# --- Configuration & Defaults ---
+DATE_FORMAT = '%m/%d/%Y'
+CURRENT_DATE = datetime.now().date()
+DEFAULT_MIN_TRL = 1
 
-def parse_capabilities(cap_string, next_string, trailer_string):
-    """
-    Combines text from Capabilities, Next, and Trailer columns, 
-    splits by common delimiters (newline, comma), and extracts CA-XXX codes.
-    """
-    combined_text = f"{cap_string}\n{next_string}\n{trailer_string}"
-    
-    # Use a regex to find all codes matching the pattern 'CA-XXX-Y.Z'
-    # The pattern is CA- followed by 3 capital letters, a hyphen, a number, a dot, and another number.
-    # The 'Capabilities' column in your data is missing a header and is the 10th column (index 9).
-    # Based on your data structure:
-    # Index 9: CA-CHE...
-    # Index 10: CA-PRC... (This is your 'Next' column)
-    # Index 11: CA-LOC... (This is your 'Capabilities' column from your prompt's header)
-    
-    # We will combine columns 9, 10, and 11 based on your provided data structure
-    
-    # Combine the three capability-related columns (indices 9, 10, 11)
-    combined_text = f"{cap_string}\n{next_string}\n{trailer_string}"
-    
-    # Regular expression to find capability codes (e.g., CA-PRC-1.1, CA-LOC-2.1, CA-CHE-1.1)
-    # This specifically looks for CA- followed by an uppercase word, a hyphen, and a number.
-    # We strip out the trailing description in parentheses (if present)
-    capabilities = re.findall(r'(CA-[A-Z]+-\d\.\d+)', combined_text)
-    
-    # Clean up and ensure uniqueness
-    return sorted(list(set(capabilities)))
+# Default file paths
+DEFAULT_PF_CSV = 'example-csvs/product_to_capability.csv'
+DEFAULT_CA_CSV = 'example-csvs/capabilities.csv'
+DEFAULT_TF_CSV = 'example-csvs/capability_to_tech.csv'
+DEFAULT_OUTPUT_JSON = 'repository_update_data_final.json'
 
-def find_min_start_date(entities):
-    """Finds the earliest planned_start_date among a list of entities."""
-    min_date = None
-    for entity in entities:
-        date_str = entity.get('planned_start_date')
-        if date_str:
+# --- TRL and Date Calculation Helpers ---
+
+def calculate_trl_for_tech_feature(tech_feature):
+    """
+    Determines the TRL for a technical feature based on the current date.
+    Returns the highest TRL whose due date has passed, otherwise returns DEFAULT_MIN_TRL (1).
+    """
+    current_trl = DEFAULT_MIN_TRL
+    
+    trl_to_date = {}
+    for date_str, trl in tech_feature.get('due_dates', {}).items():
+        try:
+            due_date = datetime.strptime(date_str, DATE_FORMAT).date()
+            trl_to_date[trl] = due_date
+        except ValueError:
+            continue
+    
+    for trl in sorted(trl_to_date.keys(), reverse=True):
+        due_date = trl_to_date[trl]
+        if CURRENT_DATE >= due_date:
+            current_trl = trl
+            break
+            
+    return current_trl
+
+def get_planning_dates(tech_features):
+    """
+    Calculates planned_start_date (absolute earliest date) and 
+    planned_end_date (absolute latest date) from all due dates, ignoring TRL filtering.
+    """
+    all_dates = []
+
+    unique_tech_features = {t['label']: t for t in tech_features}.values()
+
+    for tech_feature in unique_tech_features:
+        for date_str in tech_feature.get('due_dates', {}).keys():
             try:
-                current_date = date.fromisoformat(date_str)
-                if min_date is None or current_date < min_date:
-                    min_date = current_date
+                current_date_obj = datetime.strptime(date_str, DATE_FORMAT).date()
+                all_dates.append(current_date_obj)
             except ValueError:
-                # Ignore unparsable dates
-                pass
-    return min_date.isoformat() if min_date else ""
+                continue
+    
+    earliest_date = min(all_dates) if all_dates else None
+    latest_date = max(all_dates) if all_dates else None
 
-def find_max_end_date(entities):
-    """Finds the latest planned_end_date among a list of entities."""
-    max_date = None
-    for entity in entities:
-        date_str = entity.get('planned_end_date')
-        if date_str:
-            try:
-                current_date = date.fromisoformat(date_str)
-                if max_date is None or current_date > max_date:
-                    max_date = current_date
-            except ValueError:
-                # Ignore unparsable dates
-                pass
-    return max_date.isoformat() if max_date else ""
-    
+    return (
+        earliest_date.strftime(DATE_FORMAT) if earliest_date else '',
+        latest_date.strftime(DATE_FORMAT) if latest_date else ''
+    )
 
-def extract_dependencies(label, detail_string):
-    """
-    Extracts explicit PF-XXX-Y.Z dependencies from the Details column 
-    AND infers dependencies on all preceding minor versions within the same major version.
-    """
-    
-    # 1. Explicit Dependencies (from the Details column)
-    explicit_deps = re.findall(r'(PF-[A-Z]+-\d\.\d+)', detail_string)
-    
-    # 2. Inferred Dependencies (Based on the current label)
-    inferred_deps = set()
-    
-    # Check if the label matches the expected format (PF-XXX-Y.Z)
-    # Group 1: Prefix (PF-ODD)
-    # Group 2: Major Version (1)
-    # Group 3: Minor Version (3)
-    match = re.match(r'(PF-[A-Z]+)-(\d+)\.(\d+)', label)
-    
-    if match:
-        prefix = match.group(1)       # e.g., 'PF-ODD'
-        major_version = match.group(2) # e.g., '1' (kept as string for reassembly)
-        minor_version = int(match.group(3)) # e.g., 3
-        
-        # If the minor version is > 1, infer dependencies on all preceding minor versions
-        if minor_version > 1:
-            for i in range(1, minor_version):
-                # The inferred dependency is prefix-major.i
-                # e.g., for PF-ODD-1.3, this generates PF-ODD-1.1 and PF-ODD-1.2
-                inferred_dep_label = f"{prefix}-{major_version}.{i}"
-                inferred_deps.add(inferred_dep_label)
-                
-    # 3. Combine and clean
-    all_dependencies = set(explicit_deps)
-    all_dependencies.update(inferred_deps)
-    
-    return sorted(list(all_dependencies))
-    
+# --- Loading and Linking Functions ---
 
-def propagate_tf_dates_to_capabilities(tech_entities, cap_entities):
-    """
-    Rolls up TRL dates from Technical Functions (TF) to their linked Capabilities (CA).
-    The CA's start/end dates become the min/max dates of all linked TFs.
-    """
-    print("\n--- Starting Date Propagation: TF to CA ---")
-    
-    # 1. Build a map of CA Label -> [List of linked TF Entities]
-    ca_to_tf_list = defaultdict(list)
-    
-    # Use tech_entities (which has the planned dates) and their 'capabilities' list
-    for tf_entity in tech_entities:
-        for ca_label in tf_entity.get('capabilities', []):
-            ca_to_tf_list[ca_label].append(tf_entity)
-
-    # 2. Update Capability entities
-    for ca_entity in cap_entities:
-        ca_label = ca_entity.get('label')
-        linked_tfs = ca_to_tf_list.get(ca_label, [])
-        
-        if linked_tfs:
-            # Calculate min start date among linked TFs
-            min_start = find_min_start_date(linked_tfs)
-            
-            # Calculate max end date among linked TFs
-            max_end = find_max_end_date(linked_tfs)
-            
-            if min_start:
-                ca_entity['planned_start_date'] = min_start
-                # print(f"UPDATED: CA {ca_label} start date to {min_start}")
-            if max_end:
-                ca_entity['planned_end_date'] = max_end
-                # print(f"UPDATED: CA {ca_label} end date to {max_end}")
-        
-    print("--- Date Propagation: TF to CA Complete ---")
-    
-
-def propagate_cap_dates_to_product_features(cap_entities, pf_entities):
-    """
-    Rolls up calculated dates from Capabilities (CA) to their linked Product Features (PF).
-    The PF's start/end dates become the min/max dates of all required CAs.
-    """
-    print("--- Starting Date Propagation: CA to PF ---")
-
-    # 1. Build a map of CA Label -> CA Entity (for easy date lookup)
-    ca_lookup = {entity['label']: entity for entity in cap_entities}
-
-    # 2. Update Product Feature entities
-    for pf_entity in pf_entities:
-        # 'capabilities_required' holds the CA labels linked to this PF
-        required_ca_labels = pf_entity.get('capabilities_required', [])
-        
-        # Get the actual CA entities needed
-        linked_ca_entities = [ca_lookup[label] for label in required_ca_labels if label in ca_lookup]
-        
-        if linked_ca_entities:
-            # Calculate min start date among required CAs
-            min_start = find_min_start_date(linked_ca_entities)
-            
-            # Calculate max end date among required CAs
-            max_end = find_max_end_date(linked_ca_entities)
-            
-            if min_start:
-                pf_entity['planned_start_date'] = min_start
-                # print(f"UPDATED: PF {pf_entity['label']} start date to {min_start}")
-            if max_end:
-                pf_entity['planned_end_date'] = max_end
-                # print(f"UPDATED: PF {pf_entity['label']} end date to {max_end}")
-
-    print("--- Date Propagation: CA to PF Complete ---")
-
-
-def transform_product_feature_csv_to_json(filename):
-    """
-    Reads the CSV data, transforms each row into a JSON entity, and returns a list of dictionaries.
-    """
-    
-    # The input data has 13 columns used before empty ones, let's map the relevant ones:
-    # Swimlane: 0, Label: 1, Product Feature: 2, Details: 7, Next: 9, Capabilities: 10, Trailer: 11
-    
-    # NOTE: The provided header/data mapping is inconsistent in your prompt.
-    # Based on the provided data:
-    # Index 8 (column 'Next') = Y/N flag
-    # Index 9 (column 'Capabilities' in your header) = CA-CHE...
-    # Index 10 (Unnamed column) = CA-PRC...
-    # Index 11 (Unnamed column) = CA-LOC...
-    
-    # We will assume:
-    # --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # Index: | 0          | 1     | 2               | 3      | 4   | 5           | 6       | 7       | 8    | 9           | 10         | 11       | (12+)
-    # Header:| Swimlane   | Label | Product Feature | ...    | ... | ...         | ...     | Details | Next | Capabilities| Unnamed-10 | Unnamed-11| ...
-    # Content:
-    # --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # Row 2: | Operational| PF... | Port: baseline  | N/A    | N/A | N/A         | N/A     | * Speed | Y    | CA-CHE...   | CA-PRC...  | CA-LOC...|
-    # --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
-    # We will use columns 9, 10, and 11 for the capabilities list.
-    
-    # Use 'with open' to ensure the file is properly closed, 
-    # and 'newline=""' to prevent extra blank rows on some systems.
-    # The 'encoding="utf-8"' is good practice for text files.
-    output_entities = []
+def load_product_to_capability(file_path):
+    """Loads product features and initializes TRL."""
+    product_features = {}
     try:
-        with open(filename, mode='r', newline='', encoding='utf-8') as csvfile:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            try:
+                next(reader) 
+            except StopIteration:
+                return product_features 
             
-            # Use csv.reader to handle complex/multiline CSV fields correctly
-            reader = csv.reader(csvfile)
-            
-            # Skip the header row
-            header = next(reader)
-            
+            IDX_SWIMLANE = 0
+            IDX_LABEL = 1
+            IDX_NAME = 2 
+            IDX_PLATFORM = 3
+            IDX_ODD = 4
+            IDX_ENVIRONMENT = 5
+            IDX_TRAILER = 6
+            IDX_DETAILS = 7
+            IDX_NEXT = 8 
+            IDX_CAPABILITIES_START = 9 
+
             for row in reader:
-                # Skip empty rows or rows that don't start with a label (column 1)
-                if not row or not row[1]:
+                if not row or not row[IDX_NAME].strip():
                     continue
-                    
-                # Extract/Clean simple fields
-                swimlane = row[0].strip() or "N/A"
-                label = row[1].strip()
-                name = row[2].strip()
-                details = row[7].strip()
-                active_flag_val = "next" if row[8].strip() == "Y" else "N/A"
 
-                pf_vehicle_type = row[3].strip() if len(row) > 3 else "N/A"
+                label = row[IDX_LABEL].strip()
+                name = row[IDX_NAME].strip()
+
+                if label and name:
+                    capability_labels = []
+                    for i in range(IDX_CAPABILITIES_START, len(row)):
+                        if row[i].strip():
+                            for item in row[i].split('\n'):
+                                item = item.strip()
+                                if item:
+                                    cap_label = item.split(' ')[0].strip()
+                                    capability_labels.append(cap_label)
+                    
+                    dependencies = []
+                    details = row[IDX_DETAILS].strip()
+                    if details:
+                         for line in details.split('\n'):
+                            line = line.strip()
+                            if line.startswith('* PF-'):
+                                dep_label = line.split(' ')[1].strip()
+                                if dep_label.startswith('PF-'):
+                                    dependencies.append(dep_label)
+
+                    product_features[label] = {
+                        'name': name,
+                        'label': label,
+                        'swimlane': row[IDX_SWIMLANE].strip() or '',
+                        'platform': row[IDX_PLATFORM].strip() or '',
+                        'odd': row[IDX_ODD].strip() or '',
+                        'environment': row[IDX_ENVIRONMENT].strip() or '',
+                        'trailer': row[IDX_TRAILER].strip() or '',
+                        'details': details,
+                        'next': row[IDX_NEXT].strip() or '', 
+                        'capabilities_labels': list(set(capability_labels)),
+                        'dependencies': list(set(dependencies)), 
+                        'capabilities': [],
+                        'current_trl': DEFAULT_MIN_TRL 
+                    }
+    except Exception as e:
+        print(f"An error occurred while reading {file_path}: {e}")
+    return product_features
+
+def load_capabilities(file_path, product_features):
+    """Loads capabilities and initializes TRL."""
+    capabilities = {}
+    pf_to_cap = defaultdict(list)
+    for pf_label, pf_data in product_features.items():
+        for cap_label in pf_data['capabilities_labels']:
+            pf_to_cap[cap_label].append(pf_label)
+            
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            try:
+                next(reader) 
+            except StopIteration:
+                return capabilities
                 
-                # Capability columns (Indices 9, 10, and 11 based on your data)
-                cap_col_9 = row[9].strip() if len(row) > 9 else ""
-                cap_col_10 = row[10].strip() if len(row) > 10 else ""
-                cap_col_11 = row[11].strip() if len(row) > 11 else ""
+            IDX_SWIMLANE = 0
+            IDX_LABEL = 1
+            IDX_NAME = 2 
+            IDX_PLATFORM = 3
+            IDX_ODD = 4
+            IDX_ENVIRONMENT = 5
+            IDX_TRAILER = 6
+
+            current_swimlane = ""
+            for row in reader:
+                if not row or not row[IDX_LABEL].strip():
+                    if row and row[IDX_SWIMLANE].strip():
+                        current_swimlane = row[IDX_SWIMLANE].strip()
+                    continue
+
+                label = row[IDX_LABEL].strip()
+                swimlane = row[IDX_SWIMLANE].strip() or current_swimlane
+                if swimlane:
+                    current_swimlane = swimlane
+
+                if label:
+                    capabilities[label] = {
+                        'name': row[IDX_NAME].strip() or '',
+                        'swimlane': swimlane,
+                        'label': label,
+                        'platform': row[IDX_PLATFORM].strip() or '',
+                        'odd': row[IDX_ODD].strip() or '',
+                        'environment': row[IDX_ENVIRONMENT].strip() or '',
+                        'trailer': row[IDX_TRAILER].strip() or '',
+                        'tech_features': [], 
+                        'product_features_linked': pf_to_cap.get(label, []),
+                        'current_trl': DEFAULT_MIN_TRL 
+                    }
+
+    except Exception as e:
+        print(f"An error occurred while reading {file_path}: {e}")
+        
+    return capabilities
+
+def load_capability_to_tech(file_path, all_capabilities):
+    """Loads tech features, due dates, and calculates tech feature TRL."""
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            
+            try:
+                header = next(reader)
+                trl_row = next(reader)
+            except StopIteration:
+                return 
+
+            trl_map = {}
+            for i in range(2, len(trl_row)):
+                trl_level_str = trl_row[i].strip()
+                if trl_level_str.upper().startswith('TRL'):
+                    try:
+                        trl_level = int(trl_level_str.split(' ')[1])
+                        trl_map[i] = trl_level 
+                    except (IndexError, ValueError):
+                        continue
+
+            IDX_CAPABILITY_NAME = 0
+            IDX_TECH_LABELS = 1
+
+            for row in reader:
+                if not row or not row[IDX_CAPABILITY_NAME].strip():
+                    continue
+
+                cap_string = row[IDX_CAPABILITY_NAME].strip()
+                if cap_string.startswith('"') and cap_string.endswith('"'):
+                    cap_string = cap_string[1:-1]
                 
-                # Derive complex fields
-                capabilities_required = parse_capabilities(cap_col_9, cap_col_10, cap_col_11)
-                dependencies = extract_dependencies(label, details)
+                cap_label = cap_string.split(' ')[0].strip()
                 
-                # Construct the JSON entity dictionary
-                entity = {
-                    "_comment": f"=== CREATING PRODUCT FEATURE: {name} ===",
-                    "entity_type": "product_feature",
-                    "operation": "create",
-                    "name": name,
-                    "description": details, 
-                    "vehicle_type": pf_vehicle_type, 
-                    "swimlane_decorators": swimlane.upper().replace(' ', '_') or "N/A",
-                    "label": label,
-                    "tmos": "TBD: Define TMOS", 
-                    "status_relative_to_tmos": 0.0, 
-                    "planned_start_date": "", 
-                    "planned_end_date": "", 
-                    "active_flag": active_flag_val,
-                    "capabilities_required": capabilities_required,
-                    "dependencies": dependencies
+                if cap_label in all_capabilities:
+                    capability = all_capabilities[cap_label]
+                    
+                    tech_labels_str = row[IDX_TECH_LABELS].strip()
+                    tech_labels = []
+                    if tech_labels_str:
+                        tech_labels = [t.strip() for t in tech_labels_str.split('\n') if t.strip()]
+                        tech_labels.extend([t.strip() for t in tech_labels_str.split(',') if t.strip()])
+                        tech_labels = list(set(tech_labels)) 
+
+                    for tech_label in tech_labels:
+                        due_dates = {}
+                        for i, trl in trl_map.items():
+                            if i < len(row) and row[i].strip():
+                                date_str = row[i].strip()
+                                due_dates[date_str] = trl 
+                        
+                        tech_feature = {
+                            'label': tech_label,
+                            'due_dates': due_dates,
+                        }
+                        
+                        # Rule 1: Calculate TRL for Technical Feature
+                        tech_feature['current_trl'] = calculate_trl_for_tech_feature(tech_feature)
+                        
+                        capability['tech_features'].append(tech_feature)
+                else:
+                    pass
+
+    except Exception as e:
+        print(f"An error occurred while reading {file_path}: {e}")
+
+def calculate_all_trls(product_features, all_capabilities):
+    """
+    Calculates Capability TRL (min linked Tech TRL) and Product Feature TRL 
+    (min linked Capability TRL).
+    """
+    # 1. Calculate TRL for Capabilities 
+    for cap_label, cap_data in all_capabilities.items():
+        linked_tech_trls = [
+            tech['current_trl'] 
+            for tech in cap_data['tech_features'] 
+            if 'current_trl' in tech
+        ]
+        
+        # Rule 2: Capability TRL
+        cap_data['current_trl'] = min(linked_tech_trls) if linked_tech_trls else DEFAULT_MIN_TRL
+
+    # 2. Calculate TRL for Product Features 
+    for pf_label, pf_data in product_features.items():
+        linked_cap_trls = []
+        
+        for cap_label in pf_data['capabilities_labels']:
+            if cap_label in all_capabilities:
+                linked_cap_trls.append(all_capabilities[cap_label]['current_trl'])
+        
+        # Rule 3: Product Feature TRL
+        pf_data['current_trl'] = min(linked_cap_trls) if linked_cap_trls else DEFAULT_MIN_TRL
+
+# --- Intermediate Output Structure Function ---
+
+def construct_final_data(product_features, all_capabilities):
+    """
+    Constructs the intermediate nested data structure, including TRLs.
+    """
+    final_collection = []
+    
+    for pf_label, pf_data in product_features.items():
+        product_feature_record = {
+            'name': pf_data['name'],
+            'label': pf_data['label'],
+            'swimlane': pf_data['swimlane'],
+            'platform': pf_data['platform'],
+            'odd': pf_data['odd'],
+            'environment': pf_data['environment'],
+            'trailer': pf_data['trailer'],
+            'details': pf_data['details'],
+            'next': pf_data['next'], 
+            'current_trl': pf_data['current_trl'], 
+            'capabilities': []
+        }
+        
+        for cap_label in pf_data['capabilities_labels']:
+            if cap_label in all_capabilities:
+                cap_data = all_capabilities[cap_label]
+                
+                capability_record = {
+                    'name': cap_data['name'],
+                    'swimlane': cap_data['swimlane'],
+                    'label': cap_data['label'],
+                    'platform': cap_data['platform'],
+                    'odd': cap_data['odd'],
+                    'environment': cap_data['environment'],
+                    'trailer': cap_data['trailer'],
+                    'current_trl': cap_data['current_trl'], 
+                    'product_features_linked': cap_data['product_features_linked'], 
+                    'tech_features': cap_data['tech_features'] 
                 }
                 
-                output_entities.append(entity)
-                
-    except FileNotFoundError:
-        print(f"ERROR: The file '{filename}' was not found. Please ensure it is in the correct directory.")
-        return []
+                if not any(c['label'] == cap_label for c in product_feature_record['capabilities']):
+                    product_feature_record['capabilities'].append(capability_record)
+        
+        product_feature_record['dependencies_raw'] = product_features[pf_label]['dependencies']
+        
+        final_collection.append(product_feature_record)
+        
+    return final_collection
 
-    return output_entities
+# --- Final Transformation Function ---
 
-
-def transform_capability_csv_to_json(filename):
+def construct_repository_update_schema(final_data):
     """
-    Reads the Capability CSV data from a file, aggregates Product Features for 
-    each unique capability, and transforms the data into 'entity_type: capability' objects.
+    Constructs the final JSON output following the 'repository update' schema.
+    MODIFIED to collect and output entities in the order: PF, TF, CA.
     """
-    # Map to store aggregated data: {label: {'name': str, 'product_features': set}}
-    capability_map = defaultdict(lambda: {'name': '', 'product_features': set(), 'swimlane': 'N/A'})
-    
-    current_swimlane = 'N/A'
-    
-    try:
-        with open(filename, mode='r', newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
+    # Initialize separate lists for reordering
+    pf_entities_list = []
+    tf_entities_list = []
+    ca_entities_list = []
+
+    # 0. Pre-process to gather unique entities and TRL/Name lookups
+    all_caps = {}
+    all_techs = {}
+    pf_label_to_name = {} # Map for PF Name lookup
+
+    # ... (Pre-processing loop remains the same: populating all_caps, all_techs, pf_label_to_name) ...
+    for pf_data in final_data:
+        pf_label_to_name[pf_data['label']] = pf_data['name']
+
+        for cap_data in pf_data['capabilities']:
+            cap_label = cap_data['label']
+            if cap_label not in all_caps:
+                all_caps[cap_label] = cap_data
             
-            # Skip the header row
-            try:
-                next(reader)
-            except StopIteration:
-                return []
+            for tech_data in cap_data['tech_features']:
+                tech_label = tech_data['label']
+                if tech_label not in all_techs:
+                    current_trl = calculate_trl_for_tech_feature(tech_data) # Calculate TRL on the fly
+                    all_techs[tech_label] = {
+                        **tech_data,
+                        'current_trl': current_trl,
+                        'linked_caps': set(),
+                        'linked_pfs': set() 
+                    }
+                all_techs[tech_label]['linked_caps'].add(cap_label)
+                all_techs[tech_label]['linked_pfs'].update(cap_data['product_features_linked'])
 
-            for row in reader:
-                if not any(row):
-                    continue
+    # 1. Process Technical Functions (TF) - BEFORE Capabilities
+    for tech_label, tech_data in all_techs.items():
+        
+        first_cap_label = next(iter(tech_data['linked_caps']), None)
+        vehicle_type = all_caps[first_cap_label]['platform'] if first_cap_label and all_caps[first_cap_label]['platform'] != 'N/A' else ''
+        
+        start_date, end_date = get_planning_dates([tech_data])
 
-                if row[0]:
-                    current_swimlane = row[0].strip()
+        linked_pfs_labels = list(tech_data['linked_pfs'])
+        linked_pfs_names = [pf_label_to_name.get(label, label) for label in linked_pfs_labels]
+        
+        primary_pf_name = linked_pfs_names[0] if linked_pfs_names else "TBD: Primary PF Name"
 
-                if row[1] and row[1].startswith('CA-'):
-                    label = row[1].strip()
-                    name = row[2].strip()
-                    pf_cell = row[9].strip() if len(row) > 9 else ''
+        tech_entity = {
+            "_comment": f"=== CREATING TECHNICAL FUNCTION: {tech_label} ===",
+            "entity_type": "technical_function",
+            "operation": "create",
+            "name": tech_label, 
+            "description": f"Technical feature supporting TRL advancement for capabilities: {', '.join(tech_data['linked_caps'])}",
+            "label": tech_label,
+            "vehicle_type": vehicle_type,
+            "planned_start_date": start_date,
+            "planned_end_date": end_date,
+            "tmos": "",
+            "status_relative_to_tmos": "0.0",
+            "technical_readiness_level": tech_data['current_trl'], 
+            "capabilities": list(tech_data['linked_caps']),
+            
+            # Use single PF NAME for primary field
+            "product_feature": primary_pf_name, 
+            "product_feature_dependencies": linked_pfs_names, # Use PF NAMES here
+        }
+        tf_entities_list.append(tech_entity)
 
-                    platform_raw = row[3].strip() if len(row) > 3 else 'N/A'
-                    
-                    if not capability_map[label]['name']:
-                        capability_map[label]['name'] = name
-                        capability_map[label]['swimlane'] = current_swimlane
-                        capability_map[label]['platform'] = platform_raw
+    # 2. Process Capabilities (CA) - LAST
+    for cap_label, cap_data in all_caps.items():
+        start_date, end_date = get_planning_dates(cap_data['tech_features'])
 
-                    pf_labels_to_add = []
-                    
-                    if pf_cell:
-                        pf_labels_to_add.append(pf_cell) 
-
-                    # Extract PF labels from ODD (index 4) and Environment (index 5)
-                    pf_labels_to_add.extend(re.findall(r'(PF-[A-Z]+-\d+\.?\d*)', ' '.join(row[4:6])))
-                    
-                    for pf_label in pf_labels_to_add:
-                        pf_label = pf_label.strip()
-                        if pf_label:
-                            capability_map[label]['product_features'].add(pf_label)
-
-    except FileNotFoundError:
-        print(f"ERROR: The file '{filename}' was not found. Cannot load Capability data.")
-        return []
-
-    final_entities = []
-    for label, data in capability_map.items():
-        entity = {
-            "_comment": f"=== CREATING CAPABILITY: {data['name']} ===",
+        cap_entity = {
+            "_comment": f"=== CREATING CAPABILITY: {cap_label} ===",
             "entity_type": "capability",
             "operation": "create",
-            "name": data['name'],
-            "success_criteria": "TBD: Define success criteria",
-            "vehicle_type": data['platform'],
-            "planned_start_date": "",
-            "planned_end_date": "",
-            "tmos": "TBD: Define TMOS",
-            "progress_relative_to_tmos": 0.0,
-            "label": label,
-            "swimlane_decorators": data['swimlane'].upper().replace(' ', '_'),
-            "technical_functions": [], 
-            "product_features": sorted(list(data['product_features']))
+            "name": cap_data['name'],
+            "swimlane_decorators": f"{cap_data['swimlane']} - {cap_label}",
+            "label": cap_label,
+            "vehicle_type": cap_data['platform'] if cap_data['platform'] != 'N/A' else '',
+            "planned_start_date": start_date,
+            "planned_end_date": end_date,
+            "tmos": "", 
+            "progress_relative_to_tmos": "0.0", 
+            "technical_readiness_level": cap_data['current_trl'], 
+            "technical_functions": [t['label'] for t in cap_data['tech_features']],
+            "product_features": cap_data['product_features_linked'] # PF Labels
         }
-        final_entities.append(entity)
-
-    return final_entities
-
-
-def reconcile_links(pf_entities, cap_entities):
-    """
-    Updates the 'product_features' list in Capability entities based on the 
-    'capabilities_required' list in Product Feature entities.
-    """
-    
-    # 1. Create a quick lookup map for Capability entities
-    # { 'CA-TRL-1.3': { ... entity dict ... }, ... }
-    cap_lookup = {
-        entity['label']: entity 
-        for entity in cap_entities 
-        if entity.get('entity_type') == 'capability'
-    }
-
-    print("\n--- Starting Link Reconciliation ---")
-    
-    # 2. Iterate through Product Feature entities
-    for pf_entity in pf_entities:
-        pf_label = pf_entity.get('label')
-        # Use 'capabilities_required' as per your cached script's PF entity structure
-        required_caps = pf_entity.get('capabilities_required', []) 
+        ca_entities_list.append(cap_entity)
         
-        if required_caps and pf_label:
-            # 3. For each required capability, update the corresponding CA entity
-            for ca_label in required_caps:
-                if ca_label in cap_lookup:
-                    # Get the current set of linked PF labels (convert list to set for easy adding)
-                    linked_pfs = set(cap_lookup[ca_label].get('product_features', []))
-                    
-                    # Add the current PF label if it's not already present
-                    if pf_label not in linked_pfs:
-                        linked_pfs.add(pf_label)
-                        
-                        # Update the CA entity's product_features list (convert back to sorted list)
-                        cap_lookup[ca_label]['product_features'] = sorted(list(linked_pfs))
-                        # print(f"LINK: Added {pf_label} to capability {ca_label}")
-                else:
-                    print(f"WARNING: Capability {ca_label} required by {pf_label} was not found in the Capability CSV data.")
+    # 3. Process Product Features (PF) - FIRST
+    for pf_data in final_data:
+        pf_label = pf_data['label']
+        
+        pf_tech_features = [tech for cap in pf_data['capabilities'] for tech in cap['tech_features']]
+        start_date, end_date = get_planning_dates(pf_tech_features)
+        
+        dependencies = []
+        pf_prefix, pf_number_str = pf_label.rsplit('-', 1)
+        try:
+            pf_number = float(pf_number_str)
+            for dep_label in pf_data['dependencies_raw']:
+                dep_prefix, dep_number_str = dep_label.rsplit('-', 1)
+                if dep_prefix == pf_prefix:
+                    dep_number = float(dep_number_str)
+                    if dep_number < pf_number:
+                        dependencies.append(dep_label)
+        except ValueError:
+            pass 
 
-    print("--- Link Reconciliation Complete ---\n")
-    # The cap_entities list is modified in place because dictionaries are mutable.
-    return pf_entities + cap_entities
-
-def transform_technical_function_csv_to_json(filename):
-    """
-    Reads the Tech Function CSV, aggregates by Technical Function (TE-PRC-X.X),
-    and determines start/end dates from TRL columns.
-    """
-    tech_map = defaultdict(lambda: {
-        'capabilities': set(),
-        'trl_dates': [],
-        'label': '',
-        'name': ''
-    })
-    
-    tech_entities = []
-
-    try:
-        with open(filename, mode='r', newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
-            
-            # Skip header rows (assuming two header rows: names and TRL levels)
-            try:
-                next(reader) # Skip "Capability,Tech,Date,,"
-                trl_header = next(reader) # Skip ",,TRL 4,TRL 7,TRL 9"
-            except StopIteration:
-                return []
-            
-            for row in reader:
-                if not any(row):
-                    continue
-
-                # Indices: 0=Capability Text, 1=Tech Labels, 2=TRL 4 Date, 3=TRL 7 Date, 4=TRL 9 Date
-                if len(row) < 5 or not row[1]:
-                    continue
-
-                # 1. Extract CAPABILITY and TECH LABELS
-                cap_text = row[0].strip()
-                tech_labels_raw = row[1].strip()
-                
-                # Tech labels are often multi-line/space separated
-                tech_labels = re.findall(r'(TE-[A-Z]+-\d+\.?\d*)', tech_labels_raw)
-                
-                # The capability label is often embedded in the text (e.g., CA-PRC-2.1)
-                cap_label_match = re.search(r'(CA-[A-Z]+-\d\.\d+)', cap_text)
-                cap_label = cap_label_match.group(0) if cap_label_match else None
-                
-                if not cap_label or not tech_labels:
-                    continue
-                    
-                # 2. Extract and parse DATES
-                trl_dates_raw = [row[i].strip() for i in range(2, 5) if len(row) > i]
-                parsed_dates = [parse_date(d) for d in trl_dates_raw if parse_date(d)]
-                
-                # 3. Aggregate data by Technical Function label
-                for tech_label in tech_labels:
-                    # Update capabilities linked to this tech function
-                    tech_map[tech_label]['capabilities'].add(cap_label)
-                    tech_map[tech_label]['label'] = tech_label
-                    
-                    # Update TRL dates list
-                    for d in parsed_dates:
-                        if d not in tech_map[tech_label]['trl_dates']:
-                             tech_map[tech_label]['trl_dates'].append(d)
-
-    except FileNotFoundError:
-        print(f"ERROR: The file '{filename}' was not found. Cannot load Technical Function data.")
-        return []
-
-    # 4. Generate final Technical Function entities
-    for label, data in tech_map.items():
-        # Determine Start/End Dates
-        all_dates = sorted(data['trl_dates'])
-        planned_start_date = all_dates[0] if all_dates else ""
-        planned_end_date = all_dates[-1] if all_dates else ""
-
-        entity = {
-            "_comment": f"=== CREATING TECHNICAL FUNCTION: {label} ===",
-            "entity_type": "technical_function",
-            "operation": "create", # Assuming 'create' for now, can be changed to 'update'
-            "name": f"Technical Function {label}", # Placeholder name, as name isn't in CSV
-            "description": f"Aggregated Technical Function associated with capabilities: {', '.join(data['capabilities'])}", 
-            "success_criteria": "TBD: Define success criteria",
-            "vehicle_type": "truck", # Placeholder
-            "tmos": "TBD: Define TMOS",
-            "status_relative_to_tmos": 0.0,
-            
-            "planned_start_date": planned_start_date, # First TRL date
-            "planned_end_date": planned_end_date,   # Last TRL date
-            
-            "product_feature": "TBD: Link to PF name", # Needs to be linked manually or via a separate source
-            "capabilities": sorted(list(data['capabilities'])), # CA-XXX labels
-            "product_feature_dependencies": [],
-            "capability_dependencies": []
+        pf_entity = {
+            "_comment": f"=== CREATING PRODUCT FEATURE: {pf_label} ===",
+            "entity_type": "product_feature",
+            "operation": "create",
+            "name": pf_data['name'],
+            "description": pf_data['details'],
+            "swimlane_decorators": pf_data['swimlane'],
+            "label": pf_label,
+            "vehicle_type": pf_data['platform'] if pf_data['platform'] != 'N/A' else '',
+            "planned_start_date": start_date,
+            "planned_end_date": end_date,
+            "active_flag": "next" if pf_data.get('next', '').upper() == 'Y' else 'current',
+            "tmos": "",
+            "status_relative_to_tmos": "0.0",
+            "technical_readiness_level": pf_data['current_trl'], 
+            "capabilities_required": [cap['label'] for cap in pf_data['capabilities']], # CA Labels
+            "dependencies": dependencies # PF Labels
         }
-        tech_entities.append(entity)
-        
-    return tech_entities
+        pf_entities_list.append(pf_entity)
 
-def reconcile_tech_links(tech_entities, cap_entities):
-    """
-    Updates the 'technical_functions' list in Capability entities 
-    based on the 'capabilities' list in Technical Function entities.
-    """
-    # 1. Create a quick lookup map for Capability entities
-    cap_lookup = {
-        entity['label']: entity 
-        for entity in cap_entities 
-        if entity.get('entity_type') == 'capability'
-    }
-
-    print("--- Starting Technical Function Link Reconciliation ---")
+    # Combine entities in dependency order: PF -> TF -> CA
+    entities = pf_entities_list + tf_entities_list + ca_entities_list
     
-    # 2. Iterate through Technical Function entities
-    for tf_entity in tech_entities:
-        tf_name = tf_entity.get('name')
-        tf_label = tf_entity.get('label')
-        
-        # The CA labels linked to this TF are in the 'capabilities' list
-        linked_caps = tf_entity.get('capabilities', []) 
-        
-        if linked_caps and tf_name:
-            # 3. For each linked capability, update the corresponding CA entity
-            for ca_label in linked_caps:
-                if ca_label in cap_lookup:
-                    # Get the current set of linked TFs (convert list to set for easy adding)
-                    linked_tfs = set(cap_lookup[ca_label].get('technical_functions', []))
-                    
-                    # Add the current TF name/label if it's not already present
-                    # NOTE: The capability entity expects the TF's *name*, not the label, 
-                    # but since the name is a placeholder for now, we'll use the unique label.
-                    if tf_label not in linked_tfs:
-                        linked_tfs.add(tf_label)
-                        
-                        # Update the CA entity's technical_functions list
-                        cap_lookup[ca_label]['technical_functions'] = sorted(list(linked_tfs))
-                else:
-                    print(f"WARNING: Capability {ca_label} linked by TF {tf_label} was not found.")
-
-    print("--- Technical Function Link Reconciliation Complete ---")
-    
-    return tech_entities
-
-
-def resolve_tf_links(pf_entities, cap_entities, tech_entities):
-    """
-    Enriches Technical Function (TF) entities by tracing ALL linked Product Features (PFs) 
-    through their associated Capabilities (CAs) and populating the dependencies list.
-    """
-    
-    # 1. Build map of PF Label -> PF Name
-    # This is necessary because the TF dependency field requires the Name, not the Label.
-    pf_label_to_name = {
-        pf.get('label'): pf.get('name') 
-        for pf in pf_entities if pf.get('entity_type') == 'product_feature'
-    }
-
-    # 2. Build map of CA Label -> {set of PF Names}
-    ca_to_pf_names = defaultdict(set)
-    for ca_entity in cap_entities:
-        ca_label = ca_entity.get('label')
-        # 'product_features' in CA entity holds PF LABELS (e.g., PF-ODD-1.1)
-        pf_labels_linked_to_ca = ca_entity.get('product_features', [])
-        
-        if ca_label:
-            for pf_label in pf_labels_linked_to_ca:
-                # Convert the PF Label back to the PF Name before storing
-                pf_name = pf_label_to_name.get(pf_label)
-                if pf_name:
-                    ca_to_pf_names[ca_label].add(pf_name)
-                # Note: Warnings about missing PF names are handled here
-
-    print("--- Starting Technical Function Enrichment ---")
-
-    # 3. Iterate over Technical Functions (TF) and collect links
-    for tf_entity in tech_entities:
-        tf_caps = tf_entity.get('capabilities', [])
-        
-        # This set will hold ALL unique PF Names linked to this TF
-        all_linked_pf_names = set()
-        
-        for ca_label in tf_caps:
-            # Add all PF names linked through this specific capability
-            all_linked_pf_names.update(ca_to_pf_names[ca_label])
-
-        # 4. Apply the derived links to the TF entity
-        
-        # Populate dependencies with all unique PF names found
-        tf_entity['product_feature_dependencies'] = sorted(list(all_linked_pf_names))
-        
-        # Reset primary 'product_feature' field to TBD, as a single source isn't defined by the data
-        if not all_linked_pf_names:
-            tf_entity['product_feature'] = "TBD: Primary PF Name"
-            print(f"WARNING: TF {tf_entity.get('label')} has no linked Product Features.")
-        elif len(all_linked_pf_names) == 1:
-            # If only one PF is found, we can safely assume it's the primary product_feature
-            single_pf_name = list(all_linked_pf_names)[0]
-            tf_entity['product_feature'] = single_pf_name
-            tf_entity['product_feature_dependencies'] = [] # Clear dependencies since it's the primary field
-        else:
-            tf_entity['product_feature'] = "TBD: Primary PF Name"
-
-    print("--- Technical Function Enrichment Complete ---")
-    
-    return tech_entities
-    
-# ----------------------------------------------------------------------
-## MAIN EXECUTION
-# ----------------------------------------------------------------------
-
-def transform_data_to_json(pf_csv_path, ca_csv_path, tf_csv_path, output_json_path):
-    """
-    Main function to orchestrate data transformation, linking, propagation, and saving.
-    """
-    print(f"Loading Product Features from: {pf_csv_path}")
-    print(f"Loading Capabilities from: {ca_csv_path}")
-    print(f"Loading Technical Functions from: {tf_csv_path}")
-
-    # 1. Load entities
-    pf_entities = transform_product_feature_csv_to_json(pf_csv_path)
-    cap_entities = transform_capability_csv_to_json(ca_csv_path)
-    tech_entities = transform_technical_function_csv_to_json(tf_csv_path)
-    
-    # 2. Reconciliation and Linking Steps
-    reconcile_links(pf_entities, cap_entities) # PF <-> CA links
-    reconcile_tech_links(tech_entities, cap_entities) # CA <-> TF links
-    resolve_tf_links(pf_entities, cap_entities, tech_entities) # TF dependencies and primary PF link
-
-    # 3. Date Propagation Steps
-    propagate_tf_dates_to_capabilities(tech_entities, cap_entities)
-    propagate_cap_dates_to_product_features(cap_entities, pf_entities)
-    
-    # 4. Combine ALL entities
-    all_entities = pf_entities + cap_entities + tech_entities
-
-    # 5. Construct the final top-level JSON structure
-    final_output = {
+    # 4. Construct the final output JSON
+    output_json = {
         "metadata": {
-            "version": "1.0",
-            "description": "Comprehensive Repository Update Template for Product Feature Readiness Database",
-            "created_by": "CSV Transformer Script",
-            "created_date": date.today().isoformat(),
-            "notes": "Generated from combined roadmap CSVs."
+            "version": "2.4", # Incrementing version
+            "description": f"Repository Update Template with reordered entities (PF, TF, CA) for dependency resolution. TRL calculated as of {CURRENT_DATE.strftime(DATE_FORMAT)}.",
+            "created_by": "Python Data Processor",
+            "created_date": datetime.now().strftime('%Y-%m-%d'),
+            "notes": "Entities are now ordered to allow downstream scripts to resolve links on first pass."
         },
-        "entities": all_entities
+        "entities": entities
     }
     
-    # 6. Save output
-    with open(output_json_path, 'w') as f:
-        json.dump(final_output, f, indent=4)
-        
-    print("-" * 60)
-    print(f"Successfully processed {len(pf_entities)} PFs, {len(cap_entities)} CAs, {len(tech_entities)} TFs.")
-    print(f"Output saved to: {output_json_path}")
-    print("-" * 60)
+    return output_json
 
+# --- Main Execution (remains the same) ---
 
 def main():
-    """Parses command-line arguments and runs the data transformation."""
-    
-    # Set default paths based on the user's previous context
-    DEFAULT_PF_CSV = 'example-csvs/product_to_capability.csv'
-    DEFAULT_CA_CSV = 'example-csvs/capabilities.csv'
-    DEFAULT_TF_CSV = 'example-csvs/capability_to_tech.csv'
-    DEFAULT_OUTPUT_JSON = 'roadmap_update.json'
-    
+    """
+    Parses command-line arguments, runs the data processing pipeline, and saves the output.
+    """
     parser = argparse.ArgumentParser(
-        description="Transform multiple roadmap CSVs into a single structured JSON update file.",
+        description="Transform three roadmap CSV files into a structured JSON update file, calculating TRLs.",
         formatter_class=argparse.RawTextHelpFormatter
     )
     
@@ -674,35 +500,59 @@ def main():
         '--pf-csv',
         type=str,
         default=DEFAULT_PF_CSV,
-        help=f"Path to the Product Feature CSV file (Default: {DEFAULT_PF_CSV})"
+        help=f"Path to the Product Feature CSV (product_to_capability.csv). Default: {DEFAULT_PF_CSV}"
     )
     parser.add_argument(
         '--ca-csv',
         type=str,
         default=DEFAULT_CA_CSV,
-        help=f"Path to the Capability CSV file (Default: {DEFAULT_CA_CSV})"
+        help=f"Path to the Capabilities CSV (capabilities.csv). Default: {DEFAULT_CA_CSV}"
     )
     parser.add_argument(
         '--tf-csv',
         type=str,
         default=DEFAULT_TF_CSV,
-        help=f"Path to the Capability-to-Tech CSV file (Default: {DEFAULT_TF_CSV})"
+        help=f"Path to the Capability-to-Tech CSV (capability_to_tech.csv). Default: {DEFAULT_TF_CSV}"
     )
     parser.add_argument(
         '-o', '--output',
         type=str,
         default=DEFAULT_OUTPUT_JSON,
-        help=f"Path to the output JSON file (Default: {DEFAULT_OUTPUT_JSON})"
+        help=f"Path to the output JSON file. Default: {DEFAULT_OUTPUT_JSON}"
     )
     
     args = parser.parse_args()
     
-    transform_data_to_json(
-        args.pf_csv,
-        args.ca_csv,
-        args.tf_csv,
-        args.output
-    )
+    print(f"Starting data processing. TRL calculated as of {CURRENT_DATE.strftime(DATE_FORMAT)}.")
+    
+    # 1. Load data from CSVs
+    product_features_raw = load_product_to_capability(args.pf_csv)
+    all_capabilities_raw = load_capabilities(args.ca_csv, product_features_raw)
+    load_capability_to_tech(args.tf_csv, all_capabilities_raw)
+
+    print("\n--- TRL Calculation Phase ---")
+    # 2. Calculate dependent TRLs
+    calculate_all_trls(product_features_raw, all_capabilities_raw)
+
+    print("\n--- Intermediate Structure Construction ---")
+    # 3. Construct the previous final structure (input for the new transformation)
+    intermediate_data = construct_final_data(product_features_raw, all_capabilities_raw)
+    print(f"Constructed intermediate data structure with {len(intermediate_data)} Product Features.")
+    
+    print("\n--- Final Schema Transformation ---")
+    # 4. Transform the intermediate structure into the new repository update schema
+    final_data = construct_repository_update_schema(intermediate_data)
+    print(f"Constructed final data structure with {len(final_data['entities'])} entities.")
+
+    # 5. Output to JSON
+    try:
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump(final_data, f, ensure_ascii=False, indent=4)
+        print(f"\nSuccessfully saved the final repository update schema to {args.output}")
+    except Exception as e:
+        print(f"\nError saving to JSON file: {e}")
 
 if __name__ == "__main__":
+    # Ensure the main execution part is present
+    # To run: python your_script_name.py
     main()

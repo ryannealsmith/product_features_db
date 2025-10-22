@@ -4,15 +4,15 @@ Capability,Tech,Date,,
 TE-PRC-2.0
 TE-PRC-3.0",1/1/2026,3/1/2026,7/1/2026
 "CA-PRC-3.1 Obj Perc: Detect, classify, track, and predict cyclists in port environments (PF-ENV-1.1)","TE-PRC-3.0
-TE-PRC-4.0",1/1/2026,3/1/2026,7/1/2026
+TE-PRC-4.0",1/1/2025,3/1/2025,7/1/2026
 "CA-HRI-1.1 Detect proximal humans, and switch to SAFESTATE when a human violates buffer",TE-PRC-5.0,12/1/2025,1/1/2026,3/1/2026
 CA-HRI-2.1 Provide an interface (remote? offboard? onboard?) to allow a human to switch the AV out of SAFESTATE to continue the mission,TE-PRC-6.0,2/1/2026,7/1/2026,8/1/2026
 "CA-TOW-1.1 Tow semi-trailers (PF-TRL-1.2) along prescribed drivelines (e.g., exemplars, path pre-planning) while accounting for kinematics ",TE-PRC-7.0,3/1/2026,8/1/2026,11/1/2026
 CA-TOW-1.2 Tow semi-trailers (PF-TRL-1.2) along learned drivelines (ml path hints) while accounting for kinematics ,TE-PRC-8.0,6/1/2026,9/1/2026,12/1/2026
 CA-TOW-4.1 Borrow adjacent lanes when required (incl in intersections) when the tractor-trailer cannot fit inside the lane,"TE-PRC-8.0
-TE-PRC-9.0",6/1/2026,9/1/2026,12/1/2026
+TE-PRC-9.0",6/1/2025,9/1/2025,12/1/2026
 "CA-TOW-5.1 Change lanes for navigation purposes while accounting for trailer kinematics, dynamics",TE-PRC-9.0,3/1/2026,4/1/2026,9/1/2026
 CA-REV-1.1 Support reversing with the Terberg (AV only),TE-PRC-10.0,2/1/2026,5/1/2026,6/1/2026
 "CA-REV-2.1 Reverse a semi-trailer into an unobscured, numbered parking bay (mapped corridor)","TE-PRC-1.0
-TE-PRC-2.0",1/1/2026,3/1/2026,7/1/2026
+TE-PRC-2.0",1/1/2025,3/1/2026,7/1/2026
 "CA-REV-3.1 Reverse a semi-trailer into a prescribed, numbered parking bay with adjacent obstacles (min 0.6m clearance) (mapped corridor)",TE-PRC-10.0,2/1/2026,5/1/2026,6/1/2026
