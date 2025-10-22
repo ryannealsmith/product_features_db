@@ -153,7 +153,7 @@ def add_assessment():
     trailers = Trailer.query.all()
     
     return render_template('add_assessment.html',
-                         technical_capabilities=technical_capabilities,
+                         technical_capabilities=technical_functions,
                          readiness_levels=readiness_levels,
                          vehicle_platforms=vehicle_platforms,
                          odds=odds,
