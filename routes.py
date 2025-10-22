@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
-from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities
 from sqlalchemy import and_
 from datetime import datetime, date
 
@@ -481,3 +481,206 @@ def export_miro_csv():
         if os.path.exists(temp_path):
             os.unlink(temp_path)
         raise e
+
+@app.route('/timeline/product_features')
+def product_features_timeline():
+    """Timeline view for Product Features with start and end dates"""
+    from datetime import datetime, timedelta
+    
+    # Get all product features with dates
+    features = ProductFeature.query.filter(
+        (ProductFeature.planned_start_date.isnot(None)) | 
+        (ProductFeature.planned_end_date.isnot(None))
+    ).order_by(ProductFeature.planned_start_date).all()
+    
+    # Calculate timeline range
+    all_dates = []
+    for feature in features:
+        if feature.planned_start_date:
+            all_dates.append(feature.planned_start_date)
+        if feature.planned_end_date:
+            all_dates.append(feature.planned_end_date)
+    
+    if all_dates:
+        min_date = min(all_dates)
+        max_date = max(all_dates)
+        # Add buffer to timeline
+        timeline_start = min_date - timedelta(days=30)
+        timeline_end = max_date + timedelta(days=30)
+    else:
+        # Default timeline if no dates
+        today = datetime.now().date()
+        timeline_start = today
+        timeline_end = today + timedelta(days=365)
+    
+    # Prepare timeline data
+    timeline_data = []
+    for feature in features:
+        item = {
+            'id': feature.id,
+            'name': feature.name,
+            'description': feature.description,
+            'vehicle_type': feature.vehicle_type,
+            'swimlane_decorators': feature.swimlane_decorators,
+            'status_relative_to_tmos': feature.status_relative_to_tmos,
+            'planned_start_date': feature.planned_start_date.isoformat() if feature.planned_start_date else None,
+            'planned_end_date': feature.planned_end_date.isoformat() if feature.planned_end_date else None,
+            'active_flag': feature.active_flag,
+            'document_url': feature.document_url,
+            'duration_days': None,
+            'progress_color': 'success' if feature.status_relative_to_tmos >= 80 else 'warning' if feature.status_relative_to_tmos >= 50 else 'danger'
+        }
+        
+        # Calculate duration if both dates exist
+        if feature.planned_start_date and feature.planned_end_date:
+            duration = feature.planned_end_date - feature.planned_start_date
+            item['duration_days'] = duration.days
+        
+        timeline_data.append(item)
+    
+    return render_template('timeline_product_features.html',
+                         timeline_data=timeline_data,
+                         timeline_start=timeline_start.isoformat(),
+                         timeline_end=timeline_end.isoformat(),
+                         page_title="Product Features Timeline")
+
+@app.route('/timeline/capabilities')
+def capabilities_timeline():
+    """Timeline view for Capabilities with start and end dates"""
+    from datetime import datetime, timedelta
+    from app import Capabilities
+    
+    # Get all capabilities with dates
+    capabilities = Capabilities.query.filter(
+        (Capabilities.planned_start_date.isnot(None)) | 
+        (Capabilities.planned_end_date.isnot(None))
+    ).order_by(Capabilities.planned_start_date).all()
+    
+    # Calculate timeline range
+    all_dates = []
+    for capability in capabilities:
+        if capability.planned_start_date:
+            all_dates.append(capability.planned_start_date)
+        if capability.planned_end_date:
+            all_dates.append(capability.planned_end_date)
+    
+    if all_dates:
+        min_date = min(all_dates)
+        max_date = max(all_dates)
+        # Add buffer to timeline
+        timeline_start = min_date - timedelta(days=30)
+        timeline_end = max_date + timedelta(days=30)
+    else:
+        # Default timeline if no dates
+        today = datetime.now().date()
+        timeline_start = today
+        timeline_end = today + timedelta(days=365)
+    
+    # Prepare timeline data
+    timeline_data = []
+    for capability in capabilities:
+        item = {
+            'id': capability.id,
+            'name': capability.name,
+            'success_criteria': capability.success_criteria,
+            'vehicle_type': capability.vehicle_type,
+            'tmos': capability.tmos,
+            'progress_relative_to_tmos': capability.progress_relative_to_tmos,
+            'planned_start_date': capability.planned_start_date.isoformat() if capability.planned_start_date else None,
+            'planned_end_date': capability.planned_end_date.isoformat() if capability.planned_end_date else None,
+            'document_url': capability.document_url,
+            'duration_days': None,
+            'progress_color': 'success' if capability.progress_relative_to_tmos >= 80 else 'warning' if capability.progress_relative_to_tmos >= 50 else 'danger',
+            'technical_functions_count': len(capability.technical_functions),
+            'product_features_count': len(capability.product_features)
+        }
+        
+        # Calculate duration if both dates exist
+        if capability.planned_start_date and capability.planned_end_date:
+            duration = capability.planned_end_date - capability.planned_start_date
+            item['duration_days'] = duration.days
+        
+        timeline_data.append(item)
+    
+    return render_template('timeline_capabilities.html',
+                         timeline_data=timeline_data,
+                         timeline_start=timeline_start.isoformat(),
+                         timeline_end=timeline_end.isoformat(),
+                         page_title="Capabilities Timeline")
+
+@app.route('/timeline/technical_functions')
+def technical_functions_timeline():
+    """Timeline view for Technical Functions with start and end dates"""
+    from datetime import datetime, timedelta
+    
+    # Get all technical functions with dates
+    tech_functions = TechnicalFunction.query.filter(
+        (TechnicalFunction.planned_start_date.isnot(None)) | 
+        (TechnicalFunction.planned_end_date.isnot(None))
+    ).order_by(TechnicalFunction.planned_start_date).all()
+    
+    # Calculate timeline range
+    all_dates = []
+    for func in tech_functions:
+        if func.planned_start_date:
+            all_dates.append(func.planned_start_date)
+        if func.planned_end_date:
+            all_dates.append(func.planned_end_date)
+    
+    if all_dates:
+        min_date = min(all_dates)
+        max_date = max(all_dates)
+        # Add buffer to timeline
+        timeline_start = min_date - timedelta(days=30)
+        timeline_end = max_date + timedelta(days=30)
+    else:
+        # Default timeline if no dates
+        today = datetime.now().date()
+        timeline_start = today
+        timeline_end = today + timedelta(days=365)
+    
+    # Prepare timeline data
+    timeline_data = []
+    for func in tech_functions:
+        # Get latest readiness assessment for this function
+        latest_assessment = ReadinessAssessment.query.filter_by(
+            technical_capability_id=func.id
+        ).order_by(ReadinessAssessment.assessment_date.desc()).first()
+        
+        item = {
+            'id': func.id,
+            'name': func.name,
+            'description': func.description,
+            'success_criteria': func.success_criteria,
+            'vehicle_type': func.vehicle_type,
+            'tmos': func.tmos,
+            'status_relative_to_tmos': func.status_relative_to_tmos,
+            'planned_start_date': func.planned_start_date.isoformat() if func.planned_start_date else None,
+            'planned_end_date': func.planned_end_date.isoformat() if func.planned_end_date else None,
+            'document_url': func.document_url,
+            'product_feature_name': func.product_feature.name if func.product_feature else 'No Product Feature',
+            'product_feature_id': func.product_feature.id if func.product_feature else None,
+            'duration_days': None,
+            'progress_color': 'success' if func.status_relative_to_tmos >= 80 else 'warning' if func.status_relative_to_tmos >= 50 else 'danger',
+            'current_trl': None,
+            'current_status': None,
+            'assessments_count': len(func.readiness_assessments)
+        }
+        
+        # Add latest assessment info if available
+        if latest_assessment:
+            item['current_trl'] = latest_assessment.readiness_level.level
+            item['current_status'] = latest_assessment.current_status
+        
+        # Calculate duration if both dates exist
+        if func.planned_start_date and func.planned_end_date:
+            duration = func.planned_end_date - func.planned_start_date
+            item['duration_days'] = duration.days
+        
+        timeline_data.append(item)
+    
+    return render_template('timeline_technical_functions.html',
+                         timeline_data=timeline_data,
+                         timeline_start=timeline_start.isoformat(),
+                         timeline_end=timeline_end.isoformat(),
+                         page_title="Technical Functions Timeline")

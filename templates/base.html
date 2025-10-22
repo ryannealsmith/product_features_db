@@ -83,6 +83,24 @@
                     <hr>
                     
                     <div class="mb-2">
+                        <small class="text-muted fw-bold">TIMELINES</small>
+                    </div>
+                    
+                    <a href="{{ url_for('product_features_timeline') }}" class="nav-link {% if request.endpoint == 'product_features_timeline' %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i> Product Features
+                    </a>
+                    
+                    <a href="{{ url_for('capabilities_timeline') }}" class="nav-link {% if request.endpoint == 'capabilities_timeline' %}active{% endif %}">
+                        <i class="fas fa-road"></i> Capabilities
+                    </a>
+                    
+                    <a href="{{ url_for('technical_functions_timeline') }}" class="nav-link {% if request.endpoint == 'technical_functions_timeline' %}active{% endif %}">
+                        <i class="fas fa-project-diagram"></i> Technical Functions
+                    </a>
+                    
+                    <hr>
+                    
+                    <div class="mb-2">
                         <small class="text-muted fw-bold">EXPORT</small>
                     </div>
                     
