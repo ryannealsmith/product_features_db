@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "2.0",
+    "version": "2.1",
     "description": "Simple Update Template - Common Operations",
     "created_by": "Your Name",
     "created_date": "2025-10-21",
-    "notes": "Quick template for common update operations"
+    "notes": "Quick template for common update operations. Now includes optional document_url field for documentation links."
   },
   "entities": [
     {
@@ -13,7 +13,8 @@
       "operation": "update",
       "name": "REPLACE_WITH_ACTUAL_PRODUCT_FEATURE_NAME",
       "status_relative_to_tmos": 85.0,
-      "description": "Updated description with current progress"
+      "description": "Updated description with current progress",
+      "document_url": "https://docs.company.com/product-feature-docs"
     },
     {
       "_comment": "=== UPDATE PROGRESS ON CAPABILITY ===",
@@ -21,7 +22,8 @@
       "operation": "update",
       "name": "REPLACE_WITH_ACTUAL_CAPABILITY_NAME",
       "progress_relative_to_tmos": 70.0,
-      "success_criteria": "Updated success criteria"
+      "success_criteria": "Updated success criteria",
+      "document_url": "https://wiki.company.com/capability-specs"
     },
     {
       "_comment": "=== UPDATE PROGRESS ON TECHNICAL FUNCTION ===",
@@ -29,7 +31,8 @@
       "operation": "update",
       "name": "REPLACE_WITH_ACTUAL_TECHNICAL_FUNCTION_NAME",
       "status_relative_to_tmos": 90.0,
-      "description": "Updated with latest improvements"
+      "description": "Updated with latest improvements",
+      "document_url": "https://confluence.company.com/technical-docs"
     },
     {
       "_comment": "=== CREATE NEW CAPABILITY ===",
@@ -41,7 +44,8 @@
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-12-31",
       "tmos": "Target measure of success",
-      "progress_relative_to_tmos": 0.0
+      "progress_relative_to_tmos": 0.0,
+      "document_url": "https://wiki.company.com/new-capability-spec"
     },
     {
       "_comment": "=== CREATE NEW PRODUCT FEATURE ===",
@@ -58,7 +62,8 @@
       "planned_end_date": "2025-12-31",
       "active_flag": "next",
       "capabilities_required": ["Your New Capability Name"],
-      "dependencies": []
+      "dependencies": [],
+      "document_url": "https://docs.company.com/new-product-feature"
     },
     {
       "_comment": "=== CREATE NEW TECHNICAL FUNCTION ===",
@@ -75,7 +80,8 @@
       "product_feature": "Your New Product Feature",
       "capabilities": ["Your New Capability Name"],
       "product_feature_dependencies": [],
-      "capability_dependencies": []
+      "capability_dependencies": [],
+      "document_url": "https://confluence.company.com/new-technical-function"
     }
   ]
 }

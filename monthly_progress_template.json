@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "2.0",
+    "version": "2.1",
     "description": "Monthly Progress Update Template - October 2025",
     "created_by": "Project Manager",
     "created_date": "2025-10-21",
-    "notes": "Template for monthly progress reporting and milestone updates"
+    "notes": "Template for monthly progress reporting and milestone updates. Now includes optional document_url field for documentation links."
   },
   "entities": [
     {
@@ -13,7 +13,8 @@
       "operation": "update",
       "name": "Terberg: Driver-in operations (semi-trailer)",
       "status_relative_to_tmos": 88.0,
-      "description": "Monthly update: Completed additional safety testing, refined driver assistance protocols"
+      "description": "Monthly update: Completed additional safety testing, refined driver assistance protocols",
+      "document_url": "https://docs.terberg.com/monthly-progress-oct2025"
     },
     {
       "_comment": "=== HIGHWAY AUTOMATION PROGRESS ===",
