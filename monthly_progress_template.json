@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "2.1",
+    "version": "3.0",
     "description": "Monthly Progress Update Template - October 2025",
     "created_by": "Project Manager",
     "created_date": "2025-10-21",
-    "notes": "Template for monthly progress reporting and milestone updates. Now includes optional document_url field for documentation links."
+    "notes": "Template for monthly progress reporting and milestone updates. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },
   "entities": [
     {

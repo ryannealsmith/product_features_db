@@ -355,7 +355,7 @@ def export_miro_roadmap():
             roadmap_data["swim_lanes"][product_name] = {
                 "name": product_name,
                 "description": assessment.technical_function.product_feature.description or "",
-                "vehicle_type": assessment.technical_function.product_feature.vehicle_type or "truck",
+                "vehicle_type": assessment.technical_function.product_feature.vehicle_platform.vehicle_type if assessment.technical_function.product_feature.vehicle_platform else "truck",
                 "document_url": assessment.technical_function.product_feature.document_url,
                 "items": []
             }
@@ -520,7 +520,7 @@ def product_features_timeline():
             'id': feature.id,
             'name': feature.name,
             'description': feature.description,
-            'vehicle_type': feature.vehicle_type,
+            'vehicle_type': feature.vehicle_platform.vehicle_type if feature.vehicle_platform else 'Not specified',
             'swimlane_decorators': feature.swimlane_decorators,
             'status_relative_to_tmos': feature.status_relative_to_tmos,
             'planned_start_date': feature.planned_start_date.isoformat() if feature.planned_start_date else None,
@@ -583,7 +583,7 @@ def capabilities_timeline():
             'id': capability.id,
             'name': capability.name,
             'success_criteria': capability.success_criteria,
-            'vehicle_type': capability.vehicle_type,
+            'vehicle_type': capability.vehicle_platform.vehicle_type if capability.vehicle_platform else 'Not specified',
             'tmos': capability.tmos,
             'progress_relative_to_tmos': capability.progress_relative_to_tmos,
             'planned_start_date': capability.planned_start_date.isoformat() if capability.planned_start_date else None,
@@ -652,7 +652,7 @@ def technical_functions_timeline():
             'name': func.name,
             'description': func.description,
             'success_criteria': func.success_criteria,
-            'vehicle_type': func.vehicle_type,
+            'vehicle_type': func.vehicle_platform.vehicle_type if func.vehicle_platform else 'Not specified',
             'tmos': func.tmos,
             'status_relative_to_tmos': func.status_relative_to_tmos,
             'planned_start_date': func.planned_start_date.isoformat() if func.planned_start_date else None,

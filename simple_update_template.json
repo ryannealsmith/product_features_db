@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "2.1",
+    "version": "3.0",
     "description": "Simple Update Template - Common Operations",
     "created_by": "Your Name",
     "created_date": "2025-10-21",
-    "notes": "Quick template for common update operations. Now includes optional document_url field for documentation links."
+    "notes": "Quick template for common update operations. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },
   "entities": [
     {
@@ -40,7 +40,8 @@
       "operation": "create",
       "name": "Your New Capability Name",
       "success_criteria": "Define clear success criteria here",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-12-31",
       "tmos": "Target measure of success",
@@ -53,7 +54,8 @@
       "operation": "create",
       "name": "Your New Product Feature",
       "description": "Detailed description of the product feature",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "swimlane_decorators": "CATEGORY",
       "label": "PF-CAT-1.0",
       "tmos": "Target measure of success",
@@ -72,7 +74,8 @@
       "name": "Your New Technical Function",
       "description": "Technical implementation details",
       "success_criteria": "Specific technical success criteria",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "tmos": "Technical target measure",
       "status_relative_to_tmos": 0.0,
       "planned_start_date": "2025-01-01",

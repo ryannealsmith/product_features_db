@@ -1,9 +1,10 @@
 {
   "metadata": {
-    "version": "2.0",
+    "version": "3.0",
     "description": "Template for updating Product Feature Readiness Database",
     "created_by": "Your Name",
-    "created_date": "2025-10-21"
+    "created_date": "2025-10-21",
+    "notes": "Updated for vehicle_platform_id foreign keys replacing vehicle_type strings"
   },
   "entities": [
     {
@@ -11,7 +12,8 @@
       "operation": "create",
       "name": "Example Product Feature",
       "description": "This is an example product feature",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "swimlane_decorators": "ADAS",
       "label": "PF-ADAS-1.1",
       "tmos": "Achieve 99.9% uptime in highway conditions",
@@ -29,7 +31,8 @@
       "operation": "create",
       "name": "Highway Navigation",
       "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-11-30",
       "tmos": "Complete highway navigation capability",
@@ -46,7 +49,8 @@
       "name": "Path Planning",
       "description": "Generate optimal paths for vehicle navigation",
       "success_criteria": "Generate paths within 100ms with 99% success rate",
-      "vehicle_type": "truck",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "tmos": "Real-time path planning for highway navigation",
       "status_relative_to_tmos": 80.0,
       "planned_start_date": "2025-01-01",

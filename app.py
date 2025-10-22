@@ -19,7 +19,7 @@ class ProductFeature(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
-    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=True)
     swimlane_decorators = db.Column(db.String(200))  # Swimlane categorization
     label = db.Column(db.String(50))  # e.g., "baseline" or "PF-<SWIM_LANE>-1.1"
     tmos = db.Column(db.Text)  # Target Measure of Success
@@ -31,6 +31,7 @@ class ProductFeature(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
+    vehicle_platform = db.relationship('VehiclePlatform', backref='product_features')
     technical_capabilities = db.relationship('TechnicalFunction', back_populates='product_feature')
     
     # Many-to-many relationship with Capabilities (list of capabilities required)
@@ -68,7 +69,7 @@ class TechnicalFunction(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     success_criteria = db.Column(db.Text)  # Success criteria for this technical function
-    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=True)
     tmos = db.Column(db.Text)  # Target Measure of Success
     status_relative_to_tmos = db.Column(db.Float, default=0.0)  # Percentage (0.0 to 100.0)
     planned_start_date = db.Column(db.Date, nullable=True)
@@ -78,6 +79,7 @@ class TechnicalFunction(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
+    vehicle_platform = db.relationship('VehiclePlatform', backref='technical_functions')
     product_feature = db.relationship('ProductFeature', back_populates='technical_capabilities')
     readiness_assessments = db.relationship('ReadinessAssessment', back_populates='technical_function')
     
@@ -125,7 +127,7 @@ class VehiclePlatform(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
-    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car - kept for backward compatibility
     max_payload = db.Column(db.Float)  # in kg
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -208,7 +210,7 @@ class Capabilities(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     success_criteria = db.Column(db.Text, nullable=False)
-    vehicle_type = db.Column(db.String(50))  # e.g., truck, van, car
+    vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=True)
     planned_start_date = db.Column(db.Date, nullable=True)
     planned_end_date = db.Column(db.Date, nullable=True)
     tmos = db.Column(db.Text)  # Target Measure of Success
@@ -216,7 +218,8 @@ class Capabilities(db.Model):
     document_url = db.Column(db.String(500), nullable=True)  # Optional web link to documentation
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships - many-to-many with technical functions and product features
+    # Relationships
+    vehicle_platform = db.relationship('VehiclePlatform', backref='capabilities')
     # Technical functions required for this capability
     technical_functions = db.relationship('TechnicalFunction', 
                                         secondary='capability_technical_functions',

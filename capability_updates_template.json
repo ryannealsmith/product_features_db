@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "1.1",
+    "version": "2.0",
     "description": "Template for updating Product Feature Readiness Database capabilities",
     "created_by": "System Administrator",
     "created_date": "2025-10-21T00:00:00Z",
-    "notes": "This template shows various update scenarios for both product and technical capabilities. Optional document_url field can be used to link to documentation."
+    "notes": "This template shows various update scenarios for both product and technical capabilities. Updated for vehicle_platform_id foreign keys. Optional document_url field can be used to link to documentation."
   },
   "updates": [
     {
@@ -14,6 +14,8 @@
       "target_trl": 7,
       "assessor": "Dr. Smith",
       "notes": "Updated target for Q4 delivery milestone",
+      "vehicle_platform_id": 1,
+      "_vehicle_platform_note": "1=Terberg ATT - matches the Terberg operations",
       "document_url": "https://docs.terberg.com/driver-in-operations"
     },
     {
@@ -23,6 +25,8 @@
       "target_trl": 8,
       "assessor": "Engineer Johnson",
       "notes": "Enhanced sensor fusion requirements for production readiness",
+      "vehicle_platform_id": 5,
+      "_vehicle_platform_note": "5=Truck Platform - general truck applications",
       "document_url": "https://docs.company.com/perception-system"
     },
     {
@@ -31,7 +35,8 @@
       "due_date": "2025-12-01",
       "target_trl": 6,
       "assessor": "Tech Lead Davis",
-      "notes": "Real-time optimization improvements needed for complex scenarios"
+      "notes": "Real-time optimization improvements needed for complex scenarios",
+      "vehicle_platform_id": 5
     },
     {
       "capability_type": "product",
@@ -39,7 +44,8 @@
       "due_date": "2026-03-31",
       "target_trl": 5,
       "assessor": "Manager Wilson",
-      "notes": "Phase 1 convoy formation in controlled environments"
+      "notes": "Phase 1 convoy formation in controlled environments",
+      "vehicle_platform_id": 5
     },
     {
       "capability_type": "technical",
@@ -47,7 +53,8 @@
       "due_date": "2025-10-30",
       "target_trl": 9,
       "assessor": "Dr. Smith",
-      "notes": "Production-ready control system for autonomous operations"
+      "notes": "Production-ready control system for autonomous operations",
+      "vehicle_platform_id": 5
     },
     {
       "capability_type": "technical",
@@ -55,14 +62,17 @@
       "due_date": "2025-11-30",
       "target_trl": 7,
       "assessor": "Engineer Johnson",
-      "notes": "High-precision GPS integration with backup systems"
+      "notes": "High-precision GPS integration with backup systems",
+      "vehicle_platform_id": 5
     },
     {
       "capability_type": "product",
       "capability_name": "Remote Vehicle Operation",
       "target_trl": 4,
       "assessor": "Tech Lead Davis",
-      "notes": "Early development phase - remote monitoring capabilities"
+      "notes": "Early development phase - remote monitoring capabilities",
+      "vehicle_platform_id": 8,
+      "_vehicle_platform_note": "8=Generic Platform - applies to multiple vehicle types"
     },
     {
       "capability_type": "technical",
@@ -70,7 +80,9 @@
       "due_date": "2026-01-15",
       "target_trl": 6,
       "assessor": "Manager Wilson",
-      "notes": "Urban deployment requirements for intersection navigation"
+      "notes": "Urban deployment requirements for intersection navigation",
+      "vehicle_platform_id": 6,
+      "_vehicle_platform_note": "6=Van Platform - urban delivery applications"
     },
     {
       "capability_type": "technical",
