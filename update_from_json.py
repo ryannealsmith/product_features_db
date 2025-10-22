@@ -842,7 +842,7 @@ def create_vehicle_platform(data):
         platform = VehiclePlatform(
             name=data['name'],
             description=data.get('description', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform=data.get('vehicle_platform', ''),
             max_payload=float(data['max_payload']) if 'max_payload' in data else None
         )
         
@@ -863,7 +863,7 @@ def update_vehicle_platform(data):
             return False
         
         updates_made = []
-        fields_to_update = ['description', 'vehicle_type', 'max_payload']
+        fields_to_update = ['description', 'vehicle_platform', 'max_payload']
         
         for field in fields_to_update:
             if field in data:
