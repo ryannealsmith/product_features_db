@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "1.0",
+    "version": "1.1",
     "description": "Template for updating Product Feature Readiness Database capabilities",
     "created_by": "System Administrator",
     "created_date": "2025-10-21T00:00:00Z",
-    "notes": "This template shows various update scenarios for both product and technical capabilities"
+    "notes": "This template shows various update scenarios for both product and technical capabilities. Optional document_url field can be used to link to documentation."
   },
   "updates": [
     {
@@ -13,7 +13,8 @@
       "due_date": "2025-12-31",
       "target_trl": 7,
       "assessor": "Dr. Smith",
-      "notes": "Updated target for Q4 delivery milestone"
+      "notes": "Updated target for Q4 delivery milestone",
+      "document_url": "https://docs.terberg.com/driver-in-operations"
     },
     {
       "capability_type": "technical",
@@ -21,7 +22,8 @@
       "due_date": "2025-11-15",
       "target_trl": 8,
       "assessor": "Engineer Johnson",
-      "notes": "Enhanced sensor fusion requirements for production readiness"
+      "notes": "Enhanced sensor fusion requirements for production readiness",
+      "document_url": "https://docs.company.com/perception-system"
     },
     {
       "capability_type": "technical",

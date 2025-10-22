@@ -356,6 +356,7 @@ def export_miro_roadmap():
                 "name": product_name,
                 "description": assessment.technical_function.product_feature.description or "",
                 "vehicle_type": assessment.technical_function.product_feature.vehicle_type or "truck",
+                "document_url": assessment.technical_function.product_feature.document_url,
                 "items": []
             }
         
@@ -365,6 +366,8 @@ def export_miro_roadmap():
             "title": assessment.technical_function.name,
             "description": assessment.notes or f"Assessment for {assessment.technical_function.name}",
             "product_feature": product_name,
+            "product_feature_document_url": assessment.technical_function.product_feature.document_url,
+            "technical_function_document_url": assessment.technical_function.document_url,
             "current_trl": assessment.readiness_level.level,
             "current_trl_name": assessment.readiness_level.name,
             "status": assessment.current_status,
@@ -425,7 +428,8 @@ def export_miro_csv():
     writer.writerow([
         'Title', 'Description', 'Product Feature', 'Current TRL', 'Status', 
         'Status Color', 'Assessor', 'Platform', 'ODD', 'Environment', 
-        'Assessment Date', 'Scheduled Completion', 'Timeline Quarter', 'Notes'
+        'Assessment Date', 'Scheduled Completion', 'Timeline Quarter', 'Notes',
+        'Product Feature Document URL', 'Technical Function Document URL'
     ])
     
     for assessment in assessments:
@@ -445,7 +449,9 @@ def export_miro_csv():
             assessment.assessment_date.strftime("%Y-%m-%d"),
             assessment.scheduled_completion_date.strftime("%Y-%m-%d") if assessment.scheduled_completion_date else "",
             f"Q{timeline_pos['quarter']}",
-            assessment.notes or ""
+            assessment.notes or "",
+            assessment.technical_function.product_feature.document_url or "",
+            assessment.technical_function.document_url or ""
         ])
     
     # Create temporary CSV file
