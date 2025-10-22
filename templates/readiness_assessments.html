@@ -31,7 +31,7 @@
                 <label class="form-label">Technical Function</label>
                 <select name="technical_id" class="form-select">
                     <option value="">All Technical</option>
-                    {% for tech in technical_functions %}
+                    {% for tech in technical_capabilities %}
                     <option value="{{ tech.id }}" {% if request.args.get('technical_id')|int == tech.id %}selected{% endif %}>
                         {{ tech.name }}
                     </option>

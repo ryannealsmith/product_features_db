@@ -68,7 +68,7 @@ def readiness_assessments():
     return render_template('readiness_assessments.html', 
                          assessments=assessments,
                          product_features=product_features,
-                         technical_capabilities=technical_capabilities,
+                         technical_capabilities=technical_functions,
                          vehicle_platforms=vehicle_platforms)
 
 @app.route('/readiness_matrix')
