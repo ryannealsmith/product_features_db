@@ -1,0 +1,175 @@
+Swimlane,Label,Product Feature,Platform,ODD,Environment,Trailer,Details,Next,Comments
+Operational Environment,PF-ODD-1.1,Port: baseline,N/A,N/A,N/A,N/A,"* Speed: <=25 kph
+* Forward towing of a semi-trailer
+* Lanes
+  ** Nominal lanes width (+1m - +2.0m buffer)
+  ** Queueing lanes width (+0.5m buffer)
+  ** Lane change
+  ** Lane borrow
+* Intersections: 
+  ** Accommodate trailers (if needed) without lane exit
+  ** T junctions
+* Infra:
+  ** Pseudo-static container stacks
+* Hazards: 
+  ** NONE
+* Actors + Objects
+  ** Static objects
+    *** Low objects: >20cm (TBC)
+  ** Voids (e.g. potholes)
+    *** NONE
+  ** VRUs
+    *** NONE
+  ** Vehicles
+    *** Tractors
+    *** Articulated vehicle
+  ** Emergency vehicles
+    *** NONE
+  ** CHEs
+    *** Crane (STS)
+    *** Reach Stacker
+    *** Gantry (Mobile ?)
+    *** Gantry (Tracked?)
+* Incline
+  ** <5 degrees
+* Traction: 
+  ** Dry asphalt
+  ** Wet asphalt
+* GPS
+  ** Available
+* Ground coverage:
+  ** Clear",Y,
+,PF-ODD-1.2,Port: AV-Ped interaction,N/A,N/A,N/A,N/A,"* PF-ODD-1.1
+* Actors + Objects
+  ** VRUs
+    *** Peds approach + interact with AV
+    *** Bicycles",Y,
+,PF-ODD-1.3,Port: Movable pinning stations,N/A,N/A,N/A,N/A,"* PF-ODD-1.1
+* Infra
+  ** Movable pinning stations with Human-robot-interaction",Y,
+,PF-ODD-1.4,Port: GPS degraded/ denied,N/A,N/A,N/A,N/A,"* GPS
+  ** Available, but possibly degraded or denied",,
+,PF-ODD-2.1,Factory: baseline,N/A,N/A,N/A,N/A,,,
+,,,,,,,,,
+Environmental conditions,PF-ENV-1.1,Baseline: fair weather,All,N/A,N/A,N/A,"* Temp: 
+  ** Min: 5C
+  ** Max: 40C
+* Sand/ Dust: 
+  ** Visibility: >100m
+  ** Precipitation: N/A
+  ** Accumulation: N/A
+* Illumination: 
+  ** Day time
+  ** Night time (>12 LUX)
+* Rain
+  ** Precipitation rate: Moderate (<x mm/hr)
+  ** Visibility: >100m visibility
+  ** Accumulation: N/A
+* Wind: <50kph
+* Fog/ smoke: 
+  ** Visibility: >100m
+* Snow: 
+  ** Precipitation: None
+  ** Visibility: 100m
+  ** Accumulation: N/A
+* Ground cover: Dry, Wet",Y,
+,PF-ENV-2.1,Temperature: <=55C,Terberg,N/A,N/A,N/A,"PF-ENV-1
+* Temp: T < 55C",Y,
+,PF-ENV-3.1,Sand: Moderate sandstorm,Terberg,N/A,N/A,N/A,"PF-ENV-2
+* Sand: moderate sand storm
+  ** Wind: <50kph
+  ** Visibility: >100m",Y,
+,PF-ENV-4.1,Rain: Heavy,Terberg,N/A,N/A,N/A,"PF-ENV-3
+* Rain: Heavy (x mm/hr)",,
+,PF-ENV-5.1,Illumination: Dawn / Dusk operations,Terberg,N/A,N/A,N/A,"* Illumination: 
+  ** Dawn/ dusk operations",,
+,,,,,,,,,
+Cargo,PF-CRG-1.1.1,Semi-trailer: Boxcar; Vantec model; variable weight,Terberg,N/A,N/A,N/A,,,
+,PF-CRG-1.2.1,Semi-trailer: Chassis; City Terminal model; chassis + container (variable weight),Terberg,N/A,N/A,N/A,,Y,
+,PF-CRG-1.2.2,Semi-trailer: Chassis; Jebel Ali model; chassis + container (variable weight),Terberg,N/A,N/A,N/A,Weight: 10-40 tons Representative example,Y,
+,PF-CRG-1.3.1,Semi-trailer: Boat; Robotraz model; chassis + container (variable weight),T800,N/A,N/A,N/A,,,
+,PF-CRG-2.1.1,"Drawbar trailer: XX model, single, variable weight",T800,N/A,N/A,N/A,,,
+,PF-CRG-2.1.2,Drawbar trailer: XX model; train (up to 6 trailers); variable weight,T800,N/A,N/A,N/A,,,
+,,,,,,,,,
+Features,PF-SV,Supervision,,,,,,,
+,PF-SV-1.1,Internal Supervision (SDIC),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,
+,PF-SV-2.1,External Supervision (Line-of-Sight),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,
+,PF-SV-3.1,Remote Monitoring: M0,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,
+,PF-SV-4.1,Remote Supervision: Remote Intervention,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,Y,
+,PF-SV-5.1,Remote Assistance: Remote Driving (M4),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,,
+,PF-SV-6.1,Remote Mission Management (baseline),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,"* E-Stop/ Reset
+* Pause/ Resume
+* Enter/ Exit SAFESTOP
+* MRM (naive)
+* MRM (pull over - when)
+* Set trailer configuration",,
+,PF-SV-7.1,Vehicle supports passenger ride-along (ODD-related? Who is the passenger?),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CRG-1,,,
+,,,,,,,,,
+,PF-HRI,Human-Robot Interactions,,,,,,,
+,PF-HRI-1.1,Safe Operation: Limit motion towards nearby humans sharing operational space,Terberg,PF-ODD-1,PF-ENV-4,N/A,,,
+,PF-HRI-2.1,Proximal human: Switch into and out of SAFESTATE when human close to AV,Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,
+,PF-HRI-3.1,External HMI: HMI to continue mission (and switch out of SAFESTATE),Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,
+,,,,,,,,,
+,PF-TOW,Towing,,,,,,,
+,PF-TOW-1.1,"Tow a semi-trailer while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,PF-TOW-2.1,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,PF-TOW-3.1,"Change lanes while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,,,,,,,,,
+,PF-REV,Reversing,,,,,,,
+,PF-REV-1.1,Reverse the AV (Terberg),Terberg,PF-ODD-1,PF-ENV-1,N/A,,Y,
+,PF-REV-2.1,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,
+,PF-REV-3.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,
+,PF-REV-4.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,
+,,,,,,,,,
+,PF-DCK,Docking,,,,,,,
+,PF-DCK-1.1,Initial approach of a prescribed isolated dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,
+,PF-DCK-2.1,Initial approach of a prescribed isolated dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,
+,PF-DCK-3.1,Final approach of a prescribed crowded dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,
+,PF-DCK-4.1,Final approach of a prescribed crowded dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,,
+,,,,,,,,,
+,PF-CHE,CHE Interactions,,,,,,,
+,PF-CHE-1.1,"Rendevous with a mobile Reach Stacker at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,PF-CHE-2.1,"Rendevous with a mobile Gantry at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,PF-CHE-3.1,"Rendevous with an STS crane at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,Y,
+,PF-CHE-3.2,"Rendevous with an STS crane at a location relative to the crane, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CRG-1,,?,
+,,,,,,,,,
+,PF-HCH,Hinching/ Unhitching,,,,,,,
+,PF-HCH-1.1,Hitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,
+,PF-HCH-2.1,Unhitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,,Y,
+,,,,,,,,,
+CE Marking,PF-CE-1.1,CE Marking,Terberg,PF-ODD-1,PF-ENV-1,PF-CRG-1,"Technical conformity file is complete, and includes results from manditory testing (EMC), and validation evidence of safety functions.",,"* EMC testing;
+* Technical Conformity File completed;
+* Safety function: Avoid collision;
+* Safety function: Avoid Hazards
+* Safety function: Prevent motion during interaction"
+,,,,,,,,,
+Fleet management,PF-XMS-1.1,API: Support XYZ MS at Jebel Ali,Terberg,N/A,N/A,N/A,"* Receive/acknowledge/reject/cancel jobs from TOS
+* Send vehicle state, diagnostics, alerts to TOS",,
+,PF-XMS-2.1,Stage tasking (baseline),Terberg,N/A,N/A,N/A,* Stage until released at Map Pt X,,
+,PF-XMS-2.2,Stage tasking: Stage until released at location relative to CHE,Terberg,N/A,N/A,N/A,,,
+,PF-XMS-3.1,CHE Tasking (baseline),Terberg,N/A,N/A,N/A,"* Receive container from CHE at Map Pt X
+* Deliver container to CHE at Map Pt X (decouple container from trailer)",,
+,PF-XMS-3.2,CHE Tasking: CHE-relative interactions,Terberg,N/A,N/A,N/A,"* Receive container from CHE at a location relative to the CHE
+* Deliver container to CHE at a location relative to the CHE (decouple container from trailer)",,
+,PF-XMS-4.1,Parking Bay Tasking (baseline),Terberg,N/A,N/A,N/A,"* Deliver trailer to Parking Bay X
+* Pick up trailer from Parking Bay X",,
+,PF-XMS-5.1,Dock Tasking (baseline),Terberg,N/A,N/A,N/A,"* Pick up trailer from Dock X
+* Dock trailer at Dock X and wait
+* Drop trailer at Dock X",,
+,,,,,,,,,
+Operations,PF-OPS-1.1,AV System duty cycle management (baseline),Terberg,N/A,N/A,N/A,"* Service: Automatic service activation / deactivation (based on time, schedule, system status meeting criteria for planned service hours when the AV will automatically commence jobs it is aware of)
+* Veh Admin: Remote boot and mode control
+* Veh Admin: Automatic autonomy authorisation (based on estops, system health/battery, maintenance record, allowed hours, ODD conditions, scheduled downtime)
+* Mission: Automatic retire to home
+* Mission: Automatic retire for refueling",,
+,PF-OPS-2-1,Remote Vehicle Management (baseline),Terberg,N/A,N/A,N/A,"* Remote restarting of ACS services and devices
+* Remote modification of vehicle config and env config
+* Remote software updates
+* Remote calibration management
+* Performance metric viewer and short term history traces.",,
+,PF-OPS-3-1,Remote Data Management (baseline),Terberg,N/A,N/A,N/A,"* Live telemetry state available and viewable
+* Automatic processing of HD data snippets
+* Automatic upload management (concurrent, end-of-shift)
+* Cloud access to data snippets
+* Remote request to record HD Data",,
+,PF-OPS-4.1,Fleet Management (baseline),Terberg,N/A,N/A,N/A,"* Continuous service, while hot-swapping vehicles",,
