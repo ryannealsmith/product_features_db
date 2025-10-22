@@ -104,6 +104,36 @@ def find_or_create_references(reference_data, entity_type):
     
     return references
 
+def get_vehicle_platform_id(vehicle_type_or_id):
+    """Get vehicle platform ID from vehicle type string or existing ID"""
+    if not vehicle_type_or_id:
+        return None
+    
+    # If it's already a number, return it
+    if isinstance(vehicle_type_or_id, int):
+        return vehicle_type_or_id
+    
+    # If it's a string number, convert it
+    try:
+        return int(vehicle_type_or_id)
+    except (ValueError, TypeError):
+        pass
+    
+    # Map vehicle type string to platform ID
+    mapping = {
+        "truck": 5,      # Truck Platform
+        "van": 6,        # Van Platform  
+        "car": 7,        # Car Platform
+        "terberg": 1,    # Terberg ATT
+        "ca500": 2,      # CA500
+        "t800": 3,       # T800
+        "aev": 4,        # AEV
+        "generic": 8     # Generic Platform
+    }
+    
+    platform_id = mapping.get(str(vehicle_type_or_id).lower(), 8)  # Default to Generic Platform
+    return platform_id
+
 def create_product_feature(data):
     """Create a new product feature"""
     try:
@@ -113,17 +143,25 @@ def create_product_feature(data):
             print(f"Product feature '{data['name']}' already exists, skipping creation")
             return False
         
+        # Handle both old and new vehicle field formats
+        vehicle_platform_id = None
+        if 'vehicle_platform_id' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+        elif 'vehicle_type' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+        
         product_feature = ProductFeature(
             name=data['name'],
             description=data.get('description', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform_id=vehicle_platform_id,
             swimlane_decorators=data.get('swimlane_decorators', ''),
             label=data.get('label', ''),
             tmos=data.get('tmos', ''),
             status_relative_to_tmos=float(data.get('status_relative_to_tmos', 0.0)),
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
-            active_flag=data.get('active_flag', 'next')
+            active_flag=data.get('active_flag', 'next'),
+            document_url=data.get('document_url')
         )
         
         db.session.add(product_feature)
@@ -154,8 +192,8 @@ def update_product_feature(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['description', 'vehicle_type', 'swimlane_decorators', 'label', 
-                           'tmos', 'status_relative_to_tmos', 'active_flag']
+        fields_to_update = ['description', 'swimlane_decorators', 'label', 
+                           'tmos', 'status_relative_to_tmos', 'active_flag', 'document_url']
         
         updates_made = []
         for field in fields_to_update:
@@ -165,6 +203,14 @@ def update_product_feature(data):
                 else:
                     setattr(product_feature, field, data[field])
                 updates_made.append(field)
+        
+        # Handle vehicle platform updates
+        if 'vehicle_platform_id' in data:
+            product_feature.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+            updates_made.append('vehicle_platform_id')
+        elif 'vehicle_type' in data:
+            product_feature.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+            updates_made.append('vehicle_platform_id')
         
         # Update dates
         for date_field in ['planned_start_date', 'planned_end_date']:
@@ -201,14 +247,22 @@ def create_capability(data):
             print(f"Capability '{data['name']}' already exists, skipping creation")
             return False
         
+        # Handle both old and new vehicle field formats
+        vehicle_platform_id = None
+        if 'vehicle_platform_id' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+        elif 'vehicle_type' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+        
         capability = Capabilities(
             name=data['name'],
             success_criteria=data.get('success_criteria', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform_id=vehicle_platform_id,
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
             tmos=data.get('tmos', ''),
-            progress_relative_to_tmos=float(data.get('progress_relative_to_tmos', 0.0))
+            progress_relative_to_tmos=float(data.get('progress_relative_to_tmos', 0.0)),
+            document_url=data.get('document_url')
         )
         
         db.session.add(capability)
@@ -239,7 +293,7 @@ def update_capability(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['success_criteria', 'vehicle_type', 'tmos', 'progress_relative_to_tmos']
+        fields_to_update = ['success_criteria', 'tmos', 'progress_relative_to_tmos', 'document_url']
         
         updates_made = []
         for field in fields_to_update:
@@ -249,6 +303,14 @@ def update_capability(data):
                 else:
                     setattr(capability, field, data[field])
                 updates_made.append(field)
+        
+        # Handle vehicle platform updates
+        if 'vehicle_platform_id' in data:
+            capability.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+            updates_made.append('vehicle_platform_id')
+        elif 'vehicle_type' in data:
+            capability.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+            updates_made.append('vehicle_platform_id')
         
         # Update dates
         for date_field in ['planned_start_date', 'planned_end_date']:
@@ -296,16 +358,24 @@ def create_technical_function(data):
             print("Product feature is required for technical function")
             return False
         
+        # Handle both old and new vehicle field formats
+        vehicle_platform_id = None
+        if 'vehicle_platform_id' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+        elif 'vehicle_type' in data:
+            vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+        
         technical_function = TechnicalFunction(
             name=data['name'],
             description=data.get('description', ''),
             success_criteria=data.get('success_criteria', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform_id=vehicle_platform_id,
             tmos=data.get('tmos', ''),
             status_relative_to_tmos=float(data.get('status_relative_to_tmos', 0.0)),
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
-            product_feature_id=product_feature.id
+            product_feature_id=product_feature.id,
+            document_url=data.get('document_url')
         )
         
         db.session.add(technical_function)
@@ -340,7 +410,7 @@ def update_technical_function(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['description', 'success_criteria', 'vehicle_type', 'tmos', 'status_relative_to_tmos']
+        fields_to_update = ['description', 'success_criteria', 'tmos', 'status_relative_to_tmos', 'document_url']
         
         updates_made = []
         for field in fields_to_update:
@@ -350,6 +420,14 @@ def update_technical_function(data):
                 else:
                     setattr(technical_function, field, data[field])
                 updates_made.append(field)
+        
+        # Handle vehicle platform updates
+        if 'vehicle_platform_id' in data:
+            technical_function.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_platform_id'])
+            updates_made.append('vehicle_platform_id')
+        elif 'vehicle_type' in data:
+            technical_function.vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
+            updates_made.append('vehicle_platform_id')
         
         # Update dates
         for date_field in ['planned_start_date', 'planned_end_date']:
