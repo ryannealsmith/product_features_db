@@ -116,7 +116,7 @@ def create_product_feature(data):
         product_feature = ProductFeature(
             name=data['name'],
             description=data.get('description', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform=data.get('vehicle_platform', ''),
             swimlane_decorators=data.get('swimlane_decorators', ''),
             label=data.get('label', ''),
             tmos=data.get('tmos', ''),
@@ -154,7 +154,7 @@ def update_product_feature(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['description', 'vehicle_type', 'swimlane_decorators', 'label', 
+        fields_to_update = ['description', 'vehicle_platform', 'swimlane_decorators', 'label', 
                            'tmos', 'status_relative_to_tmos', 'active_flag']
         
         updates_made = []
@@ -204,7 +204,7 @@ def create_capability(data):
         capability = Capabilities(
             name=data['name'],
             success_criteria=data.get('success_criteria', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform_id=data.get('vehicle_platform_id', None),
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
             tmos=data.get('tmos', ''),
@@ -239,7 +239,7 @@ def update_capability(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['success_criteria', 'vehicle_type', 'tmos', 'progress_relative_to_tmos']
+        fields_to_update = ['success_criteria', 'vehicle_platform', 'tmos', 'progress_relative_to_tmos']
         
         updates_made = []
         for field in fields_to_update:
@@ -300,7 +300,7 @@ def create_technical_function(data):
             name=data['name'],
             description=data.get('description', ''),
             success_criteria=data.get('success_criteria', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform=data.get('vehicle_platform', ''),
             tmos=data.get('tmos', ''),
             status_relative_to_tmos=float(data.get('status_relative_to_tmos', 0.0)),
             planned_start_date=parse_date(data.get('planned_start_date')),
@@ -340,7 +340,7 @@ def update_technical_function(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['description', 'success_criteria', 'vehicle_type', 'tmos', 'status_relative_to_tmos']
+        fields_to_update = ['description', 'success_criteria', 'vehicle_platform', 'tmos', 'status_relative_to_tmos']
         
         updates_made = []
         for field in fields_to_update:
@@ -672,7 +672,7 @@ def create_vehicle_platform(data):
         platform = VehiclePlatform(
             name=data['name'],
             description=data.get('description', ''),
-            vehicle_type=data.get('vehicle_type', ''),
+            vehicle_platform=data.get('vehicle_platform', ''),
             max_payload=float(data['max_payload']) if 'max_payload' in data else None
         )
         
@@ -693,7 +693,7 @@ def update_vehicle_platform(data):
             return False
         
         updates_made = []
-        fields_to_update = ['description', 'vehicle_type', 'max_payload']
+        fields_to_update = ['description', 'vehicle_platform', 'max_payload']
         
         for field in fields_to_update:
             if field in data:
@@ -1192,7 +1192,7 @@ def export_current_data(output_file='current_data.json'):
                 pf_data = {
                     "name": pf.name,
                     "description": pf.description,
-                    "vehicle_type": pf.vehicle_type,
+                    "vehicle_platform": pf.vehicle_platform,
                     "swimlane_decorators": pf.swimlane_decorators,
                     "label": pf.label,
                     "tmos": pf.tmos,
@@ -1212,7 +1212,7 @@ def export_current_data(output_file='current_data.json'):
                 cap_data = {
                     "name": cap.name,
                     "success_criteria": cap.success_criteria,
-                    "vehicle_type": cap.vehicle_type,
+                    "vehicle_platform": cap.vehicle_platform,
                     "planned_start_date": cap.planned_start_date.isoformat() if cap.planned_start_date else None,
                     "planned_end_date": cap.planned_end_date.isoformat() if cap.planned_end_date else None,
                     "tmos": cap.tmos,
@@ -1229,7 +1229,7 @@ def export_current_data(output_file='current_data.json'):
                     "name": tf.name,
                     "description": tf.description,
                     "success_criteria": tf.success_criteria,
-                    "vehicle_type": tf.vehicle_type,
+                    "vehicle_platform": tf.vehicle_platform,
                     "tmos": tf.tmos,
                     "status_relative_to_tmos": tf.status_relative_to_tmos,
                     "planned_start_date": tf.planned_start_date.isoformat() if tf.planned_start_date else None,
@@ -1290,7 +1290,7 @@ def main():
         print('        "operation": "create|update|delete",')
         print('        "name": "Entity Name",')
         print('        "description": "Entity description",')
-        print('        "vehicle_type": "truck|van|car",')
+        print('        "vehicle_platform": "truck|van|car",')
         print('        "planned_start_date": "2025-01-01",')
         print('        "planned_end_date": "2025-12-31",')
         print('        "tmos": "Target Measure of Success",')
@@ -1360,7 +1360,7 @@ def generate_template_json():
                 "operation": "create",
                 "name": "Example Product Feature",
                 "description": "This is an example product feature",
-                "vehicle_type": "truck",
+                "vehicle_platform": "truck",
                 "swimlane_decorators": "ADAS",
                 "label": "PF-ADAS-1.1",
                 "tmos": "Achieve 99.9% uptime in highway conditions",
@@ -1376,7 +1376,7 @@ def generate_template_json():
                 "operation": "create",
                 "name": "Highway Navigation",
                 "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-                "vehicle_type": "truck",
+                "vehicle_platform": "truck",
                 "planned_start_date": "2025-01-01",
                 "planned_end_date": "2025-11-30",
                 "tmos": "Complete highway navigation capability",
@@ -1390,7 +1390,7 @@ def generate_template_json():
                 "name": "Path Planning",
                 "description": "Generate optimal paths for vehicle navigation",
                 "success_criteria": "Generate paths within 100ms with 99% success rate",
-                "vehicle_type": "truck",
+                "vehicle_platform": "truck",
                 "tmos": "Real-time path planning for highway navigation",
                 "status_relative_to_tmos": 80.0,
                 "planned_start_date": "2025-01-01",
