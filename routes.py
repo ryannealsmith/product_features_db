@@ -312,6 +312,20 @@ def add_product_feature():
         
         try:
             db.session.add(product_feature)
+            db.session.flush()  # Get the ID before committing
+            
+            # Handle capabilities_required many-to-many relationship
+            capability_ids = request.form.getlist('capabilities_required')
+            if capability_ids:
+                capabilities = Capabilities.query.filter(Capabilities.id.in_(capability_ids)).all()
+                product_feature.capabilities_required.extend(capabilities)
+            
+            # Handle dependent_technical_functions many-to-many relationship
+            technical_function_ids = request.form.getlist('dependent_technical_functions')
+            if technical_function_ids:
+                technical_functions = TechnicalFunction.query.filter(TechnicalFunction.id.in_(technical_function_ids)).all()
+                product_feature.dependent_technical_functions.extend(technical_functions)
+            
             db.session.commit()
             flash('Product feature added successfully!', 'success')
             return redirect(url_for('product_features'))
@@ -321,9 +335,13 @@ def add_product_feature():
     
     # GET request - show form
     vehicle_platforms = VehiclePlatform.query.all()
+    capabilities = Capabilities.query.order_by(Capabilities.name).all()
+    technical_functions = TechnicalFunction.query.order_by(TechnicalFunction.name).all()
     
     return render_template('add_product_feature.html',
-                         vehicle_platforms=vehicle_platforms)
+                         vehicle_platforms=vehicle_platforms,
+                         capabilities=capabilities,
+                         technical_functions=technical_functions)
 
 @app.route('/api/readiness_data')
 def api_readiness_data():

@@ -116,6 +116,55 @@
                 </div>
             </div>
             
+            <!-- Dependencies Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="text-primary"><i class="fas fa-sitemap"></i> Dependencies</h5>
+                    <p class="text-muted">Define what capabilities and technical functions this product feature depends on or enables.</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="capabilities_required" class="form-label">Required Capabilities</label>
+                        <select name="capabilities_required" id="capabilities_required" class="form-select" multiple size="6">
+                            {% for capability in capabilities %}
+                            <option value="{{ capability.id }}">
+                                {{ capability.name }}
+                                {% if capability.vehicle_platform %}
+                                    ({{ capability.vehicle_platform.vehicle_type|title }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple capabilities that this product feature requires.
+                            <br>These are high-level capabilities needed for this feature to work.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="dependent_technical_functions" class="form-label">Dependent Technical Functions</label>
+                        <select name="dependent_technical_functions" id="dependent_technical_functions" class="form-select" multiple size="6">
+                            {% for tech_func in technical_functions %}
+                            <option value="{{ tech_func.id }}">
+                                {{ tech_func.name }}
+                                {% if tech_func.product_feature %}
+                                    (from {{ tech_func.product_feature.name }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple technical functions that depend on this product feature.
+                            <br>These are specific technical implementations that need this feature.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="d-flex justify-content-between">
                 <a href="{{ url_for('product_features') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Product Features
@@ -135,7 +184,7 @@
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h6 class="text-primary">Naming Convention</h6>
                 <ul class="list-unstyled small">
                     <li>• Use clear, descriptive names</li>
@@ -144,7 +193,7 @@
                     <li>• Example: "Autonomous Highway Driving"</li>
                 </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h6 class="text-success">TMOS Best Practices</h6>
                 <ul class="list-unstyled small">
                     <li>• Make criteria measurable and specific</li>
@@ -153,13 +202,22 @@
                     <li>• Example: "Achieve 99.9% uptime in highway scenarios"</li>
                 </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h6 class="text-warning">Timeline Planning</h6>
                 <ul class="list-unstyled small">
                     <li>• Set realistic start and end dates</li>
                     <li>• Consider dependencies</li>
                     <li>• Allow buffer time for testing</li>
                     <li>• Align with product roadmaps</li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-info">Dependencies</h6>
+                <ul class="list-unstyled small">
+                    <li>• <strong>Required Capabilities:</strong> High-level capabilities this feature needs</li>
+                    <li>• <strong>Dependent Tech Functions:</strong> Technical functions that rely on this feature</li>
+                    <li>• Think about what enables this feature vs. what this feature enables</li>
+                    <li>• Dependencies help with roadmap planning</li>
                 </ul>
             </div>
         </div>
@@ -204,6 +262,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
     nameInput.addEventListener('blur', generateLabel);
     swimlaneInput.addEventListener('blur', generateLabel);
+    
+    // Improve multi-select UX
+    const capabilitiesSelect = document.getElementById('capabilities_required');
+    const techFunctionsSelect = document.getElementById('dependent_technical_functions');
+    
+    // Add helper text for multi-select
+    function addSelectionCounter(selectElement, labelId) {
+        const label = document.querySelector(`label[for="${selectElement.id}"]`);
+        const counter = document.createElement('span');
+        counter.className = 'badge bg-primary ms-2';
+        counter.style.display = 'none';
+        label.appendChild(counter);
+        
+        selectElement.addEventListener('change', function() {
+            const selectedCount = this.selectedOptions.length;
+            if (selectedCount > 0) {
+                counter.textContent = `${selectedCount} selected`;
+                counter.style.display = 'inline';
+            } else {
+                counter.style.display = 'none';
+            }
+        });
+    }
+    
+    if (capabilitiesSelect) {
+        addSelectionCounter(capabilitiesSelect, 'capabilities_required');
+    }
+    
+    if (techFunctionsSelect) {
+        addSelectionCounter(techFunctionsSelect, 'dependent_technical_functions');
+    }
+    
+    // Add keyboard shortcuts info
+    const dependenciesSection = document.querySelector('h5:contains("Dependencies")');
+    if (dependenciesSection) {
+        const shortcutInfo = document.createElement('small');
+        shortcutInfo.className = 'text-muted ms-2';
+        shortcutInfo.innerHTML = '<i class="fas fa-keyboard"></i> Use Ctrl+Click (Cmd+Click on Mac) to select multiple items';
+        dependenciesSection.parentNode.appendChild(shortcutInfo);
+    }
 });
 </script>
 {% endblock %}
