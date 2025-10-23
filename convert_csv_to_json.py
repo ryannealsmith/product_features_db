@@ -18,10 +18,6 @@ DEFAULT_TF_CSV = 'example-csvs/capability_to_tech.csv'
 DEFAULT_OUTPUT_JSON = 'repository_update_data_final.json'
 
 # --- Utilities ---
-    
-def ignore_swimlane(swimlane):
-    return (swimlane == "Operational Environment" or 
-            swimlane == "Environmental conditions" or swimlane == "Cargo")
 
 def get_random_subset(collection, min_count=2, max_count=5):
     """Randomly selects a subset of capability labels."""
@@ -133,7 +129,6 @@ def load_product_features(file_path):
                 # - Cargo
                 swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
                 if swimlane != '': previous_swimlane = swimlane
-                if ignore_swimlane(swimlane): continue
 
                 label = row[IDX_LABEL].strip()
                 name = row[IDX_NAME].strip()
@@ -198,7 +193,6 @@ def load_capabilities(file_path):
                 label = row[IDX_LABEL].strip()
                 swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
                 if swimlane != '': previous_swimlane = swimlane
-                if ignore_swimlane(swimlane): continue
 
                 cap_to_pf = []
                 for i in range(IDX_PRODUCT_FEATURES_START, len(row)):
