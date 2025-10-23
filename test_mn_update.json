@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "version": "4.0",
+    "description": "Test M:N capability creation",
+    "created_by": "Test",
+    "created_date": "2025-10-23"
+  },
+  "entities": [
+    {
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Test Shared Capability",
+      "success_criteria": "Test capability that can be shared across multiple product features",
+      "product_feature_ids": ["Autonomous Port Operations", "Highway Autonomous Driving"],
+      "vehicle_platform_id": 1,
+      "tmos": "Test TMOS for shared capability",
+      "progress_relative_to_tmos": 50.0
+    }
+  ]
+}

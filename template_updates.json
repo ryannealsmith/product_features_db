@@ -4,7 +4,7 @@
     "description": "Template for updating Product Feature Readiness Database - Many-to-Many Relationships",
     "created_by": "Ryan Smith",
     "created_date": "2025-10-23",
-    "notes": "Updated for Many-to-Many relationship structure: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction"
+    "notes": "Updated for M:N relationship structure: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction"
   },
   "entities": [
     {
@@ -31,7 +31,9 @@
       "operation": "create",
       "name": "Highway Navigation",
       "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-      "product_feature_ids": ["Example Product Feature"],
+      "product_feature_ids": [
+        "Example Product Feature"
+      ],
       "vehicle_platform_id": 5,
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-11-30",
@@ -41,6 +43,26 @@
       "technical_functions": [
         "Path Planning",
         "Lane Detection"
+      ]
+    },
+    {
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Shared Safety Monitoring",
+      "success_criteria": "Advanced safety monitoring shared across multiple product features",
+      "product_feature_ids": [
+        "Example Product Feature",
+        "Another Product Feature"
+      ],
+      "vehicle_platform_id": 5,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-11-30",
+      "tmos": "Universal safety monitoring capability",
+      "progress_relative_to_tmos": 45.0,
+      "document_url": "https://docs.example.com/safety-monitoring",
+      "technical_functions": [
+        "Collision Detection",
+        "Emergency Stop"
       ]
     },
     {
@@ -87,7 +109,11 @@
       "operation": "update",
       "name": "Highway Navigation",
       "progress_relative_to_tmos": 70.0,
-      "tmos": "Updated TMOS for highway navigation"
+      "tmos": "Updated TMOS for highway navigation",
+      "product_feature_ids": [
+        "Example Product Feature",
+        "Another Product Feature"
+      ]
     },
     {
       "entity_type": "technical_function",

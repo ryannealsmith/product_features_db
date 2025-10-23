@@ -239,7 +239,7 @@ def update_product_feature(data):
         return False
 
 def create_capability(data):
-    """Create a new capability"""
+    """Create a new capability with many-to-many ProductFeature relationships"""
     try:
         # Check if already exists
         existing = Capabilities.query.filter_by(name=data['name']).first()
@@ -254,21 +254,9 @@ def create_capability(data):
         elif 'vehicle_type' in data:
             vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
         
-        # Find required product feature
-        product_feature = None
-        if 'product_feature' in data:
-            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
-            if not product_feature:
-                print(f"Product feature '{data['product_feature']}' not found for capability")
-                return False
-        else:
-            print("Product feature is required for capability in new database structure")
-            return False
-        
         capability = Capabilities(
             name=data['name'],
             success_criteria=data.get('success_criteria', ''),
-            product_feature_id=product_feature.id,
             vehicle_platform_id=vehicle_platform_id,
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
@@ -280,12 +268,36 @@ def create_capability(data):
         db.session.add(capability)
         db.session.flush()  # Get the ID
         
-        # Handle relationships
+        # Handle M:N relationships with ProductFeatures
+        # Support both old format (single product_feature) and new format (product_feature_ids array)
+        product_features_to_link = []
+        
+        if 'product_feature_ids' in data and data['product_feature_ids']:
+            # New M:N format - array of product feature names
+            for pf_name in data['product_feature_ids']:
+                pf = ProductFeature.query.filter_by(name=pf_name).first()
+                if pf:
+                    product_features_to_link.append(pf)
+                else:
+                    print(f"Warning: Product feature '{pf_name}' not found for capability")
+        elif 'product_feature' in data and data['product_feature']:
+            # Old 1:N format compatibility - single product feature name
+            pf = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            if pf:
+                product_features_to_link.append(pf)
+            else:
+                print(f"Warning: Product feature '{data['product_feature']}' not found for capability")
+        
+        # Link to ProductFeatures using the many-to-many relationship
+        for pf in product_features_to_link:
+            pf.capabilities.append(capability)
+        
+        # Handle relationships with TechnicalFunctions
         if 'technical_functions' in data:
             tech_functions = find_or_create_references(data['technical_functions'], 'technical_function')
             capability.technical_functions.extend(tech_functions)
         
-        print(f"Created capability: {capability.name}")
+        print(f"Created capability: {capability.name} (linked to {len(product_features_to_link)} product features)")
         return True
         
     except Exception as e:
@@ -293,7 +305,7 @@ def create_capability(data):
         return False
 
 def update_capability(data):
-    """Update an existing capability"""
+    """Update an existing capability with M:N ProductFeature relationships"""
     try:
         capability = Capabilities.query.filter_by(name=data['name']).first()
         if not capability:
@@ -326,16 +338,34 @@ def update_capability(data):
                 setattr(capability, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
-        # Update product feature if provided
-        if 'product_feature' in data:
-            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
-            if product_feature:
-                capability.product_feature_id = product_feature.id
+        # Update M:N relationships with ProductFeatures
+        if 'product_feature_ids' in data:
+            # New M:N format - clear existing and add new relationships
+            # Clear existing relationships by removing this capability from all product features
+            for pf in capability.product_features:
+                pf.capabilities.remove(capability)
+            
+            # Add new relationships
+            for pf_name in data['product_feature_ids']:
+                pf = ProductFeature.query.filter_by(name=pf_name).first()
+                if pf:
+                    pf.capabilities.append(capability)
+                else:
+                    print(f"Warning: Product feature '{pf_name}' not found")
+            updates_made.append('product_feature_ids')
+        elif 'product_feature' in data:
+            # Old 1:N format compatibility - clear existing and add single relationship
+            for pf in capability.product_features:
+                pf.capabilities.remove(capability)
+            
+            pf = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            if pf:
+                pf.capabilities.append(capability)
                 updates_made.append('product_feature')
             else:
                 print(f"Warning: Product feature '{data['product_feature']}' not found")
         
-        # Update relationships
+        # Update relationships with TechnicalFunctions
         if 'technical_functions' in data:
             capability.technical_functions.clear()
             tech_functions = find_or_create_references(data['technical_functions'], 'technical_function')
@@ -1330,8 +1360,8 @@ def main():
         print("- Capabilities") 
         print("- Technical Functions")
         print("")
-        print("New Database Structure (v3.0):")
-        print("  ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction")
+        print("New Database Structure (v4.0):")
+        print("  ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction")
         print("")
         print("JSON Structure:")
         print("  {")
@@ -1368,7 +1398,8 @@ def main():
         print("")
         print("Capability:")
         print('  "success_criteria": "Success criteria text",')
-        print('  "product_feature": "Required Product Feature Name",  // Required!')
+        print('  "product_feature_ids": ["Product Feature 1", "Product Feature 2"],  // M:N relationships')
+        print('  "product_feature": "Single Product Feature Name",  // Old 1:N compatibility')
         print('  "progress_relative_to_tmos": 75.0,')
         print('  "document_url": "https://docs.example.com/doc",')
         print('  "technical_functions": ["Tech Function 1"]')
@@ -1410,11 +1441,11 @@ def generate_template_json():
     """Generate a template JSON file with examples"""
     template_data = {
         "metadata": {
-            "version": "3.0",
-            "description": "Template for updating Product Feature Readiness Database - New DB Structure",
+            "version": "4.0",
+            "description": "Template for updating Product Feature Readiness Database - Many-to-Many Relationships",
             "created_by": "Ryan Smith",
             "created_date": datetime.now().strftime('%Y-%m-%d'),
-            "notes": "Updated for new relationship structure: ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction"
+            "notes": "Updated for M:N relationship structure: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction"
         },
         "entities": [
             {
@@ -1439,7 +1470,7 @@ def generate_template_json():
                 "operation": "create",
                 "name": "Highway Navigation",
                 "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-                "product_feature": "Example Product Feature",  # Required in new structure
+                "product_feature_ids": ["Example Product Feature"],  # New M:N format
                 "vehicle_platform_id": 5,
                 "planned_start_date": "2025-01-01",
                 "planned_end_date": "2025-11-30",
@@ -1447,6 +1478,20 @@ def generate_template_json():
                 "progress_relative_to_tmos": 60.0,
                 "document_url": "https://docs.example.com/highway-nav",
                 "technical_functions": ["Path Planning", "Lane Detection"]
+            },
+            {
+                "entity_type": "capability",
+                "operation": "create",
+                "name": "Shared Safety Monitoring",
+                "success_criteria": "Advanced safety monitoring shared across multiple product features",
+                "product_feature_ids": ["Example Product Feature", "Another Product Feature"],  # Demonstrates M:N
+                "vehicle_platform_id": 5,
+                "planned_start_date": "2025-01-01",
+                "planned_end_date": "2025-11-30",
+                "tmos": "Universal safety monitoring capability",
+                "progress_relative_to_tmos": 45.0,
+                "document_url": "https://docs.example.com/safety-monitoring",
+                "technical_functions": ["Collision Detection", "Emergency Stop"]
             },
             {
                 "entity_type": "technical_function",
@@ -1488,7 +1533,8 @@ def generate_template_json():
                 "operation": "update",
                 "name": "Highway Navigation",
                 "progress_relative_to_tmos": 70.0,
-                "tmos": "Updated TMOS for highway navigation"
+                "tmos": "Updated TMOS for highway navigation",
+                "product_feature_ids": ["Example Product Feature", "Another Product Feature"]  # Update M:N relationships
             },
             {
                 "entity_type": "technical_function",
@@ -1505,10 +1551,11 @@ def generate_template_json():
             json.dump(template_data, jsonfile, indent=2, ensure_ascii=False)
         
         print(f"Template JSON file generated: {output_file}")
-        print("Updated for new database structure:")
-        print("- ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction")
+        print("Updated for Many-to-Many database structure:")
+        print("- ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction")
+        print("- Use product_feature_ids array for M:N capability relationships")
         print("- Use vehicle_platform_id instead of vehicle_type")
-        print("- Capabilities require a product_feature")
+        print("- Capabilities can be shared across multiple ProductFeatures")
         print("- TechnicalFunctions link through capabilities")
         print("")
         print("Edit this file with your specific data and run:")
