@@ -318,6 +318,11 @@ def construct_repository_update_schema(product_features_raw,
             for cap_label in capabilities:
                 product_feature_dependencies.add(pf_label)
 
+
+        # Find the name of the linked product feature
+        product_feature_label = random.choice(list(product_feature_dependencies))
+        product_feature_name = product_features_raw[product_feature_label]['name']
+
         # TODO: Replace with actual start / end dates.
         start_date, end_date, _ = generate_random_date_range()
 
@@ -334,7 +339,7 @@ def construct_repository_update_schema(product_features_raw,
             "planned_start_date": start_date,
             "planned_end_date": end_date,
             "product_feature_dependencies": list(product_feature_dependencies),
-            "product_feature": random.choice(list(product_feature_dependencies)),
+            "product_feature": product_feature_name,
             "capabilities": capabilities,
             "capability_dependencies": "",
             "document_url": "",
