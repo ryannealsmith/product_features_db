@@ -228,9 +228,33 @@ def load_capabilities(file_path):
         
     return capabilities
 
+def load_fake_technical_functions(capabilities):
+    """Loads technical functions."""
+    technical_functions = {}
+
+    idx = 0
+    for cap_label, cap_data in capabilities.items():
+        label = "TECH-FUNCTION-" + str(idx)
+        idx += 1
+        technical_functions[label] = {
+            'name': label,
+            'swimlane': cap_data['swimlane'],
+            'label': label,
+            'platform': cap_data['platform'] if cap_data['platform'] != 'N/A' else '',
+            'odd': cap_data['odd'],
+            'environment': cap_data['environment'],
+            'trailer': cap_data['trailer'],
+            'next': cap_data['next'],
+            'capabilities': cap_label
+        }
+
+    return technical_functions
+
 # --- Final Transformation Function ---
 
-def construct_repository_update_schema(product_features_raw, all_capabilities_raw):
+def construct_repository_update_schema(product_features_raw, 
+                                       capabilities_raw, 
+                                       technical_functions_raw):
     """
     Constructs the final JSON output following the 'repository update' schema.
     MODIFIED to collect and output entities in the order: PF, TF, CA.
@@ -242,9 +266,10 @@ def construct_repository_update_schema(product_features_raw, all_capabilities_ra
 
     # To store mapping of product features to capability labels.
     pf_to_cap_labels = defaultdict(list)
+    tf_to_cap_labels = defaultdict(list)
     
-    # 1. Process Capabilities (CA) - LAST
-    for cap_label, cap_data in all_capabilities_raw.items():
+    # 1. Process Capabilities.
+    for cap_label, cap_data in capabilities_raw.items():
 
         # TODO: Replace with actual start / end dates.
         start_date, end_date, _ = generate_random_date_range()
@@ -255,9 +280,15 @@ def construct_repository_update_schema(product_features_raw, all_capabilities_ra
             print(f"INFO: Capability Feature {cap_label} has no linked capabilities. Assigning random subset.")
             # Assign a random subset of 2 to 5 capabilities as a fallback
             pf_labels = get_random_subset(product_features_raw, 2, 5)
+        tf_labels = cap_data['tech_features']
+        if not tf_labels:
+            print(f"INFO: Capability Feature {cap_label} has no linked technical functions. Assigning random subset.")
+            tf_labels = get_random_subset(technical_functions_raw, 2, 5)
         
         for pf_label in pf_labels:
             pf_to_cap_labels[pf_label].append(cap_label)
+        for tf_label in tf_labels:
+            tf_to_cap_labels[tf_label].append(cap_label)
 
         cap_entity = {
             "_comment": f"=== CREATING CAPABILITY: {cap_label} ===",
@@ -276,8 +307,41 @@ def construct_repository_update_schema(product_features_raw, all_capabilities_ra
             "product_features": pf_labels, # PF Labels
         }
         ca_entities_list.append(cap_entity)
+
+    # 2. Process Technical Functions (TFs)
+    for tf_lable, tf_data in technical_functions_raw.items():
+
+        # Determine all product feature dependencies.
+        capabilities = tf_to_cap_labels[tf_label]
+        product_feature_dependencies = set()
+        for pf_label, cap_labels in pf_to_cap_labels.items():
+            for cap_label in capabilities:
+                product_feature_dependencies.add(pf_label)
+
+        # TODO: Replace with actual start / end dates.
+        start_date, end_date, _ = generate_random_date_range()
+
+        tf_entity = {
+            "_comment": f"=== CREATING TECHNICAL FUNCTION WITH MULTIPLE DEPENDENCIES ===",
+            "entity_type": "technical_function",
+            "operation": "create",
+            "name": tf_data['name'],
+            "description": "",
+            "success_criteria": "",
+            "vehicle_platform_id": 8,
+            "tmos": "",
+            "status_relative_to_tmos": "0.0",
+            "planned_start_date": start_date,
+            "planned_end_date": end_date,
+            "product_feature_dependencies": list(product_feature_dependencies),
+            "product_feature": random.choice(list(product_feature_dependencies)),
+            "capabilities": capabilities,
+            "capability_dependencies": "",
+            "document_url": "",
+        }
+        tf_entities_list.append(tf_entity)
         
-    # 2. Process Product Features (PF) - FIRST
+    # 3. Process Product Features (PF)
     for pf_label, pf_data in product_features_raw.items():    
         min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
         max_end_date = date(1, 1, 1)        # Initialize with a date far in the past 
@@ -327,7 +391,7 @@ def construct_repository_update_schema(product_features_raw, all_capabilities_ra
     # Combine entities in dependency order: PF -> CA -> TF
     entities = pf_entities_list + ca_entities_list + tf_entities_list
     
-    # 3. Construct the final output JSON
+    # 4. Construct the final output JSON
     output_json = {
         "metadata": {
             "version": "0.0", # Incrementing version
@@ -364,12 +428,12 @@ def main():
         default=DEFAULT_CA_CSV,
         help=f"Path to the Capabilities CSV (capabilities.csv). Default: {DEFAULT_CA_CSV}"
     )
-    # parser.add_argument(
-    #     '--tf-csv',
-    #     type=str,
-    #     default=DEFAULT_TF_CSV,
-    #     help=f"Path to the Capability-to-Tech CSV (capability_to_tech.csv). Default: {DEFAULT_TF_CSV}"
-    # )
+    parser.add_argument(
+        '--tf-csv',
+        type=str,
+        default=DEFAULT_TF_CSV,
+        help=f"Path to the Capability-to-Tech CSV (capability_to_tech.csv). Default: {DEFAULT_TF_CSV}"
+    )
     parser.add_argument(
         '-o', '--output',
         type=str,
@@ -382,11 +446,14 @@ def main():
     # 1. Load data from CSVs
     print(f"Starting data processing: {CURRENT_DATE.strftime(DATE_FORMAT)}.")
     product_features_raw = load_product_features(args.pf_csv)
-    all_capabilities_raw = load_capabilities(args.ca_csv)
+    capabilities_raw = load_capabilities(args.ca_csv)
+    technical_functions_raw = load_fake_technical_functions(capabilities_raw)
     
     print("\n--- Final Schema Transformation ---")
     # 2. Transform the intermediate structure into the new repository update schema
-    final_data = construct_repository_update_schema(product_features_raw, all_capabilities_raw)
+    final_data = construct_repository_update_schema(product_features_raw, 
+                                                    capabilities_raw, 
+                                                    technical_functions_raw)
     print(f"Constructed final data structure with {len(final_data['entities'])} entities.")
 
     # 3. Output to JSON
