@@ -533,7 +533,7 @@ def export_miro_roadmap():
     # Get all assessments with related data
     assessments = db.session.query(ReadinessAssessment).join(
         TechnicalFunction
-    ).join(ProductFeature).join(TechnicalReadinessLevel).all()
+    ).join(TechnicalReadinessLevel).all()
     
     # Create roadmap structure
     roadmap_data = {
@@ -551,27 +551,45 @@ def export_miro_roadmap():
         "items": []
     }
     
-    # Group assessments by product feature (swim lanes)
+    # Group assessments by technical function (since we don't have direct product feature relationship)
     for assessment in assessments:
-        product_name = assessment.technical_function.product_feature.name
+        tech_func = assessment.technical_function
         
-        if product_name not in roadmap_data["swim_lanes"]:
-            roadmap_data["swim_lanes"][product_name] = {
-                "name": product_name,
-                "description": assessment.technical_function.product_feature.description or "",
-                "vehicle_type": assessment.technical_function.product_feature.vehicle_platform.vehicle_type if assessment.technical_function.product_feature.vehicle_platform else "truck",
-                "document_url": assessment.technical_function.product_feature.document_url,
+        # Find product features through capabilities
+        product_features = []
+        for capability in tech_func.capabilities:
+            if capability.product_feature:
+                product_features.append(capability.product_feature)
+        
+        # Use the technical function as the swim lane if no product features found
+        if not product_features:
+            lane_name = f"Technical Function: {tech_func.name}"
+            lane_description = tech_func.description or ""
+            lane_doc_url = tech_func.document_url
+        else:
+            # Use the first product feature as the swim lane
+            pf = product_features[0]
+            lane_name = pf.name
+            lane_description = pf.description or ""
+            lane_doc_url = pf.document_url
+        
+        if lane_name not in roadmap_data["swim_lanes"]:
+            roadmap_data["swim_lanes"][lane_name] = {
+                "name": lane_name,
+                "description": lane_description,
+                "vehicle_type": assessment.vehicle_platform.vehicle_type if assessment.vehicle_platform else "truck",
+                "document_url": lane_doc_url,
                 "items": []
             }
         
         # Create roadmap item
         item = {
             "id": f"assessment_{assessment.id}",
-            "title": assessment.technical_function.name,
-            "description": assessment.notes or f"Assessment for {assessment.technical_function.name}",
-            "product_feature": product_name,
-            "product_feature_document_url": assessment.technical_function.product_feature.document_url,
-            "technical_function_document_url": assessment.technical_function.document_url,
+            "title": tech_func.name,
+            "description": assessment.notes or f"Assessment for {tech_func.name}",
+            "swim_lane": lane_name,
+            "product_feature_document_url": product_features[0].document_url if product_features else None,
+            "technical_function_document_url": tech_func.document_url,
             "current_trl": assessment.readiness_level.level,
             "current_trl_name": assessment.readiness_level.name,
             "status": assessment.current_status,
@@ -620,7 +638,7 @@ def export_miro_csv():
     # Get all assessments with proper joins
     assessments = db.session.query(ReadinessAssessment).join(
         TechnicalFunction
-    ).join(ProductFeature).join(TechnicalReadinessLevel).join(
+    ).join(TechnicalReadinessLevel).join(
         VehiclePlatform
     ).join(ODD).join(Environment).all()
     
@@ -637,12 +655,32 @@ def export_miro_csv():
     ])
     
     for assessment in assessments:
+        tech_func = assessment.technical_function
+        
+        # Find product features through capabilities
+        product_features = []
+        for capability in tech_func.capabilities:
+            if capability.product_feature:
+                product_features.append(capability.product_feature)
+        
+        # Use first product feature or technical function name
+        product_feature_name = product_features[0].name if product_features else f"Technical Function: {tech_func.name}"
+        product_feature_doc_url = product_features[0].document_url if product_features else ""
+        
         timeline_pos = calculate_timeline_position(assessment)
+        
+        # Get product features associated with this technical function
+        product_features = [pf.name for pf in assessment.technical_function.capabilities]
+        product_feature_name = ", ".join(product_features) if product_features else "No Product Feature"
+        
+        # Get document URLs
+        doc_urls = [pf.document_url for pf in assessment.technical_function.capabilities if pf.document_url]
+        doc_url = ", ".join(doc_urls) if doc_urls else ""
         
         writer.writerow([
             assessment.technical_function.name,
             assessment.technical_function.description or assessment.notes or "",
-            assessment.technical_function.product_feature.name,
+            product_feature_name,
             f"TRL {assessment.readiness_level.level}: {assessment.readiness_level.name}",
             assessment.current_status.upper() if assessment.current_status else "NOT_SET",
             get_status_color(assessment.current_status),
@@ -654,7 +692,7 @@ def export_miro_csv():
             assessment.scheduled_completion_date.strftime("%Y-%m-%d") if assessment.scheduled_completion_date else "",
             f"Q{timeline_pos['quarter']}",
             assessment.notes or "",
-            assessment.technical_function.product_feature.document_url or "",
+            doc_url,
             assessment.technical_function.document_url or ""
         ])
     
