@@ -33,58 +33,6 @@ def get_random_subset(collection, min_count=2, max_count=5):
     # Select a random subset of labels without replacement
     return random.sample(all_labels, subset_size)
 
-def generate_random_date_range():
-    """
-    Generates a random start date (Nov 2025 - Dec 2026) and a corresponding 
-    end date that is randomly 3 or 6 months later.
-
-    Returns:
-        tuple: A tuple containing (start_date, end_date, months_apart) 
-               as formatted strings (YYYY-MM-DD).
-    """
-    # 1. Define the overall start/end boundaries
-    # We'll use the 1st of the month for easy calculation.
-    min_date = date(2025, 11, 1)  # Nov 1, 2025
-    max_date = date(2026, 12, 1)  # Dec 1, 2026 (The furthest the start date can be)
-
-    # 2. Generate a list of all possible valid starting dates (1st of each month)
-    # The start date must allow for a 6-month leap to stay within a reasonable range
-    # of the target end date (Dec 2026).
-    
-    # We must ensure the start date + 6 months doesn't go past Dec 2026.
-    # The last possible start date for a 6-month interval is July 2026 (July + 6 mo = Jan 2027)
-    # So, we'll set the furthest random start to June 2026 (June 1, 2026) to allow a 6-month end date in Dec 2026.
-    
-    
-    possible_starts = []
-    current_date = min_date
-    
-    # Stop the starting date in June 2026 to ensure the 6-month range can end in Dec 2026.
-    while current_date <= date(2026, 6, 1):
-        possible_starts.append(current_date)
-        # Add one month to the current date
-        current_date += relativedelta(months=+1)
-
-    # If the list is empty (shouldn't happen with the current range, but for safety)
-    if not possible_starts:
-        return "Error: No valid start dates found in the range.", None, None
-
-    # 3. Select a random start date from the valid list
-    start_date = random.choice(possible_starts)
-
-    # 4. Randomly select the duration (3 or 6 months)
-    months_apart = random.choice([3, 6])
-
-    # 5. Calculate the end date using the selected duration
-    end_date = start_date + relativedelta(months=months_apart)
-
-    # 6. Return the results
-    return (
-        start_date.strftime("%Y-%m-%d"), 
-        end_date.strftime("%Y-%m-%d"), 
-        months_apart
-    )
-
 def get_capability_dates(cap_label, ca_list):
     """Retrieves the planned start and end dates for a given capability label."""
     for cap_entity in ca_list:
@@ -115,18 +63,14 @@ def load_product_features(file_path):
             IDX_TRAILER = 6
             IDX_DETAILS = 7
             IDX_NEXT = 8
+            IDX_START_DATE = 10
+            IDX_END_DATE = 11
 
             previous_swimlane = ''
             for row in reader:
                 if not row or not row[IDX_NAME].strip():
                     continue
 
-                # NOTE: We ignore the the following swimlanes as they are
-                #       dependencies:
-                #
-                # - Operational Environment
-                # - Environmental conditions
-                # - Cargo
                 swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
                 if swimlane != '': previous_swimlane = swimlane
 
@@ -134,16 +78,6 @@ def load_product_features(file_path):
                 name = row[IDX_NAME].strip()
 
                 if label and name:
-                    dependencies = []
-                    details = row[IDX_DETAILS].strip()
-                    if details:
-                         for line in details.split('\n'):
-                            line = line.strip()
-                            if line.startswith('* PF-'):
-                                dep_label = line.split(' ')[1].strip()
-                                if dep_label.startswith('PF-'):
-                                    dependencies.append(dep_label)
-
                     product_features[label] = {
                         'name': name,
                         'label': label,
@@ -152,9 +86,10 @@ def load_product_features(file_path):
                         'odd': row[IDX_ODD].strip() or '',
                         'environment': row[IDX_ENVIRONMENT].strip() or '',
                         'trailer': row[IDX_TRAILER].strip() or '',
-                        'details': details,
+                        'start_date': row[IDX_START_DATE].strip() or '',
+                        'end_date': row[IDX_END_DATE].strip() or '',
+                        'details': row[IDX_DETAILS].strip() or '',
                         'next': row[IDX_NEXT].strip() or 'N', 
-                        'dependencies': list(set(dependencies)), 
                         'capabilities': []
                     }
     except Exception as e:
@@ -244,6 +179,48 @@ def load_fake_technical_functions(capabilities):
 
     return technical_functions
 
+def get_start_and_end_dates_from_product_features(pf_labels, product_features_raw):
+    """Get start / end dates for product features."""
+
+    min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
+    max_end_date = date(1, 1, 1)         # Initialize with a date far in the past 
+
+    for pf_label in pf_labels:
+
+        # IMPORTANT: Make sure this value exists!
+        if pf_label not in product_features_raw:
+            print("Warning: Could not find " + pf_label + " in product "
+                  "features. This means it is linked in a capability, but "
+                  "does not actually exist in the product features.")
+            continue
+
+        # 1. Get the date string from the raw data
+        start_date_str = product_features_raw[pf_label]['start_date']
+        end_date_str = product_features_raw[pf_label]['end_date']
+        
+        # 2. Convert the string to a datetime.date object
+        try:
+            start_date = datetime.strptime(start_date_str, "%b %Y").date()
+        except ValueError:
+            # Handle cases where the string might not be a valid date, 
+            # or log an error and skip/assign a default.
+            print(f"Warning: Could not parse start_date '{start_date_str}' for feature '{pf_label}'")
+            continue # Skip this feature if the date is invalid
+
+        if start_date < min_start_date:
+            min_start_date = start_date
+
+        try:
+            end_date = datetime.strptime(end_date_str, "%b %Y").date()
+        except ValueError:
+            print(f"Warning: Could not parse end_date '{end_date_str}' for feature '{pf_label}'")
+            continue # Skip this feature if the date is invalid
+
+        if end_date > max_end_date:
+            max_end_date = end_date
+
+    return min_start_date.strftime("%Y-%m-%d"), max_end_date.strftime("%Y-%m-%d")
+
 # --- Final Transformation Function ---
 
 def construct_repository_update_schema(product_features_raw, 
@@ -265,9 +242,6 @@ def construct_repository_update_schema(product_features_raw,
     # 1. Process Capabilities.
     for cap_label, cap_data in capabilities_raw.items():
 
-        # TODO: Replace with actual start / end dates.
-        start_date, end_date, _ = generate_random_date_range()
-
         # HACK: If cap lables are empty, then select a random one.
         pf_labels = cap_data['product_features_linked']
         if not pf_labels:
@@ -284,6 +258,10 @@ def construct_repository_update_schema(product_features_raw,
         for tf_label in tf_labels:
             tf_to_cap_labels[tf_label].append(cap_label)
 
+        # IMPORTANT: Get the start / end date from the product features.
+        min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
+            pf_labels, product_features_raw)
+
         cap_entity = {
             "_comment": f"=== CREATING CAPABILITY: {cap_label} ===",
             "entity_type": "capability",
@@ -291,10 +269,9 @@ def construct_repository_update_schema(product_features_raw,
             "name": cap_data['name'],
             "swimlane_decorators": f"{cap_data['swimlane']} - {cap_label}",
             "label": cap_label,
-            # "vehicle_type": cap_data['platform'] if cap_data['platform'] != 'N/A' else '',
             "vehicle_platform_id": 8,
-            "planned_start_date": start_date,
-            "planned_end_date": end_date,
+            "planned_start_date": min_start_date,
+            "planned_end_date": max_end_date,
             "tmos": "", 
             "progress_relative_to_tmos": "0.0", 
             "technical_functions": [t['label'] for t in cap_data['tech_features']],
@@ -307,18 +284,19 @@ def construct_repository_update_schema(product_features_raw,
 
         # Determine all product feature dependencies.
         capabilities = tf_to_cap_labels[tf_label]
-        product_feature_dependencies = set()
+        pf_labels = set()
         for pf_label, cap_labels in pf_to_cap_labels.items():
             for cap_label in capabilities:
-                product_feature_dependencies.add(pf_label)
-
+                if pf_label in product_features_raw:
+                    pf_labels.add(pf_label)
 
         # Find the name of the linked product feature
-        product_feature_label = random.choice(list(product_feature_dependencies))
+        product_feature_label = random.choice(list(pf_labels))
         product_feature_name = product_features_raw[product_feature_label]['name']
 
-        # TODO: Replace with actual start / end dates.
-        start_date, end_date, _ = generate_random_date_range()
+        # IMPORTANT: Get the start / end date from the product features.
+        min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
+            pf_labels, product_features_raw)
 
         tf_entity = {
             "_comment": f"=== CREATING TECHNICAL FUNCTION WITH MULTIPLE DEPENDENCIES ===",
@@ -330,9 +308,9 @@ def construct_repository_update_schema(product_features_raw,
             "vehicle_platform_id": 8,
             "tmos": "",
             "status_relative_to_tmos": "0.0",
-            "planned_start_date": start_date,
-            "planned_end_date": end_date,
-            "product_feature_dependencies": list(product_feature_dependencies),
+            "planned_start_date": min_start_date,
+            "planned_end_date": max_end_date,
+            "product_feature_dependencies": list(pf_labels),
             "product_feature": product_feature_name,
             "capabilities": capabilities,
             "capability_dependencies": "",
@@ -341,43 +319,18 @@ def construct_repository_update_schema(product_features_raw,
         tf_entities_list.append(tf_entity)
         
     # 3. Process Product Features (PF)
-    for pf_label, pf_data in product_features_raw.items():    
-        min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
-        max_end_date = date(1, 1, 1)        # Initialize with a date far in the past 
-        cap_labels = pf_to_cap_labels[pf_label]
-        for cap_label in cap_labels:
-            # Retrieve the date strings from the CA entity list (created in step 1)
-            start_date_str, end_date_str = get_capability_dates(cap_label, ca_entities_list)
-            
-            if start_date_str and end_date_str:
-                # Convert the date strings back to date objects for comparison
-                current_start = date.fromisoformat(start_date_str)
-                current_end = date.fromisoformat(end_date_str)
-                
-                # Find the earliest start date
-                if current_start < min_start_date:
-                    min_start_date = current_start
-                    
-                # Find the latest end date
-                if current_end > max_end_date:
-                    max_end_date = current_end
-
-        # Only set if at least one capability was found and processed.
-        pf_start_date_str = min_start_date.strftime("%Y-%m-%d") if min_start_date != date(9999, 12, 31) else ""
-        pf_end_date_str = max_end_date.strftime("%Y-%m-%d") if max_end_date != date(1, 1, 1) else ""
-                    
+    for pf_label, pf_data in product_features_raw.items():                        
         pf_entity = {
             "_comment": f"=== CREATING PRODUCT FEATURE: {pf_label} ===",
             "entity_type": "product_feature",
             "operation": "create",
             "name": pf_data['name'],
-            "description": "", #pf_data['details'],
+            "description": "",
             "swimlane_decorators": pf_data['swimlane'],
             "label": pf_label,
-            # "vehicle_type": pf_data['platform'] if pf_data['platform'] != 'N/A' else '',
             "vehicle_platform_id": 8,
-            "planned_start_date": pf_start_date_str,
-            "planned_end_date": pf_end_date_str,
+            "planned_start_date": pf_data['start_date'],
+            "planned_end_date": pf_data['end_date'],
             "active_flag": "next" if pf_data.get('next', '').upper() == 'Y' else 'current',
             "tmos": "",
             "status_relative_to_tmos": "0.0",
