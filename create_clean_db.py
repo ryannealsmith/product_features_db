@@ -123,7 +123,7 @@ def create_demo_data():
         db.session.add(demo_pf)
         db.session.flush()
         
-        # Create Capabilities owned by this ProductFeature
+        # Create Capabilities (no longer owned by ProductFeature due to M:N relationship)
         capabilities_data = [
             {
                 "name": "DEMO: Port Navigation",
@@ -150,7 +150,6 @@ def create_demo_data():
             capability = Capabilities(
                 name=cap_data["name"],
                 success_criteria=cap_data["success_criteria"],
-                product_feature_id=demo_pf.id,
                 vehicle_platform_id=1,
                 tmos=cap_data["tmos"],
                 progress_relative_to_tmos=cap_data["progress"],
@@ -161,6 +160,49 @@ def create_demo_data():
             created_capabilities.append(capability)
         
         db.session.flush()
+        
+        # Link Capabilities to ProductFeature using many-to-many relationship
+        for capability in created_capabilities:
+            demo_pf.capabilities.append(capability)
+        
+        # Create a second ProductFeature to demonstrate shared capabilities
+        demo_pf2 = ProductFeature(
+            name="Highway Autonomous Driving",
+            description="DEMO DATA: Autonomous driving capabilities for highway environments",
+            vehicle_platform_id=1,  # Truck Platform
+            swimlane_decorators="Highway, Autonomous, ADAS",
+            label="PF-HWY-1.0",
+            tmos="Autonomous highway driving with 99.9% safety record",
+            status_relative_to_tmos=45.0,
+            planned_start_date=date(2024, 6, 1),
+            planned_end_date=date(2026, 6, 30),
+            active_flag="next",
+            document_url="https://docs.example.com/highway-driving"
+        )
+        
+        db.session.add(demo_pf2)
+        db.session.flush()
+        
+        # Create a shared capability and assign it to both ProductFeatures
+        shared_capability = Capabilities(
+            name="DEMO: Advanced Safety Monitoring",
+            success_criteria="Multi-sensor safety monitoring for all environments",
+            vehicle_platform_id=1,
+            tmos="Universal safety monitoring across all operational domains",
+            progress_relative_to_tmos=65.0,
+            planned_start_date=date(2024, 1, 1),
+            planned_end_date=date(2025, 12, 31)
+        )
+        
+        db.session.add(shared_capability)
+        db.session.flush()
+        
+        # Link shared capability to both ProductFeatures (demonstrating M:N)
+        demo_pf.capabilities.append(shared_capability)
+        demo_pf2.capabilities.append(shared_capability)
+        
+        # Add the shared capability to the list for TechnicalFunction linking
+        created_capabilities.append(shared_capability)
         
         # Create TechnicalFunctions that implement these capabilities
         tech_functions_data = [
@@ -223,14 +265,16 @@ def create_demo_data():
         
         print(f"✅ Created demo data:")
         print(f"   • ProductFeature: {demo_pf.name}")
-        print(f"   • {len(created_capabilities)} Capabilities")
+        print(f"   • ProductFeature: {demo_pf2.name}")
+        print(f"   • {len(created_capabilities)} Capabilities (including 1 shared)")
         print(f"   • {len(tech_functions_data)} TechnicalFunctions")
+        print(f"   • Demonstrated M:N relationship with shared 'Advanced Safety Monitoring' capability")
 
 def main():
     """Main function"""
     print("🚀 Creating clean database with new relationship structure...")
     print("=" * 60)
-    print("STRUCTURE: ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction")
+    print("STRUCTURE: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction")
     print("=" * 60)
     
     create_clean_database()
@@ -239,9 +283,9 @@ def main():
     print("\n" + "=" * 60)
     print("✅ DATABASE CREATED SUCCESSFULLY!")
     print("\n🎯 New Relationship Structure:")
-    print("   • ProductFeature owns Capabilities (1:N)")
-    print("   • Capabilities implemented by TechnicalFunctions (M:N)")
-    print("   • Clean separation of concerns")
+    print("   • ProductFeature ↔ Capabilities (M:N)")
+    print("   • Capabilities ↔ TechnicalFunctions (M:N)")
+    print("   • Capabilities can be shared across multiple ProductFeatures")
     print("\n📊 Ready for testing with the Flask application!")
 
 if __name__ == "__main__":
