@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add Technical Function{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-plus"></i> New Technical Function</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Technical Function Name *</label>
+                        <input type="text" name="name" id="name" class="form-control" required
+                               placeholder="Enter technical function name">
+                        <div class="form-text">Unique name for this technical function</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="vehicle_platform_id" class="form-label">Vehicle Platform</label>
+                        <select name="vehicle_platform_id" id="vehicle_platform_id" class="form-select">
+                            <option value="">Select Vehicle Platform</option>
+                            {% for platform in vehicle_platforms %}
+                            <option value="{{ platform.id }}">
+                                {{ platform.name }} ({{ platform.vehicle_type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Target vehicle platform for this function</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="description" id="description" class="form-control" rows="3"
+                          placeholder="Describe what this technical function does and how it works..."></textarea>
+                <div class="form-text">Detailed description of the technical function</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="success_criteria" class="form-label">Success Criteria *</label>
+                <textarea name="success_criteria" id="success_criteria" class="form-control" rows="3" required
+                          placeholder="Define clear success criteria for this technical function..."></textarea>
+                <div class="form-text">Measurable criteria that define successful implementation</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="status_relative_to_tmos" class="form-label">Status (% of TMOS)</label>
+                        <input type="number" name="status_relative_to_tmos" id="status_relative_to_tmos" 
+                               class="form-control" min="0" max="100" step="0.1" value="0.0"
+                               placeholder="0.0">
+                        <div class="form-text">Status percentage relative to Target Measure of Success</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="capability_ids" class="form-label">Implementing Capabilities</label>
+                        <select name="capability_ids" id="capability_ids" class="form-select" multiple>
+                            {% for capability in capabilities %}
+                            <option value="{{ capability.id }}">
+                                {{ capability.name }}
+                                {% if capability.product_feature %}
+                                    ({{ capability.product_feature.name }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Capabilities that this technical function implements (hold Ctrl/Cmd to select multiple)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="tmos" class="form-label">Target Measure of Success (TMOS)</label>
+                <textarea name="tmos" id="tmos" class="form-control" rows="2"
+                          placeholder="Define the target measure of success for this technical function..."></textarea>
+                <div class="form-text">Clear definition of what success looks like for this function</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="planned_start_date" class="form-label">Planned Start Date</label>
+                        <input type="date" name="planned_start_date" id="planned_start_date" class="form-control">
+                        <div class="form-text">When development of this function should begin</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="planned_end_date" class="form-label">Planned End Date</label>
+                        <input type="date" name="planned_end_date" id="planned_end_date" class="form-control">
+                        <div class="form-text">When this function should be completed</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="document_url" class="form-label">Documentation URL</label>
+                <input type="url" name="document_url" id="document_url" class="form-control"
+                       placeholder="https://docs.example.com/technical-function-spec">
+                <div class="form-text">Optional link to detailed documentation or specifications</div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('technical_capabilities') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Technical Functions
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Technical Function
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Information Panel -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Technical Function Guidelines</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>What is a Technical Function?</h6>
+                <ul class="mb-0">
+                    <li>A specific technical implementation or algorithm</li>
+                    <li>Implements one or more capabilities</li>
+                    <li>Has measurable success criteria and performance metrics</li>
+                    <li>Can be developed and tested independently</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Best Practices</h6>
+                <ul class="mb-0">
+                    <li>Use specific, technical names describing the function</li>
+                    <li>Include performance requirements in success criteria</li>
+                    <li>Link to capabilities that this function implements</li>
+                    <li>Define clear acceptance criteria for testing</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <h6>Examples of Technical Functions</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Algorithms:</strong>
+                    <ul class="small mb-0">
+                        <li>Path Planning Algorithm</li>
+                        <li>Object Detection Model</li>
+                        <li>Sensor Fusion Engine</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <strong>Controllers:</strong>
+                    <ul class="small mb-0">
+                        <li>Steering Controller</li>
+                        <li>Brake Controller</li>
+                        <li>Throttle Controller</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <strong>Interfaces:</strong>
+                    <ul class="small mb-0">
+                        <li>CAN Bus Interface</li>
+                        <li>Sensor Data Interface</li>
+                        <li>HMI Communication</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation and UX improvements
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const startDateInput = document.getElementById('planned_start_date');
+    const endDateInput = document.getElementById('planned_end_date');
+    
+    // Date validation
+    function validateDates() {
+        if (startDateInput.value && endDateInput.value) {
+            if (new Date(startDateInput.value) > new Date(endDateInput.value)) {
+                endDateInput.setCustomValidity('End date must be after start date');
+            } else {
+                endDateInput.setCustomValidity('');
+            }
+        }
+    }
+    
+    startDateInput.addEventListener('change', validateDates);
+    endDateInput.addEventListener('change', validateDates);
+    
+    // Status validation
+    const statusInput = document.getElementById('status_relative_to_tmos');
+    statusInput.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        if (value < 0 || value > 100) {
+            this.setCustomValidity('Status must be between 0 and 100');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Multi-select helper text
+    const capabilitySelect = document.getElementById('capability_ids');
+    if (capabilitySelect.options.length === 0) {
+        const helpText = capabilitySelect.parentNode.querySelector('.form-text');
+        helpText.innerHTML = '<em>No capabilities available. Create capabilities first before adding technical functions.</em>';
+        helpText.className = 'form-text text-warning';
+    }
+    
+    // Form submission confirmation
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('name').value;
+        const selectedCapabilities = Array.from(capabilitySelect.selectedOptions).map(opt => opt.text);
+        
+        let message = `Create technical function "${name}"?`;
+        if (selectedCapabilities.length > 0) {
+            message += `\n\nImplementing capabilities:\n• ${selectedCapabilities.join('\n• ')}`;
+        }
+        
+        if (!confirm(message)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

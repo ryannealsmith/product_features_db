@@ -168,9 +168,9 @@ def create_product_feature(data):
         db.session.flush()  # Get the ID
         
         # Handle relationships
-        if 'capabilities_required' in data:
-            capabilities = find_or_create_references(data['capabilities_required'], 'capability')
-            product_feature.capabilities_required.extend(capabilities)
+        if 'capabilities' in data:
+            capabilities = find_or_create_references(data['capabilities'], 'capability')
+            product_feature.capabilities.extend(capabilities)
         
         if 'dependencies' in data:
             dependencies = find_or_create_references(data['dependencies'], 'product_feature')
@@ -219,11 +219,11 @@ def update_product_feature(data):
                 updates_made.append(date_field)
         
         # Update relationships
-        if 'capabilities_required' in data:
-            product_feature.capabilities_required.clear()
-            capabilities = find_or_create_references(data['capabilities_required'], 'capability')
-            product_feature.capabilities_required.extend(capabilities)
-            updates_made.append('capabilities_required')
+        if 'capabilities' in data:
+            product_feature.capabilities.clear()
+            capabilities = find_or_create_references(data['capabilities'], 'capability')
+            product_feature.capabilities.extend(capabilities)
+            updates_made.append('capabilities')
         
         if 'dependencies' in data:
             product_feature.dependencies.clear()
@@ -254,9 +254,21 @@ def create_capability(data):
         elif 'vehicle_type' in data:
             vehicle_platform_id = get_vehicle_platform_id(data['vehicle_type'])
         
+        # Find required product feature
+        product_feature = None
+        if 'product_feature' in data:
+            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            if not product_feature:
+                print(f"Product feature '{data['product_feature']}' not found for capability")
+                return False
+        else:
+            print("Product feature is required for capability in new database structure")
+            return False
+        
         capability = Capabilities(
             name=data['name'],
             success_criteria=data.get('success_criteria', ''),
+            product_feature_id=product_feature.id,
             vehicle_platform_id=vehicle_platform_id,
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
@@ -272,10 +284,6 @@ def create_capability(data):
         if 'technical_functions' in data:
             tech_functions = find_or_create_references(data['technical_functions'], 'technical_function')
             capability.technical_functions.extend(tech_functions)
-        
-        if 'product_features' in data:
-            product_features = find_or_create_references(data['product_features'], 'product_feature')
-            capability.product_features.extend(product_features)
         
         print(f"Created capability: {capability.name}")
         return True
@@ -318,18 +326,21 @@ def update_capability(data):
                 setattr(capability, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
+        # Update product feature if provided
+        if 'product_feature' in data:
+            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            if product_feature:
+                capability.product_feature_id = product_feature.id
+                updates_made.append('product_feature')
+            else:
+                print(f"Warning: Product feature '{data['product_feature']}' not found")
+        
         # Update relationships
         if 'technical_functions' in data:
             capability.technical_functions.clear()
             tech_functions = find_or_create_references(data['technical_functions'], 'technical_function')
             capability.technical_functions.extend(tech_functions)
             updates_made.append('technical_functions')
-        
-        if 'product_features' in data:
-            capability.product_features.clear()
-            product_features = find_or_create_references(data['product_features'], 'product_feature')
-            capability.product_features.extend(product_features)
-            updates_made.append('product_features')
         
         print(f"Updated capability '{capability.name}': {', '.join(updates_made)}")
         return True
@@ -345,17 +356,6 @@ def create_technical_function(data):
         existing = TechnicalFunction.query.filter_by(name=data['name']).first()
         if existing:
             print(f"Technical function '{data['name']}' already exists, skipping creation")
-            return False
-        
-        # Find required product feature
-        product_feature = None
-        if 'product_feature' in data:
-            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
-            if not product_feature:
-                print(f"Product feature '{data['product_feature']}' not found for technical function")
-                return False
-        else:
-            print("Product feature is required for technical function")
             return False
         
         # Handle both old and new vehicle field formats
@@ -374,25 +374,16 @@ def create_technical_function(data):
             status_relative_to_tmos=float(data.get('status_relative_to_tmos', 0.0)),
             planned_start_date=parse_date(data.get('planned_start_date')),
             planned_end_date=parse_date(data.get('planned_end_date')),
-            product_feature_id=product_feature.id,
             document_url=data.get('document_url')
         )
         
         db.session.add(technical_function)
         db.session.flush()  # Get the ID
         
-        # Handle relationships
+        # Handle relationships - TechnicalFunctions are now linked through Capabilities
         if 'capabilities' in data:
             capabilities = find_or_create_references(data['capabilities'], 'capability')
             technical_function.capabilities.extend(capabilities)
-        
-        if 'product_feature_dependencies' in data:
-            pf_dependencies = find_or_create_references(data['product_feature_dependencies'], 'product_feature')
-            technical_function.product_feature_dependencies.extend(pf_dependencies)
-        
-        if 'capability_dependencies' in data:
-            cap_dependencies = find_or_create_references(data['capability_dependencies'], 'capability')
-            technical_function.capability_dependencies.extend(cap_dependencies)
         
         print(f"Created technical function: {technical_function.name}")
         return True
@@ -435,33 +426,12 @@ def update_technical_function(data):
                 setattr(technical_function, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
-        # Update product feature if provided
-        if 'product_feature' in data:
-            product_feature = ProductFeature.query.filter_by(name=data['product_feature']).first()
-            if product_feature:
-                technical_function.product_feature_id = product_feature.id
-                updates_made.append('product_feature')
-            else:
-                print(f"Warning: Product feature '{data['product_feature']}' not found")
-        
-        # Update relationships
+        # Update relationships - TechnicalFunctions are now linked through Capabilities
         if 'capabilities' in data:
             technical_function.capabilities.clear()
             capabilities = find_or_create_references(data['capabilities'], 'capability')
             technical_function.capabilities.extend(capabilities)
             updates_made.append('capabilities')
-        
-        if 'product_feature_dependencies' in data:
-            technical_function.product_feature_dependencies.clear()
-            pf_dependencies = find_or_create_references(data['product_feature_dependencies'], 'product_feature')
-            technical_function.product_feature_dependencies.extend(pf_dependencies)
-            updates_made.append('product_feature_dependencies')
-        
-        if 'capability_dependencies' in data:
-            technical_function.capability_dependencies.clear()
-            cap_dependencies = find_or_create_references(data['capability_dependencies'], 'capability')
-            technical_function.capability_dependencies.extend(cap_dependencies)
-            updates_made.append('capability_dependencies')
         
         print(f"Updated technical function '{technical_function.name}': {', '.join(updates_made)}")
         return True
@@ -1270,7 +1240,8 @@ def export_current_data(output_file='current_data.json'):
                 pf_data = {
                     "name": pf.name,
                     "description": pf.description,
-                    "vehicle_type": pf.vehicle_type,
+                    "vehicle_platform_id": pf.vehicle_platform_id,
+                    "vehicle_platform_name": pf.vehicle_platform.name if pf.vehicle_platform else None,
                     "swimlane_decorators": pf.swimlane_decorators,
                     "label": pf.label,
                     "tmos": pf.tmos,
@@ -1278,9 +1249,10 @@ def export_current_data(output_file='current_data.json'):
                     "planned_start_date": pf.planned_start_date.isoformat() if pf.planned_start_date else None,
                     "planned_end_date": pf.planned_end_date.isoformat() if pf.planned_end_date else None,
                     "active_flag": pf.active_flag,
-                    "capabilities_required": [cap.name for cap in pf.capabilities_required],
+                    "document_url": pf.document_url,
+                    "capabilities": [cap.name for cap in pf.capabilities],
                     "dependencies": [dep.name for dep in pf.dependencies],
-                    "technical_functions_count": len(pf.technical_capabilities)
+                    "capabilities_count": len(pf.capabilities)
                 }
                 export_data["product_features"].append(pf_data)
             
@@ -1290,13 +1262,17 @@ def export_current_data(output_file='current_data.json'):
                 cap_data = {
                     "name": cap.name,
                     "success_criteria": cap.success_criteria,
-                    "vehicle_type": cap.vehicle_type,
+                    "product_feature_id": cap.product_feature_id,
+                    "product_feature_name": cap.product_feature.name if cap.product_feature else None,
+                    "vehicle_platform_id": cap.vehicle_platform_id,
+                    "vehicle_platform_name": cap.vehicle_platform.name if cap.vehicle_platform else None,
                     "planned_start_date": cap.planned_start_date.isoformat() if cap.planned_start_date else None,
                     "planned_end_date": cap.planned_end_date.isoformat() if cap.planned_end_date else None,
                     "tmos": cap.tmos,
                     "progress_relative_to_tmos": cap.progress_relative_to_tmos,
+                    "document_url": cap.document_url,
                     "technical_functions": [tf.name for tf in cap.technical_functions],
-                    "product_features": [pf.name for pf in cap.product_features]
+                    "technical_functions_count": len(cap.technical_functions)
                 }
                 export_data["capabilities"].append(cap_data)
             
@@ -1307,15 +1283,15 @@ def export_current_data(output_file='current_data.json'):
                     "name": tf.name,
                     "description": tf.description,
                     "success_criteria": tf.success_criteria,
-                    "vehicle_type": tf.vehicle_type,
+                    "vehicle_platform_id": tf.vehicle_platform_id,
+                    "vehicle_platform_name": tf.vehicle_platform.name if tf.vehicle_platform else None,
                     "tmos": tf.tmos,
                     "status_relative_to_tmos": tf.status_relative_to_tmos,
                     "planned_start_date": tf.planned_start_date.isoformat() if tf.planned_start_date else None,
                     "planned_end_date": tf.planned_end_date.isoformat() if tf.planned_end_date else None,
-                    "product_feature": tf.product_feature.name if tf.product_feature else None,
+                    "document_url": tf.document_url,
                     "capabilities": [cap.name for cap in tf.capabilities],
-                    "product_feature_dependencies": [pf.name for pf in tf.product_feature_dependencies],
-                    "capability_dependencies": [cap.name for cap in tf.capability_dependencies],
+                    "capabilities_count": len(tf.capabilities),
                     "assessment_count": len(tf.readiness_assessments)
                 }
                 export_data["technical_functions"].append(tf_data)
@@ -1354,10 +1330,13 @@ def main():
         print("- Capabilities") 
         print("- Technical Functions")
         print("")
+        print("New Database Structure (v3.0):")
+        print("  ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction")
+        print("")
         print("JSON Structure:")
         print("  {")
         print('    "metadata": {')
-        print('      "version": "2.0",')
+        print('      "version": "3.0",')
         print('      "description": "Description of updates",')
         print('      "created_by": "Ryan Smith",')
         print('      "created_date": "2025-10-21"')
@@ -1368,7 +1347,7 @@ def main():
         print('        "operation": "create|update|delete",')
         print('        "name": "Entity Name",')
         print('        "description": "Entity description",')
-        print('        "vehicle_type": "truck|van|car",')
+        print('        "vehicle_platform_id": 5,  // Use platform ID, not vehicle_type')
         print('        "planned_start_date": "2025-01-01",')
         print('        "planned_end_date": "2025-12-31",')
         print('        "tmos": "Target Measure of Success",')
@@ -1383,22 +1362,26 @@ def main():
         print('  "label": "PF-SWIM-1.1",')
         print('  "status_relative_to_tmos": 85.5,')
         print('  "active_flag": "next",')
-        print('  "capabilities_required": ["Capability 1", "Capability 2"],')
+        print('  "document_url": "https://docs.example.com/doc",')
+        print('  "capabilities": ["Capability 1", "Capability 2"],')
         print('  "dependencies": ["Other Product Feature"]')
         print("")
         print("Capability:")
         print('  "success_criteria": "Success criteria text",')
+        print('  "product_feature": "Required Product Feature Name",  // Required!')
         print('  "progress_relative_to_tmos": 75.0,')
-        print('  "technical_functions": ["Tech Function 1"],')
-        print('  "product_features": ["Product Feature 1"]')
+        print('  "document_url": "https://docs.example.com/doc",')
+        print('  "technical_functions": ["Tech Function 1"]')
         print("")
         print("Technical Function:")
         print('  "success_criteria": "Success criteria text",')
         print('  "status_relative_to_tmos": 90.0,')
-        print('  "product_feature": "Required Product Feature",')
-        print('  "capabilities": ["Related Capability"],')
-        print('  "product_feature_dependencies": ["PF Dependency"],')
-        print('  "capability_dependencies": ["Cap Dependency"]')
+        print('  "document_url": "https://docs.example.com/doc",')
+        print('  "capabilities": ["Related Capability"]  // Links through capabilities')
+        print("")
+        print("Vehicle Platform IDs:")
+        print("  1: Terberg ATT, 2: CA500, 3: T800, 4: AEV")
+        print("  5: Truck Platform, 6: Van Platform, 7: Car Platform, 8: Generic Platform")
         print("")
         print("Examples:")
         print("  python update_from_json.py my_updates.json")
@@ -1427,10 +1410,11 @@ def generate_template_json():
     """Generate a template JSON file with examples"""
     template_data = {
         "metadata": {
-            "version": "2.0",
-            "description": "Template for updating Product Feature Readiness Database",
+            "version": "3.0",
+            "description": "Template for updating Product Feature Readiness Database - New DB Structure",
             "created_by": "Ryan Smith",
-            "created_date": datetime.now().strftime('%Y-%m-%d')
+            "created_date": datetime.now().strftime('%Y-%m-%d'),
+            "notes": "Updated for new relationship structure: ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction"
         },
         "entities": [
             {
@@ -1438,7 +1422,7 @@ def generate_template_json():
                 "operation": "create",
                 "name": "Example Product Feature",
                 "description": "This is an example product feature",
-                "vehicle_type": "truck",
+                "vehicle_platform_id": 5,  # Use platform ID instead of vehicle_type
                 "swimlane_decorators": "ADAS",
                 "label": "PF-ADAS-1.1",
                 "tmos": "Achieve 99.9% uptime in highway conditions",
@@ -1446,7 +1430,8 @@ def generate_template_json():
                 "planned_start_date": "2025-01-15",
                 "planned_end_date": "2025-12-31",
                 "active_flag": "next",
-                "capabilities_required": ["Highway Navigation"],
+                "document_url": "https://docs.example.com/product-feature",
+                "capabilities": ["Highway Navigation"],  # Changed from capabilities_required
                 "dependencies": []
             },
             {
@@ -1454,13 +1439,14 @@ def generate_template_json():
                 "operation": "create",
                 "name": "Highway Navigation",
                 "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-                "vehicle_type": "truck",
+                "product_feature": "Example Product Feature",  # Required in new structure
+                "vehicle_platform_id": 5,
                 "planned_start_date": "2025-01-01",
                 "planned_end_date": "2025-11-30",
                 "tmos": "Complete highway navigation capability",
                 "progress_relative_to_tmos": 60.0,
-                "technical_functions": ["Path Planning", "Lane Detection"],
-                "product_features": []
+                "document_url": "https://docs.example.com/highway-nav",
+                "technical_functions": ["Path Planning", "Lane Detection"]
             },
             {
                 "entity_type": "technical_function",
@@ -1468,15 +1454,27 @@ def generate_template_json():
                 "name": "Path Planning",
                 "description": "Generate optimal paths for vehicle navigation",
                 "success_criteria": "Generate paths within 100ms with 99% success rate",
-                "vehicle_type": "truck",
+                "vehicle_platform_id": 5,
                 "tmos": "Real-time path planning for highway navigation",
                 "status_relative_to_tmos": 80.0,
                 "planned_start_date": "2025-01-01",
                 "planned_end_date": "2025-08-31",
-                "product_feature": "Example Product Feature",
-                "capabilities": ["Highway Navigation"],
-                "product_feature_dependencies": [],
-                "capability_dependencies": []
+                "document_url": "https://docs.example.com/path-planning",
+                "capabilities": ["Highway Navigation"]  # Links through capabilities
+            },
+            {
+                "entity_type": "technical_function",
+                "operation": "create",
+                "name": "Lane Detection",
+                "description": "Computer vision system for lane boundary detection",
+                "success_criteria": "Detect lane boundaries with 99.5% accuracy in daylight",
+                "vehicle_platform_id": 5,
+                "tmos": "Reliable lane detection for highway navigation",
+                "status_relative_to_tmos": 85.0,
+                "planned_start_date": "2025-01-01",
+                "planned_end_date": "2025-07-31",
+                "document_url": "https://docs.example.com/lane-detection",
+                "capabilities": ["Highway Navigation"]
             },
             {
                 "entity_type": "product_feature",
@@ -1487,8 +1485,15 @@ def generate_template_json():
             },
             {
                 "entity_type": "capability",
+                "operation": "update",
+                "name": "Highway Navigation",
+                "progress_relative_to_tmos": 70.0,
+                "tmos": "Updated TMOS for highway navigation"
+            },
+            {
+                "entity_type": "technical_function",
                 "operation": "delete",
-                "name": "Obsolete Capability",
+                "name": "Obsolete Technical Function",
                 "force_delete": False
             }
         ]
@@ -1500,6 +1505,12 @@ def generate_template_json():
             json.dump(template_data, jsonfile, indent=2, ensure_ascii=False)
         
         print(f"Template JSON file generated: {output_file}")
+        print("Updated for new database structure:")
+        print("- ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction")
+        print("- Use vehicle_platform_id instead of vehicle_type")
+        print("- Capabilities require a product_feature")
+        print("- TechnicalFunctions link through capabilities")
+        print("")
         print("Edit this file with your specific data and run:")
         print(f"python update_from_json.py {output_file}")
         

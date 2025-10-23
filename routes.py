@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
-from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities, capability_technical_functions
 from sqlalchemy import and_
 from datetime import datetime, date
 
@@ -132,15 +132,30 @@ def dashboard():
 
 @app.route('/product_features')
 def product_features():
-    """View all product features"""
-    features = ProductFeature.query.all()
+    """View all product features with eager loading to prevent N+1 queries"""
+    from sqlalchemy.orm import joinedload
+    
+    features = ProductFeature.query.options(
+        joinedload(ProductFeature.vehicle_platform),
+        joinedload(ProductFeature.capabilities)
+        .joinedload(Capabilities.technical_functions)
+        .joinedload(TechnicalFunction.readiness_assessments)
+        .joinedload(ReadinessAssessment.readiness_level)
+    ).all()
+    
     return render_template('product_features.html', features=features)
+
+@app.route('/capabilities')
+def capabilities():
+    """Capabilities management page"""
+    capabilities = Capabilities.query.all()
+    return render_template('capabilities.html', capabilities=capabilities)
 
 @app.route('/technical_capabilities')
 def technical_capabilities():
-    """Technical functions management page"""
-    capabilities = TechnicalFunction.query.all()
-    return render_template('technical_functions.html', capabilities=capabilities)
+    """Technical capabilities management page"""
+    technical_functions = TechnicalFunction.query.all()
+    return render_template('technical_functions.html', technical_functions=technical_functions)
 
 @app.route('/readiness_assessments')
 def readiness_assessments():
@@ -314,17 +329,9 @@ def add_product_feature():
             db.session.add(product_feature)
             db.session.flush()  # Get the ID before committing
             
-            # Handle capabilities_required many-to-many relationship
-            capability_ids = request.form.getlist('capabilities_required')
-            if capability_ids:
-                capabilities = Capabilities.query.filter(Capabilities.id.in_(capability_ids)).all()
-                product_feature.capabilities_required.extend(capabilities)
-            
-            # Handle dependent_technical_functions many-to-many relationship
-            technical_function_ids = request.form.getlist('dependent_technical_functions')
-            if technical_function_ids:
-                technical_functions = TechnicalFunction.query.filter(TechnicalFunction.id.in_(technical_function_ids)).all()
-                product_feature.dependent_technical_functions.extend(technical_functions)
+            # Note: With the new structure, capabilities are owned by product features
+            # This route now focuses on creating the product feature
+            # Capabilities can be added separately through a dedicated interface
             
             db.session.commit()
             flash('Product feature added successfully!', 'success')
@@ -335,13 +342,133 @@ def add_product_feature():
     
     # GET request - show form
     vehicle_platforms = VehiclePlatform.query.all()
-    capabilities = Capabilities.query.order_by(Capabilities.name).all()
-    technical_functions = TechnicalFunction.query.order_by(TechnicalFunction.name).all()
     
     return render_template('add_product_feature.html',
+                         vehicle_platforms=vehicle_platforms)
+
+@app.route('/add_capability', methods=['GET', 'POST'])
+def add_capability():
+    """Add new capability"""
+    if request.method == 'POST':
+        # Handle date conversions
+        planned_start_date = None
+        planned_end_date = None
+        
+        if request.form.get('planned_start_date'):
+            from datetime import datetime
+            planned_start_date = datetime.strptime(request.form['planned_start_date'], '%Y-%m-%d').date()
+        
+        if request.form.get('planned_end_date'):
+            from datetime import datetime
+            planned_end_date = datetime.strptime(request.form['planned_end_date'], '%Y-%m-%d').date()
+        
+        # Handle progress_relative_to_tmos conversion
+        progress_relative_to_tmos = 0.0
+        if request.form.get('progress_relative_to_tmos'):
+            try:
+                progress_relative_to_tmos = float(request.form['progress_relative_to_tmos'])
+            except ValueError:
+                progress_relative_to_tmos = 0.0
+        
+        capability = Capabilities(
+            name=request.form['name'],
+            success_criteria=request.form['success_criteria'],
+            product_feature_id=request.form['product_feature_id'],
+            vehicle_platform_id=request.form.get('vehicle_platform_id') or None,
+            planned_start_date=planned_start_date,
+            planned_end_date=planned_end_date,
+            tmos=request.form.get('tmos', ''),
+            progress_relative_to_tmos=progress_relative_to_tmos,
+            document_url=request.form.get('document_url', '')
+        )
+        
+        try:
+            db.session.add(capability)
+            db.session.flush()  # Get the ID before adding relationships
+            
+            # Add technical function dependencies if specified
+            technical_function_ids = request.form.getlist('technical_function_ids')
+            if technical_function_ids:
+                technical_functions = TechnicalFunction.query.filter(TechnicalFunction.id.in_(technical_function_ids)).all()
+                capability.technical_functions.extend(technical_functions)
+            
+            db.session.commit()
+            flash('Capability added successfully!', 'success')
+            return redirect(url_for('capabilities'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding capability: {str(e)}', 'danger')
+    
+    # GET request - show form
+    vehicle_platforms = VehiclePlatform.query.all()
+    product_features = ProductFeature.query.all()
+    technical_functions = TechnicalFunction.query.all()
+    
+    return render_template('add_capability.html',
                          vehicle_platforms=vehicle_platforms,
-                         capabilities=capabilities,
+                         product_features=product_features,
                          technical_functions=technical_functions)
+
+@app.route('/add_technical_function', methods=['GET', 'POST'])
+def add_technical_function():
+    """Add new technical function"""
+    if request.method == 'POST':
+        # Handle date conversions
+        planned_start_date = None
+        planned_end_date = None
+        
+        if request.form.get('planned_start_date'):
+            from datetime import datetime
+            planned_start_date = datetime.strptime(request.form['planned_start_date'], '%Y-%m-%d').date()
+        
+        if request.form.get('planned_end_date'):
+            from datetime import datetime
+            planned_end_date = datetime.strptime(request.form['planned_end_date'], '%Y-%m-%d').date()
+        
+        # Handle status_relative_to_tmos conversion
+        status_relative_to_tmos = 0.0
+        if request.form.get('status_relative_to_tmos'):
+            try:
+                status_relative_to_tmos = float(request.form['status_relative_to_tmos'])
+            except ValueError:
+                status_relative_to_tmos = 0.0
+        
+        technical_function = TechnicalFunction(
+            name=request.form['name'],
+            description=request.form.get('description', ''),
+            success_criteria=request.form['success_criteria'],
+            vehicle_platform_id=request.form.get('vehicle_platform_id') or None,
+            tmos=request.form.get('tmos', ''),
+            status_relative_to_tmos=status_relative_to_tmos,
+            planned_start_date=planned_start_date,
+            planned_end_date=planned_end_date,
+            document_url=request.form.get('document_url', '')
+        )
+        
+        try:
+            db.session.add(technical_function)
+            db.session.flush()  # Get the ID before adding relationships
+            
+            # Add capability relationships if specified
+            capability_ids = request.form.getlist('capability_ids')
+            if capability_ids:
+                capabilities = Capabilities.query.filter(Capabilities.id.in_(capability_ids)).all()
+                technical_function.capabilities.extend(capabilities)
+            
+            db.session.commit()
+            flash('Technical function added successfully!', 'success')
+            return redirect(url_for('technical_capabilities'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding technical function: {str(e)}', 'danger')
+    
+    # GET request - show form
+    vehicle_platforms = VehiclePlatform.query.all()
+    capabilities = Capabilities.query.all()
+    
+    return render_template('add_technical_function.html',
+                         vehicle_platforms=vehicle_platforms,
+                         capabilities=capabilities)
 
 @app.route('/api/readiness_data')
 def api_readiness_data():
@@ -353,11 +480,17 @@ def api_readiness_data():
         db.func.count(ReadinessAssessment.id).label('count')
     ).join(ReadinessAssessment).group_by(TechnicalReadinessLevel.level).all()
     
-    # Get readiness by product feature
+    # Get readiness by product feature - use explicit joins with the many-to-many relationship
     product_readiness = db.session.query(
         ProductFeature.name,
         db.func.avg(TechnicalReadinessLevel.level).label('avg_trl')
-    ).join(TechnicalFunction).join(ReadinessAssessment).join(TechnicalReadinessLevel).group_by(ProductFeature.name).all()
+    ).select_from(ProductFeature)\
+     .join(Capabilities, ProductFeature.id == Capabilities.product_feature_id)\
+     .join(capability_technical_functions, Capabilities.id == capability_technical_functions.c.capability_id)\
+     .join(TechnicalFunction, TechnicalFunction.id == capability_technical_functions.c.technical_function_id)\
+     .join(ReadinessAssessment, TechnicalFunction.id == ReadinessAssessment.technical_function_id)\
+     .join(TechnicalReadinessLevel, ReadinessAssessment.technical_readiness_level_id == TechnicalReadinessLevel.id)\
+     .group_by(ProductFeature.name).all()
     
     return jsonify({
         'trl_distribution': [{'level': t.level, 'name': t.name, 'count': t.count} for t in trl_distribution],
@@ -663,7 +796,7 @@ def capabilities_timeline():
             'duration_days': None,
             'progress_color': 'success' if capability.progress_relative_to_tmos >= 80 else 'warning' if capability.progress_relative_to_tmos >= 50 else 'danger',
             'technical_functions_count': len(capability.technical_functions),
-            'product_features_count': len(capability.product_features)
+            'product_features_count': 1 if capability.product_feature else 0
         }
         
         # Calculate duration if both dates exist
@@ -729,8 +862,8 @@ def technical_functions_timeline():
             'planned_start_date': func.planned_start_date.isoformat() if func.planned_start_date else None,
             'planned_end_date': func.planned_end_date.isoformat() if func.planned_end_date else None,
             'document_url': func.document_url,
-            'product_feature_name': func.product_feature.name if func.product_feature else 'No Product Feature',
-            'product_feature_id': func.product_feature.id if func.product_feature else None,
+            'product_feature_name': func.capabilities[0].product_feature.name if func.capabilities and func.capabilities[0].product_feature else 'No Product Feature',
+            'product_feature_id': func.capabilities[0].product_feature.id if func.capabilities and func.capabilities[0].product_feature else None,
             'duration_days': None,
             'progress_color': 'success' if func.status_relative_to_tmos >= 80 else 'warning' if func.status_relative_to_tmos >= 50 else 'danger',
             'current_trl': None,

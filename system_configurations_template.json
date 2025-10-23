@@ -1,10 +1,14 @@
 {
   "metadata": {
-    "version": "2.0",
-    "description": "System Configurations Update Template for Product Feature Readiness Database",
+    "version": "3.0",
+    "description": "System Configurations Update Template for Product Feature Readiness Database - Updated for New Structure",
     "created_by": "Ryan Smith",
-    "created_date": "2025-10-21",
-    "notes": "Template for managing Vehicle Platforms, ODDs, Environments, Trailers, and Technical Readiness Levels"
+    "created_date": "2025-10-23",
+    "notes": [
+      "Template for managing Vehicle Platforms, ODDs, Environments, Trailers, and Technical Readiness Levels",
+      "Updated for new database structure with vehicle_platform_id references",
+      "Vehicle Platform IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform"
+    ]
   },
   "configurations": [
     {

@@ -120,12 +120,12 @@
             <div class="row mt-4">
                 <div class="col-12">
                     <h5 class="text-primary"><i class="fas fa-sitemap"></i> Dependencies</h5>
-                    <p class="text-muted">Define what capabilities and technical functions this product feature depends on or enables.</p>
+                    <p class="text-muted">Define what capabilities this product feature requires to function properly.</p>
                 </div>
             </div>
             
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="mb-3">
                         <label for="capabilities_required" class="form-label">Required Capabilities</label>
                         <select name="capabilities_required" id="capabilities_required" class="form-select" multiple size="6">
@@ -141,25 +141,6 @@
                         <div class="form-text">
                             <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple capabilities that this product feature requires.
                             <br>These are high-level capabilities needed for this feature to work.
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="dependent_technical_functions" class="form-label">Dependent Technical Functions</label>
-                        <select name="dependent_technical_functions" id="dependent_technical_functions" class="form-select" multiple size="6">
-                            {% for tech_func in technical_functions %}
-                            <option value="{{ tech_func.id }}">
-                                {{ tech_func.name }}
-                                {% if tech_func.product_feature %}
-                                    (from {{ tech_func.product_feature.name }})
-                                {% endif %}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple technical functions that depend on this product feature.
-                            <br>These are specific technical implementations that need this feature.
                         </div>
                     </div>
                 </div>
@@ -215,9 +196,9 @@
                 <h6 class="text-info">Dependencies</h6>
                 <ul class="list-unstyled small">
                     <li>• <strong>Required Capabilities:</strong> High-level capabilities this feature needs</li>
-                    <li>• <strong>Dependent Tech Functions:</strong> Technical functions that rely on this feature</li>
-                    <li>• Think about what enables this feature vs. what this feature enables</li>
-                    <li>• Dependencies help with roadmap planning</li>
+                    <li>• Select capabilities that must exist for this feature to work</li>
+                    <li>• Think about foundational capabilities like sensors, algorithms, or interfaces</li>
+                    <li>• Dependencies help with roadmap planning and sequencing</li>
                 </ul>
             </div>
         </div>
@@ -265,7 +246,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Improve multi-select UX
     const capabilitiesSelect = document.getElementById('capabilities_required');
-    const techFunctionsSelect = document.getElementById('dependent_technical_functions');
     
     // Add helper text for multi-select
     function addSelectionCounter(selectElement, labelId) {
@@ -288,10 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (capabilitiesSelect) {
         addSelectionCounter(capabilitiesSelect, 'capabilities_required');
-    }
-    
-    if (techFunctionsSelect) {
-        addSelectionCounter(techFunctionsSelect, 'dependent_technical_functions');
     }
     
     // Add keyboard shortcuts info

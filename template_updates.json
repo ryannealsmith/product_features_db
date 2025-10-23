@@ -1,10 +1,10 @@
 {
   "metadata": {
     "version": "3.0",
-    "description": "Template for updating Product Feature Readiness Database",
+    "description": "Template for updating Product Feature Readiness Database - New DB Structure",
     "created_by": "Ryan Smith",
-    "created_date": "2025-10-21",
-    "notes": "Updated for vehicle_platform_id foreign keys replacing vehicle_type strings"
+    "created_date": "2025-10-23",
+    "notes": "Updated for new relationship structure: ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction"
   },
   "entities": [
     {
@@ -13,7 +13,6 @@
       "name": "Example Product Feature",
       "description": "This is an example product feature",
       "vehicle_platform_id": 5,
-      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "swimlane_decorators": "ADAS",
       "label": "PF-ADAS-1.1",
       "tmos": "Achieve 99.9% uptime in highway conditions",
@@ -21,7 +20,8 @@
       "planned_start_date": "2025-01-15",
       "planned_end_date": "2025-12-31",
       "active_flag": "next",
-      "capabilities_required": [
+      "document_url": "https://docs.example.com/product-feature",
+      "capabilities": [
         "Highway Navigation"
       ],
       "dependencies": []
@@ -31,17 +31,17 @@
       "operation": "create",
       "name": "Highway Navigation",
       "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
+      "product_feature": "Example Product Feature",
       "vehicle_platform_id": 5,
-      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-11-30",
       "tmos": "Complete highway navigation capability",
       "progress_relative_to_tmos": 60.0,
+      "document_url": "https://docs.example.com/highway-nav",
       "technical_functions": [
         "Path Planning",
         "Lane Detection"
-      ],
-      "product_features": []
+      ]
     },
     {
       "entity_type": "technical_function",
@@ -50,17 +50,30 @@
       "description": "Generate optimal paths for vehicle navigation",
       "success_criteria": "Generate paths within 100ms with 99% success rate",
       "vehicle_platform_id": 5,
-      "_vehicle_platform_note": "Available IDs: 1=Terberg ATT, 2=CA500, 3=T800, 4=AEV, 5=Truck Platform, 6=Van Platform, 7=Car Platform, 8=Generic Platform",
       "tmos": "Real-time path planning for highway navigation",
       "status_relative_to_tmos": 80.0,
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-08-31",
-      "product_feature": "Example Product Feature",
+      "document_url": "https://docs.example.com/path-planning",
       "capabilities": [
         "Highway Navigation"
-      ],
-      "product_feature_dependencies": [],
-      "capability_dependencies": []
+      ]
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Lane Detection",
+      "description": "Computer vision system for lane boundary detection",
+      "success_criteria": "Detect lane boundaries with 99.5% accuracy in daylight",
+      "vehicle_platform_id": 5,
+      "tmos": "Reliable lane detection for highway navigation",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-07-31",
+      "document_url": "https://docs.example.com/lane-detection",
+      "capabilities": [
+        "Highway Navigation"
+      ]
     },
     {
       "entity_type": "product_feature",
@@ -71,8 +84,15 @@
     },
     {
       "entity_type": "capability",
+      "operation": "update",
+      "name": "Highway Navigation",
+      "progress_relative_to_tmos": 70.0,
+      "tmos": "Updated TMOS for highway navigation"
+    },
+    {
+      "entity_type": "technical_function",
       "operation": "delete",
-      "name": "Obsolete Capability",
+      "name": "Obsolete Technical Function",
       "force_delete": false
     }
   ]

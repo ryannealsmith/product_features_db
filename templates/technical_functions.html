@@ -3,73 +3,141 @@
 {% block page_title %}Technical Functions{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-microchip"></i> Technical Functions</h2>
+    <div class="d-flex align-items-center gap-3">
+        <div class="text-muted">
+            <small>{{ technical_functions|length }} technical functions total</small>
+        </div>
+        <a href="{{ url_for('add_technical_function') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Technical Function
+        </a>
+    </div>
+</div>
+
 <div class="row">
-    {% for capability in capabilities %}
+    {% for tech_function in technical_functions %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h6 class="mb-0">
-                    <i class="fas fa-microchip"></i> {{ capability.name }}
-                    <span class="badge bg-primary float-end">{{ capability.product_feature.name }}</span>
+                    <i class="fas fa-microchip"></i> {{ tech_function.name }}
+                    {% if tech_function.vehicle_platform %}
+                        <span class="badge bg-secondary float-end">{{ tech_function.vehicle_platform.name }}</span>
+                    {% endif %}
                 </h6>
             </div>
             <div class="card-body">
-                <p class="card-text">{{ capability.description }}</p>
+                <p class="card-text">{{ tech_function.description or 'No description provided.' }}</p>
                 
-                {% if capability.readiness_assessments %}
-                <h6 class="mt-3 mb-2">Readiness Summary:</h6>
-                <div class="row">
-                    <div class="col-6">
-                        <small class="text-muted">Total Assessments:</small>
-                        <strong class="d-block">{{ capability.readiness_assessments|length }}</strong>
-                    </div>
-                    <div class="col-6">
-                        {% set avg_trl = (capability.readiness_assessments | map(attribute='readiness_level.level') | sum / capability.readiness_assessments|length) | round(1) %}
-                        <small class="text-muted">Average TRL:</small>
-                        <span class="d-block">
-                            <span class="badge {% if avg_trl >= 7 %}trl-high{% elif avg_trl >= 4 %}trl-medium{% else %}trl-low{% endif %}">
-                                {{ avg_trl }}
-                            </span>
-                        </span>
-                    </div>
+                {% if tech_function.success_criteria %}
+                <div class="mb-3">
+                    <small class="text-muted">Success Criteria:</small>
+                    <p class="small">{{ tech_function.success_criteria }}</p>
                 </div>
+                {% endif %}
                 
-                <div class="mt-3">
-                    <small class="text-muted">Recent Assessments:</small>
-                    {% for assessment in capability.readiness_assessments[:3] %}
-                    <div class="border-start border-3 ps-2 mb-2 confidence-{{ assessment.confidence_level }}">
-                        <div class="d-flex justify-content-between">
-                            <span class="small">{{ assessment.vehicle_platform.name }}</span>
-                            <span class="badge {% if assessment.readiness_level.level >= 7 %}trl-high{% elif assessment.readiness_level.level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
-                                TRL {{ assessment.readiness_level.level }}
-                            </span>
+                {% if tech_function.status_relative_to_tmos is not none %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">TMOS Progress:</small>
+                        <small class="text-muted">{{ tech_function.status_relative_to_tmos }}%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar 
+                             {% if tech_function.status_relative_to_tmos >= 80 %}bg-success
+                             {% elif tech_function.status_relative_to_tmos >= 50 %}bg-warning
+                             {% else %}bg-danger{% endif %}"
+                             role="progressbar"
+                             style="width: {{ tech_function.status_relative_to_tmos }}%"
+                             aria-valuenow="{{ tech_function.status_relative_to_tmos }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
                         </div>
-                        <div class="small text-muted">{{ assessment.odd.name }} | {{ assessment.environment.name }}</div>
                     </div>
-                    {% endfor %}
-                    {% if capability.readiness_assessments|length > 3 %}
-                    <small class="text-muted">... and {{ capability.readiness_assessments|length - 3 }} more</small>
-                    {% endif %}
                 </div>
-                {% else %}
-                <div class="alert alert-light mt-3">
-                    <i class="fas fa-info-circle"></i> No readiness assessments available for this capability.
+                {% endif %}
+                
+                {% if tech_function.capabilities %}
+                <div class="mb-3">
+                    <small class="text-muted">Implementing Capabilities:</small>
+                    <div class="mt-1">
+                        {% for capability in tech_function.capabilities %}
+                            <span class="badge bg-primary me-1">{{ capability.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if tech_function.tmos %}
+                <div class="mb-3">
+                    <small class="text-muted">Target Measure of Success:</small>
+                    <p class="small">{{ tech_function.tmos }}</p>
+                </div>
+                {% endif %}
+                
+                {% if tech_function.planned_start_date or tech_function.planned_end_date %}
+                <div class="mb-3">
+                    <div class="row">
+                        {% if tech_function.planned_start_date %}
+                        <div class="col-6">
+                            <small class="text-muted">Start:</small>
+                            <div class="small">{{ tech_function.planned_start_date.strftime('%b %d, %Y') }}</div>
+                        </div>
+                        {% endif %}
+                        {% if tech_function.planned_end_date %}
+                        <div class="col-6">
+                            <small class="text-muted">End:</small>
+                            <div class="small">{{ tech_function.planned_end_date.strftime('%b %d, %Y') }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if tech_function.document_url %}
+                <div class="mb-3">
+                    <a href="{{ tech_function.document_url }}" target="_blank" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-external-link-alt"></i> Documentation
+                    </a>
                 </div>
                 {% endif %}
             </div>
+            
+            {% if tech_function.readiness_assessments %}
             <div class="card-footer">
-                <small class="text-muted">Created: {{ capability.created_at.strftime('%Y-%m-%d') }}</small>
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">Assessments:</small>
+                        <strong class="d-block">{{ tech_function.readiness_assessments|length }}</strong>
+                    </div>
+                    <div class="col-6">
+                        {% if tech_function.readiness_assessments %}
+                            {% set avg_trl = (tech_function.readiness_assessments | map(attribute='readiness_level.level') | sum / tech_function.readiness_assessments|length) | round(1) %}
+                            <small class="text-muted">Average TRL:</small>
+                            <span class="d-block">
+                                <span class="badge {% if avg_trl >= 7 %}bg-success{% elif avg_trl >= 4 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ avg_trl }}
+                                </span>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-microchip fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Technical Functions</h4>
+            <p class="text-muted">Get started by creating your first technical function.</p>
+            <a href="{{ url_for('add_technical_function') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Technical Function
+            </a>
         </div>
     </div>
     {% endfor %}
 </div>
-
-{% if not capabilities %}
-<div class="text-center py-5">
-    <i class="fas fa-microchip fa-3x text-muted mb-3"></i>
-    <h4 class="text-muted">No Technical Capabilities Found</h4>
-    <p class="text-muted">Technical capabilities are the underlying technologies needed to enable product features.</p>
-</div>
-{% endif %}
 {% endblock %}

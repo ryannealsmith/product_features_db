@@ -11,7 +11,7 @@ def get_vehicle_platform_id(vehicle_type_str):
         "ca500": 2,      # CA500
         "t800": 3,       # T800
         "aev": 4,        # AEV
-        "generic": 8     # Generic Platform
+        "all": 8     # Any Platform
     }
     return mapping.get(vehicle_type_str.lower(), 8)  # Default to Generic Platform
 
