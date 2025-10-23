@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "3.0",
-    "description": "Template for updating Product Feature Readiness Database - New DB Structure",
+    "version": "4.0",
+    "description": "Template for updating Product Feature Readiness Database - Many-to-Many Relationships",
     "created_by": "Ryan Smith",
     "created_date": "2025-10-23",
-    "notes": "Updated for new relationship structure: ProductFeature (1:N) → Capabilities (M:N) → TechnicalFunction"
+    "notes": "Updated for Many-to-Many relationship structure: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction"
   },
   "entities": [
     {
@@ -31,7 +31,7 @@
       "operation": "create",
       "name": "Highway Navigation",
       "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
-      "product_feature": "Example Product Feature",
+      "product_feature_ids": ["Example Product Feature"],
       "vehicle_platform_id": 5,
       "planned_start_date": "2025-01-01",
       "planned_end_date": "2025-11-30",

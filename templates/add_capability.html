@@ -20,9 +20,8 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="product_feature_id" class="form-label">Parent Product Feature *</label>
-                        <select name="product_feature_id" id="product_feature_id" class="form-select" required>
-                            <option value="">Select Product Feature</option>
+                        <label for="product_feature_ids" class="form-label">Product Features *</label>
+                        <select name="product_feature_ids" id="product_feature_ids" class="form-select" multiple size="4" required>
                             {% for feature in product_features %}
                             <option value="{{ feature.id }}">
                                 {{ feature.name }} 
@@ -30,7 +29,9 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Product feature that owns this capability</div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple product features that use this capability
+                        </div>
                     </div>
                 </div>
             </div>
@@ -211,8 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Technical functions multi-select helper
+    // Technical functions and product features multi-select helper
     const techFunctionsSelect = document.getElementById('technical_function_ids');
+    const productFeaturesSelect = document.getElementById('product_feature_ids');
     
     // Add selection counter for multi-select
     function addSelectionCounter(selectElement) {
@@ -244,13 +246,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    if (productFeaturesSelect) {
+        addSelectionCounter(productFeaturesSelect);
+    }
+    
     // Form submission confirmation
     form.addEventListener('submit', function(e) {
         const name = document.getElementById('name').value;
-        const productFeature = document.getElementById('product_feature_id').selectedOptions[0]?.text;
+        const selectedProductFeatures = productFeaturesSelect ? Array.from(productFeaturesSelect.selectedOptions).map(opt => opt.text) : [];
         const selectedTechFunctions = techFunctionsSelect ? Array.from(techFunctionsSelect.selectedOptions).map(opt => opt.text) : [];
         
-        let message = `Create capability "${name}" under product feature "${productFeature}"?`;
+        let message = `Create capability "${name}"?`;
+        if (selectedProductFeatures.length > 0) {
+            message += `\n\nUsed by product features:\n• ${selectedProductFeatures.join('\n• ')}`;
+        }
         if (selectedTechFunctions.length > 0) {
             message += `\n\nDependent on technical functions:\n• ${selectedTechFunctions.join('\n• ')}`;
         }

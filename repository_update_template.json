@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "3.0",
-    "description": "Comprehensive Repository Update Template for Product Feature Readiness Database",
+    "version": "4.0",
+    "description": "Comprehensive Repository Update Template for Product Feature Readiness Database (Many-to-Many Relationships)",
     "created_by": "Ryan Smith",
-    "created_date": "2025-10-21",
-    "notes": "This template demonstrates all CRUD operations for autonomous vehicle capability management. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
+    "created_date": "2025-10-23",
+    "notes": "This template demonstrates all CRUD operations for autonomous vehicle capability management. Updated for Many-to-Many ProductFeature-Capability relationship. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },
   "entities": [
     {
@@ -20,7 +20,7 @@
       "tmos": "Achieve Level 4 autonomous emergency response capability",
       "progress_relative_to_tmos": 25.0,
       "technical_functions": [],
-      "product_features": [],
+      "product_feature_ids": [],
       "document_url": "https://docs.company.com/emergency-braking-spec"
     },
     {
@@ -134,7 +134,7 @@
       "tmos": "Fully autonomous predictive maintenance system",
       "progress_relative_to_tmos": 15.0,
       "technical_functions": [],
-      "product_features": []
+      "product_feature_ids": []
     },
     {
       "_comment": "=== CREATING PRODUCT FEATURE WITH COMPLEX RELATIONSHIPS ===",
@@ -194,7 +194,7 @@
       "name": "Autonomous Emergency Braking",
       "progress_relative_to_tmos": 45.0,
       "technical_functions": ["Collision Prediction Algorithm", "Emergency Brake Controller"],
-      "product_features": ["Emergency Response System"]
+      "product_feature_ids": ["Emergency Response System"]
     }
   ]
 }

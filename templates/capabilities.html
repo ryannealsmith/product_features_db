@@ -22,8 +22,12 @@
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-gear"></i> {{ capability.name }}
-                    {% if capability.product_feature %}
-                        <span class="badge bg-primary float-end">{{ capability.product_feature.name }}</span>
+                    {% if capability.product_features %}
+                        <div class="float-end">
+                            {% for pf in capability.product_features %}
+                                <span class="badge bg-primary me-1">{{ pf.name }}</span>
+                            {% endfor %}
+                        </div>
                     {% endif %}
                 </h5>
                 {% if capability.vehicle_platform %}

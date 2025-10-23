@@ -33,8 +33,10 @@ class ProductFeature(db.Model):
     # Relationships
     vehicle_platform = db.relationship('VehiclePlatform', backref='product_features')
     
-    # One-to-many relationship: ProductFeature owns multiple Capabilities
-    capabilities = db.relationship('Capabilities', back_populates='product_feature', cascade='all, delete-orphan')
+    # Many-to-many relationship: ProductFeatures can have multiple Capabilities, and Capabilities can belong to multiple ProductFeatures
+    capabilities = db.relationship('Capabilities', 
+                                  secondary='product_feature_capabilities',
+                                  back_populates='product_features')
     
     # Self-referential many-to-many for co-dependencies on other product features
     dependencies = db.relationship('ProductFeature',
@@ -185,13 +187,12 @@ class Trailer(db.Model):
 
 
 class Capabilities(db.Model):
-    """Skills/abilities that make up a product feature and are implemented by technical functions"""
+    """Skills/abilities that make up product features and are implemented by technical functions"""
     __tablename__ = 'capabilities'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     success_criteria = db.Column(db.Text, nullable=False)
-    product_feature_id = db.Column(db.Integer, db.ForeignKey('product_features.id'), nullable=False)
     vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=True)
     planned_start_date = db.Column(db.Date, nullable=True)
     planned_end_date = db.Column(db.Date, nullable=True)
@@ -203,8 +204,10 @@ class Capabilities(db.Model):
     # Relationships
     vehicle_platform = db.relationship('VehiclePlatform', backref='capabilities')
     
-    # Many-to-one relationship: Capability belongs to one ProductFeature
-    product_feature = db.relationship('ProductFeature', back_populates='capabilities')
+    # Many-to-many relationship: Capabilities can belong to multiple ProductFeatures
+    product_features = db.relationship('ProductFeature', 
+                                     secondary='product_feature_capabilities',
+                                     back_populates='capabilities')
     
     # Many-to-many relationship: Capabilities are implemented by TechnicalFunctions
     technical_functions = db.relationship('TechnicalFunction', 
@@ -219,6 +222,11 @@ class Capabilities(db.Model):
 capability_technical_functions = db.Table('capability_technical_functions',
     db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True),
     db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_capabilities.id'), primary_key=True)
+)
+
+product_feature_capabilities = db.Table('product_feature_capabilities',
+    db.Column('product_feature_id', db.Integer, db.ForeignKey('product_features.id'), primary_key=True),
+    db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True)
 )
 
 product_feature_dependencies = db.Table('product_feature_dependencies',

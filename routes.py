@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
-from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities, capability_technical_functions
+from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities, capability_technical_functions, product_feature_capabilities
 from sqlalchemy import and_
 from datetime import datetime, date
 
@@ -373,7 +373,6 @@ def add_capability():
         capability = Capabilities(
             name=request.form['name'],
             success_criteria=request.form['success_criteria'],
-            product_feature_id=request.form['product_feature_id'],
             vehicle_platform_id=request.form.get('vehicle_platform_id') or None,
             planned_start_date=planned_start_date,
             planned_end_date=planned_end_date,
@@ -385,6 +384,12 @@ def add_capability():
         try:
             db.session.add(capability)
             db.session.flush()  # Get the ID before adding relationships
+            
+            # Add product feature relationships if specified
+            product_feature_ids = request.form.getlist('product_feature_ids')
+            if product_feature_ids:
+                product_features = ProductFeature.query.filter(ProductFeature.id.in_(product_feature_ids)).all()
+                capability.product_features.extend(product_features)
             
             # Add technical function dependencies if specified
             technical_function_ids = request.form.getlist('technical_function_ids')
@@ -485,7 +490,8 @@ def api_readiness_data():
         ProductFeature.name,
         db.func.avg(TechnicalReadinessLevel.level).label('avg_trl')
     ).select_from(ProductFeature)\
-     .join(Capabilities, ProductFeature.id == Capabilities.product_feature_id)\
+     .join(product_feature_capabilities, ProductFeature.id == product_feature_capabilities.c.product_feature_id)\
+     .join(Capabilities, Capabilities.id == product_feature_capabilities.c.capability_id)\
      .join(capability_technical_functions, Capabilities.id == capability_technical_functions.c.capability_id)\
      .join(TechnicalFunction, TechnicalFunction.id == capability_technical_functions.c.technical_function_id)\
      .join(ReadinessAssessment, TechnicalFunction.id == ReadinessAssessment.technical_capability_id)\
@@ -1095,8 +1101,8 @@ def download_database_json():
                 "id": cap.id,
                 "name": cap.name,
                 "success_criteria": cap.success_criteria,
-                "product_feature_id": cap.product_feature_id,
-                "product_feature_name": cap.product_feature.name if cap.product_feature else None,
+                "product_feature_ids": [pf.id for pf in cap.product_features],
+                "product_feature_names": [pf.name for pf in cap.product_features],
                 "vehicle_platform_id": cap.vehicle_platform_id,
                 "vehicle_platform_name": cap.vehicle_platform.name if cap.vehicle_platform else None,
                 "planned_start_date": cap.planned_start_date.isoformat() if cap.planned_start_date else None,

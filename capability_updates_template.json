@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "version": "2.0",
-    "description": "Template for updating Product Feature Readiness Database capabilities",
+    "version": "4.0",
+    "description": "Template for updating Product Feature Readiness Database capabilities (Many-to-Many Relationships)",
     "created_by": "Ryan Smith",
-    "created_date": "2025-10-21T00:00:00Z",
-    "notes": "This template shows various update scenarios for both product and technical capabilities. Updated for vehicle_platform_id foreign keys. Optional document_url field can be used to link to documentation."
+    "created_date": "2025-10-23T00:00:00Z",
+    "notes": "This template shows various update scenarios for both product and technical capabilities. Updated for Many-to-Many ProductFeature-Capability relationship. Updated for vehicle_platform_id foreign keys. Optional document_url field can be used to link to documentation."
   },
   "updates": [
     {
