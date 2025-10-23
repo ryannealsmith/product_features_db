@@ -888,3 +888,118 @@ def technical_functions_timeline():
                          timeline_start=timeline_start.isoformat(),
                          timeline_end=timeline_end.isoformat(),
                          page_title="Technical Functions Timeline")
+
+
+# Configuration Management Routes
+
+@app.route('/config/add/<config_type>', methods=['POST'])
+def add_config_item(config_type):
+    """Add new configuration item"""
+    try:
+        data = request.form.to_dict()
+        
+        if config_type == 'vehicle_platform':
+            # Convert max_payload to float if provided
+            if data.get('max_payload'):
+                data['max_payload'] = float(data['max_payload'])
+            
+            new_item = VehiclePlatform(
+                name=data['name'],
+                description=data.get('description', ''),
+                vehicle_type=data.get('vehicle_type', ''),
+                max_payload=data.get('max_payload')
+            )
+            
+        elif config_type == 'odd':
+            # Convert max_speed to int if provided
+            if data.get('max_speed'):
+                data['max_speed'] = int(data['max_speed'])
+            
+            new_item = ODD(
+                name=data['name'],
+                description=data.get('description', ''),
+                max_speed=data.get('max_speed'),
+                direction=data.get('direction', ''),
+                lanes=data.get('lanes', ''),
+                intersections=data.get('intersections', ''),
+                traction=data.get('traction', '')
+            )
+            
+        elif config_type == 'environment':
+            new_item = Environment(
+                name=data['name'],
+                description=data.get('description', ''),
+                region=data.get('region', ''),
+                climate=data.get('climate', ''),
+                terrain=data.get('terrain', '')
+            )
+            
+        elif config_type == 'trailer':
+            # Convert numeric fields if provided
+            if data.get('length'):
+                data['length'] = float(data['length'])
+            if data.get('max_weight'):
+                data['max_weight'] = float(data['max_weight'])
+            if data.get('axle_count'):
+                data['axle_count'] = int(data['axle_count'])
+            
+            new_item = Trailer(
+                name=data['name'],
+                description=data.get('description', ''),
+                trailer_type=data.get('trailer_type', ''),
+                length=data.get('length'),
+                max_weight=data.get('max_weight'),
+                axle_count=data.get('axle_count')
+            )
+            
+        else:
+            return jsonify({'success': False, 'error': 'Invalid configuration type'}), 400
+        
+        db.session.add(new_item)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'{config_type.title()} added successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/config/delete/<config_type>/<int:item_id>', methods=['DELETE'])
+def delete_config_item(config_type, item_id):
+    """Delete configuration item"""
+    try:
+        if config_type == 'vehicle_platform':
+            item = VehiclePlatform.query.get_or_404(item_id)
+        elif config_type == 'odd':
+            item = ODD.query.get_or_404(item_id)
+        elif config_type == 'environment':
+            item = Environment.query.get_or_404(item_id)
+        elif config_type == 'trailer':
+            item = Trailer.query.get_or_404(item_id)
+        else:
+            return jsonify({'success': False, 'error': 'Invalid configuration type'}), 400
+        
+        # Check if item is being used in any assessments
+        if hasattr(item, 'readiness_assessments') and item.readiness_assessments:
+            return jsonify({
+                'success': False, 
+                'error': f'Cannot delete {item.name} - it is being used in readiness assessments'
+            }), 400
+        
+        # Check if vehicle platform is being used by product features, capabilities, or technical functions
+        if config_type == 'vehicle_platform':
+            if item.product_features or item.capabilities or item.technical_functions:
+                return jsonify({
+                    'success': False,
+                    'error': f'Cannot delete {item.name} - it is being used by other entities'
+                }), 400
+        
+        db.session.delete(item)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'{config_type.title()} deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

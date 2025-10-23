@@ -7,18 +7,63 @@
     <!-- Vehicle Platforms -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-truck"></i> Vehicle Platforms</h5>
+                <button class="btn btn-primary btn-sm" onclick="showAddForm('vehicle_platform')">
+                    <i class="fas fa-plus"></i> Add Platform
+                </button>
             </div>
             <div class="card-body">
+                <!-- Add Vehicle Platform Form (Initially Hidden) -->
+                <div id="add_vehicle_platform_form" class="border rounded p-3 mb-3" style="display: none;">
+                    <h6>Add New Vehicle Platform</h6>
+                    <form onsubmit="submitConfigForm(event, 'vehicle_platform')">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control form-control-sm" name="name" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Vehicle Type</label>
+                                    <input type="text" class="form-control form-control-sm" name="vehicle_type" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Max Payload (kg)</label>
+                                    <input type="number" class="form-control form-control-sm" name="max_payload" step="0.1">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control form-control-sm" name="description" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddForm('vehicle_platform')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
                 {% for platform in vehicle_platforms %}
-                <div class="border-bottom pb-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ platform.name }}</strong>
-                        <span class="badge bg-secondary">{{ platform.vehicle_type }}</span>
+                <div class="border-bottom pb-2 mb-2" id="vehicle_platform_{{ platform.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ platform.name }}</strong>
+                                <span class="badge bg-secondary">{{ platform.vehicle_type }}</span>
+                            </div>
+                            <small class="text-muted">{{ platform.description }}</small>
+                            <br><small class="text-muted">Max Payload: {{ platform.max_payload }}kg</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm ms-2" 
+                                onclick="deleteConfigItem('vehicle_platform', {{ platform.id }}, '{{ platform.name }}')"
+                                title="Delete Vehicle Platform">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                    <small class="text-muted">{{ platform.description }}</small>
-                    <br><small class="text-muted">Max Payload: {{ platform.max_payload }}kg</small>
                 </div>
                 {% endfor %}
             </div>
@@ -28,20 +73,77 @@
     <!-- ODDs -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-road"></i> Operational Design Domains</h5>
+                <button class="btn btn-primary btn-sm" onclick="showAddForm('odd')">
+                    <i class="fas fa-plus"></i> Add ODD
+                </button>
             </div>
             <div class="card-body">
+                <!-- Add ODD Form (Initially Hidden) -->
+                <div id="add_odd_form" class="border rounded p-3 mb-3" style="display: none;">
+                    <h6>Add New Operational Design Domain</h6>
+                    <form onsubmit="submitConfigForm(event, 'odd')">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control form-control-sm" name="name" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Max Speed (km/h)</label>
+                                    <input type="number" class="form-control form-control-sm" name="max_speed">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Direction</label>
+                                    <input type="text" class="form-control form-control-sm" name="direction">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Lanes</label>
+                                    <input type="text" class="form-control form-control-sm" name="lanes">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control form-control-sm" name="description" rows="2"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Traction</label>
+                                    <input type="text" class="form-control form-control-sm" name="traction">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Intersections</label>
+                                    <input type="text" class="form-control form-control-sm" name="intersections">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddForm('odd')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
                 {% for odd in odds %}
-                <div class="border-bottom pb-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ odd.name }}</strong>
-                        <span class="badge bg-info">{{ odd.max_speed }} km/h</span>
+                <div class="border-bottom pb-2 mb-2" id="odd_{{ odd.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ odd.name }}</strong>
+                                <span class="badge bg-info">{{ odd.max_speed }} km/h</span>
+                            </div>
+                            <small class="text-muted">{{ odd.description }}</small>
+                            <br><small class="text-muted">Direction: {{ odd.direction }}</small>
+                            <br><small class="text-muted">Lanes: {{ odd.lanes }}</small>
+                            <br><small class="text-muted">Traction: {{ odd.traction }}</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm ms-2" 
+                                onclick="deleteConfigItem('odd', {{ odd.id }}, '{{ odd.name }}')"
+                                title="Delete ODD">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                    <small class="text-muted">{{ odd.description }}</small>
-                    <br><small class="text-muted">Direction: {{ odd.direction }}</small>
-                    <br><small class="text-muted">Lanes: {{ odd.lanes }}</small>
-                    <br><small class="text-muted">Traction: {{ odd.traction }}</small>
                 </div>
                 {% endfor %}
             </div>
@@ -51,19 +153,68 @@
     <!-- Environments -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-globe"></i> Operating Environments</h5>
+                <button class="btn btn-primary btn-sm" onclick="showAddForm('environment')">
+                    <i class="fas fa-plus"></i> Add Environment
+                </button>
             </div>
             <div class="card-body">
+                <!-- Add Environment Form (Initially Hidden) -->
+                <div id="add_environment_form" class="border rounded p-3 mb-3" style="display: none;">
+                    <h6>Add New Operating Environment</h6>
+                    <form onsubmit="submitConfigForm(event, 'environment')">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control form-control-sm" name="name" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Region</label>
+                                    <input type="text" class="form-control form-control-sm" name="region">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Climate</label>
+                                    <input type="text" class="form-control form-control-sm" name="climate">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Terrain</label>
+                                    <input type="text" class="form-control form-control-sm" name="terrain">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control form-control-sm" name="description" rows="2"></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddForm('environment')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
                 {% for env in environments %}
-                <div class="border-bottom pb-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ env.name }}</strong>
-                        <span class="badge bg-success">{{ env.climate }}</span>
+                <div class="border-bottom pb-2 mb-2" id="environment_{{ env.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ env.name }}</strong>
+                                <span class="badge bg-success">{{ env.climate }}</span>
+                            </div>
+                            <small class="text-muted">{{ env.description }}</small>
+                            <br><small class="text-muted">Region: {{ env.region }}</small>
+                            <br><small class="text-muted">Terrain: {{ env.terrain }}</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm ms-2" 
+                                onclick="deleteConfigItem('environment', {{ env.id }}, '{{ env.name }}')"
+                                title="Delete Environment">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                    <small class="text-muted">{{ env.description }}</small>
-                    <br><small class="text-muted">Region: {{ env.region }}</small>
-                    <br><small class="text-muted">Terrain: {{ env.terrain }}</small>
                 </div>
                 {% endfor %}
             </div>
@@ -73,19 +224,72 @@
     <!-- Trailers -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="fas fa-trailer"></i> Trailer Configurations</h5>
+                <button class="btn btn-primary btn-sm" onclick="showAddForm('trailer')">
+                    <i class="fas fa-plus"></i> Add Trailer
+                </button>
             </div>
             <div class="card-body">
+                <!-- Add Trailer Form (Initially Hidden) -->
+                <div id="add_trailer_form" class="border rounded p-3 mb-3" style="display: none;">
+                    <h6>Add New Trailer Configuration</h6>
+                    <form onsubmit="submitConfigForm(event, 'trailer')">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control form-control-sm" name="name" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Trailer Type</label>
+                                    <input type="text" class="form-control form-control-sm" name="trailer_type">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Length (m)</label>
+                                    <input type="number" class="form-control form-control-sm" name="length" step="0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Max Weight (kg)</label>
+                                    <input type="number" class="form-control form-control-sm" name="max_weight" step="0.1">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Axle Count</label>
+                                    <input type="number" class="form-control form-control-sm" name="axle_count">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control form-control-sm" name="description" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddForm('trailer')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
                 {% for trailer in trailers %}
-                <div class="border-bottom pb-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ trailer.name }}</strong>
-                        <span class="badge bg-warning">{{ trailer.trailer_type }}</span>
+                <div class="border-bottom pb-2 mb-2" id="trailer_{{ trailer.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ trailer.name }}</strong>
+                                <span class="badge bg-warning">{{ trailer.trailer_type }}</span>
+                            </div>
+                            <small class="text-muted">{{ trailer.description }}</small>
+                            <br><small class="text-muted">Length: {{ trailer.length }}m | Weight: {{ trailer.max_weight }}kg</small>
+                            <br><small class="text-muted">Axles: {{ trailer.axle_count }}</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm ms-2" 
+                                onclick="deleteConfigItem('trailer', {{ trailer.id }}, '{{ trailer.name }}')"
+                                title="Delete Trailer">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-                    <small class="text-muted">{{ trailer.description }}</small>
-                    <br><small class="text-muted">Length: {{ trailer.length }}m | Weight: {{ trailer.max_weight }}kg</small>
-                    <br><small class="text-muted">Axles: {{ trailer.axle_count }}</small>
                 </div>
                 {% endfor %}
             </div>
@@ -124,4 +328,84 @@
         </div>
     </div>
 </div>
+
+<script>
+function showAddForm(configType) {
+    const form = document.getElementById(`add_${configType}_form`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function hideAddForm(configType) {
+    document.getElementById(`add_${configType}_form`).style.display = 'none';
+}
+
+function submitConfigForm(event, configType) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Saving...';
+    submitBtn.disabled = true;
+    
+    fetch(`/config/add/${configType}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Network response was not ok');
+    })
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show the new item
+            window.location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error occurred'));
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding item. Please try again.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function deleteConfigItem(configType, itemId, itemName) {
+    if (confirm(`Are you sure you want to delete "${itemName}"?`)) {
+        fetch(`/config/delete/${configType}/${itemId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(data => {
+            if (data.success) {
+                // Remove the item from the page
+                const element = document.getElementById(`${configType}_${itemId}`);
+                if (element) {
+                    element.remove();
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error occurred'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting item. Please try again.');
+        });
+    }
+}
+</script>
 {% endblock %}
