@@ -2,7 +2,7 @@
   "metadata": {
     "version": "2.0",
     "description": "Template for updating Product Feature Readiness Database capabilities",
-    "created_by": "System Administrator",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21T00:00:00Z",
     "notes": "This template shows various update scenarios for both product and technical capabilities. Updated for vehicle_platform_id foreign keys. Optional document_url field can be used to link to documentation."
   },

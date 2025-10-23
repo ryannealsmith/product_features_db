@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add Product Feature{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-plus"></i> New Product Feature</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Feature Name *</label>
+                        <input type="text" name="name" id="name" class="form-control" required
+                               placeholder="Enter product feature name">
+                        <div class="form-text">Unique name for this product feature</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="vehicle_platform_id" class="form-label">Vehicle Platform</label>
+                        <select name="vehicle_platform_id" id="vehicle_platform_id" class="form-select">
+                            <option value="">Select Vehicle Platform</option>
+                            {% for platform in vehicle_platforms %}
+                            <option value="{{ platform.id }}">
+                                {{ platform.name }} ({{ platform.vehicle_type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Target vehicle platform for this feature</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="description" id="description" class="form-control" rows="3"
+                          placeholder="Describe what this product feature does and its purpose..."></textarea>
+                <div class="form-text">Detailed description of the product feature</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="swimlane_decorators" class="form-label">Swimlane Decorators</label>
+                        <input type="text" name="swimlane_decorators" id="swimlane_decorators" class="form-control"
+                               placeholder="e.g., Safety, Navigation, Control">
+                        <div class="form-text">Categories for organizing in roadmap views</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="label" class="form-label">Label</label>
+                        <input type="text" name="label" id="label" class="form-control"
+                               placeholder="e.g., baseline, PF-SAFETY-1.1">
+                        <div class="form-text">Short label or version identifier</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="tmos" class="form-label">Target Measure of Success (TMOS)</label>
+                <textarea name="tmos" id="tmos" class="form-control" rows="2"
+                          placeholder="Define the success criteria for this feature..."></textarea>
+                <div class="form-text">Measurable criteria that define when this feature is considered successful</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="status_relative_to_tmos" class="form-label">Progress Relative to TMOS (%)</label>
+                        <input type="number" name="status_relative_to_tmos" id="status_relative_to_tmos" 
+                               class="form-control" min="0" max="100" step="0.1" value="0">
+                        <div class="form-text">Current progress percentage (0-100)</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="planned_start_date" class="form-label">Planned Start Date</label>
+                        <input type="date" name="planned_start_date" id="planned_start_date" class="form-control">
+                        <div class="form-text">When development should begin</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="planned_end_date" class="form-label">Planned End Date</label>
+                        <input type="date" name="planned_end_date" id="planned_end_date" class="form-control">
+                        <div class="form-text">Target completion date</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="active_flag" class="form-label">Status</label>
+                        <select name="active_flag" id="active_flag" class="form-select">
+                            <option value="next" selected>Next - Planned for development</option>
+                            <option value="active">Active - Currently in development</option>
+                            <option value="completed">Completed - Development finished</option>
+                            <option value="on_hold">On Hold - Development paused</option>
+                            <option value="cancelled">Cancelled - Development stopped</option>
+                        </select>
+                        <div class="form-text">Current development status</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="document_url" class="form-label">Documentation URL</label>
+                        <input type="url" name="document_url" id="document_url" class="form-control"
+                               placeholder="https://docs.example.com/feature-spec">
+                        <div class="form-text">Optional link to detailed documentation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('product_features') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Product Features
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Product Feature
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Form Guidelines Panel -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6><i class="fas fa-info-circle"></i> Product Feature Guidelines</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <h6 class="text-primary">Naming Convention</h6>
+                <ul class="list-unstyled small">
+                    <li>• Use clear, descriptive names</li>
+                    <li>• Avoid technical jargon when possible</li>
+                    <li>• Focus on customer-facing capabilities</li>
+                    <li>• Example: "Autonomous Highway Driving"</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-success">TMOS Best Practices</h6>
+                <ul class="list-unstyled small">
+                    <li>• Make criteria measurable and specific</li>
+                    <li>• Include performance metrics</li>
+                    <li>• Define acceptance criteria</li>
+                    <li>• Example: "Achieve 99.9% uptime in highway scenarios"</li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-warning">Timeline Planning</h6>
+                <ul class="list-unstyled small">
+                    <li>• Set realistic start and end dates</li>
+                    <li>• Consider dependencies</li>
+                    <li>• Allow buffer time for testing</li>
+                    <li>• Align with product roadmaps</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add client-side validation and UX improvements
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('planned_start_date');
+    const endDateInput = document.getElementById('planned_end_date');
+    
+    // Validate that end date is after start date
+    function validateDates() {
+        if (startDateInput.value && endDateInput.value) {
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            
+            if (endDate <= startDate) {
+                endDateInput.setCustomValidity('End date must be after start date');
+            } else {
+                endDateInput.setCustomValidity('');
+            }
+        }
+    }
+    
+    startDateInput.addEventListener('change', validateDates);
+    endDateInput.addEventListener('change', validateDates);
+    
+    // Auto-generate label based on name and swimlane
+    const nameInput = document.getElementById('name');
+    const swimlaneInput = document.getElementById('swimlane_decorators');
+    const labelInput = document.getElementById('label');
+    
+    function generateLabel() {
+        if (nameInput.value && swimlaneInput.value && !labelInput.value) {
+            const swimlane = swimlaneInput.value.toUpperCase().replace(/[^A-Z]/g, '');
+            const version = '1.0';
+            labelInput.value = `PF-${swimlane}-${version}`;
+        }
+    }
+    
+    nameInput.addEventListener('blur', generateLabel);
+    swimlaneInput.addEventListener('blur', generateLabel);
+});
+</script>
+{% endblock %}

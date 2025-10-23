@@ -272,6 +272,59 @@ def add_assessment():
                          environments=environments,
                          trailers=trailers)
 
+@app.route('/add_product_feature', methods=['GET', 'POST'])
+def add_product_feature():
+    """Add new product feature"""
+    if request.method == 'POST':
+        # Handle date conversions
+        planned_start_date = None
+        planned_end_date = None
+        
+        if request.form.get('planned_start_date'):
+            from datetime import datetime
+            planned_start_date = datetime.strptime(request.form['planned_start_date'], '%Y-%m-%d').date()
+        
+        if request.form.get('planned_end_date'):
+            from datetime import datetime
+            planned_end_date = datetime.strptime(request.form['planned_end_date'], '%Y-%m-%d').date()
+        
+        # Handle status_relative_to_tmos conversion
+        status_relative_to_tmos = 0.0
+        if request.form.get('status_relative_to_tmos'):
+            try:
+                status_relative_to_tmos = float(request.form['status_relative_to_tmos'])
+            except ValueError:
+                status_relative_to_tmos = 0.0
+        
+        product_feature = ProductFeature(
+            name=request.form['name'],
+            description=request.form.get('description', ''),
+            vehicle_platform_id=request.form.get('vehicle_platform_id') or None,
+            swimlane_decorators=request.form.get('swimlane_decorators', ''),
+            label=request.form.get('label', ''),
+            tmos=request.form.get('tmos', ''),
+            status_relative_to_tmos=status_relative_to_tmos,
+            planned_start_date=planned_start_date,
+            planned_end_date=planned_end_date,
+            active_flag=request.form.get('active_flag', 'next'),
+            document_url=request.form.get('document_url', '')
+        )
+        
+        try:
+            db.session.add(product_feature)
+            db.session.commit()
+            flash('Product feature added successfully!', 'success')
+            return redirect(url_for('product_features'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding product feature: {str(e)}', 'danger')
+    
+    # GET request - show form
+    vehicle_platforms = VehiclePlatform.query.all()
+    
+    return render_template('add_product_feature.html',
+                         vehicle_platforms=vehicle_platforms)
+
 @app.route('/api/readiness_data')
 def api_readiness_data():
     """API endpoint for readiness data (for charts/graphs)"""

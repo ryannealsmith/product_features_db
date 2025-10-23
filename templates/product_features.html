@@ -3,17 +3,69 @@
 {% block page_title %}Product Features{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cogs"></i> Product Features</h2>
+    <a href="{{ url_for('add_product_feature') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Product Feature
+    </a>
+</div>
+
 <div class="row">
     {% for feature in features %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-cogs"></i> {{ feature.name }}
+                    <i class="fas fa-star"></i> {{ feature.name }}
+                    {% if feature.label %}
+                        <small class="badge bg-secondary ms-2">{{ feature.label }}</small>
+                    {% endif %}
                 </h5>
+                {% if feature.vehicle_platform %}
+                    <small class="text-muted">
+                        <i class="fas fa-truck"></i> {{ feature.vehicle_platform.name }}
+                    </small>
+                {% endif %}
             </div>
             <div class="card-body">
                 <p class="card-text">{{ feature.description }}</p>
+                
+                {% if feature.tmos %}
+                <div class="mb-3">
+                    <h6 class="text-primary">Target Measure of Success:</h6>
+                    <p class="small text-muted">{{ feature.tmos }}</p>
+                </div>
+                {% endif %}
+                
+                {% if feature.status_relative_to_tmos is not none %}
+                <div class="mb-3">
+                    <h6>Progress to TMOS:</h6>
+                    <div class="progress">
+                        <div class="progress-bar {% if feature.status_relative_to_tmos >= 80 %}bg-success{% elif feature.status_relative_to_tmos >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ feature.status_relative_to_tmos }}%"
+                             aria-valuenow="{{ feature.status_relative_to_tmos }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ feature.status_relative_to_tmos }}%
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if feature.planned_start_date or feature.planned_end_date %}
+                <div class="mb-3">
+                    <h6>Timeline:</h6>
+                    <small class="text-muted">
+                        {% if feature.planned_start_date %}
+                            <i class="fas fa-play"></i> Start: {{ feature.planned_start_date.strftime('%Y-%m-%d') }}
+                        {% endif %}
+                        {% if feature.planned_end_date %}
+                            <i class="fas fa-flag-checkered"></i> End: {{ feature.planned_end_date.strftime('%Y-%m-%d') }}
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
                 
                 <h6 class="mt-3 mb-2">Technical Capabilities:</h6>
                 {% if feature.technical_capabilities %}
@@ -46,7 +98,21 @@
                 {% endif %}
             </div>
             <div class="card-footer">
-                <small class="text-muted">Created: {{ feature.created_at.strftime('%Y-%m-%d') }}</small>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> Created: {{ feature.created_at.strftime('%Y-%m-%d') }}
+                    </small>
+                    <div>
+                        {% if feature.document_url %}
+                            <a href="{{ feature.document_url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="View Documentation">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        {% endif %}
+                        <span class="badge {% if feature.active_flag == 'active' %}bg-success{% elif feature.active_flag == 'completed' %}bg-primary{% elif feature.active_flag == 'on_hold' %}bg-warning{% elif feature.active_flag == 'cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                            {{ feature.active_flag|title }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -58,6 +124,9 @@
     <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
     <h4 class="text-muted">No Product Features Found</h4>
     <p class="text-muted">Product features define the capabilities that can be delivered to customers.</p>
+    <a href="{{ url_for('add_product_feature') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Your First Product Feature
+    </a>
 </div>
 {% endif %}
 {% endblock %}

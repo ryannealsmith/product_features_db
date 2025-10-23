@@ -1359,7 +1359,7 @@ def main():
         print('    "metadata": {')
         print('      "version": "2.0",')
         print('      "description": "Description of updates",')
-        print('      "created_by": "Your Name",')
+        print('      "created_by": "Ryan Smith",')
         print('      "created_date": "2025-10-21"')
         print("    },")
         print('    "entities": [')
@@ -1429,7 +1429,7 @@ def generate_template_json():
         "metadata": {
             "version": "2.0",
             "description": "Template for updating Product Feature Readiness Database",
-            "created_by": "Your Name",
+            "created_by": "Ryan Smith",
             "created_date": datetime.now().strftime('%Y-%m-%d')
         },
         "entities": [

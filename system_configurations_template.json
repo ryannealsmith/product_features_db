@@ -2,7 +2,7 @@
   "metadata": {
     "version": "2.0",
     "description": "System Configurations Update Template for Product Feature Readiness Database",
-    "created_by": "System Administrator",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21",
     "notes": "Template for managing Vehicle Platforms, ODDs, Environments, Trailers, and Technical Readiness Levels"
   },

@@ -2,7 +2,7 @@
   "metadata": {
     "version": "3.0",
     "description": "Comprehensive Repository Update Template for Product Feature Readiness Database",
-    "created_by": "Development Team",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21",
     "notes": "This template demonstrates all CRUD operations for autonomous vehicle capability management. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },

@@ -2,7 +2,7 @@
   "metadata": {
     "version": "3.0",
     "description": "Template for updating Product Feature Readiness Database",
-    "created_by": "Your Name",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21",
     "notes": "Updated for vehicle_platform_id foreign keys replacing vehicle_type strings"
   },

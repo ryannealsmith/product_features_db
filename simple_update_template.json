@@ -2,7 +2,7 @@
   "metadata": {
     "version": "3.0",
     "description": "Simple Update Template - Common Operations",
-    "created_by": "Your Name",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21",
     "notes": "Quick template for common update operations. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },

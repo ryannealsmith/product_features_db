@@ -2,7 +2,7 @@
   "metadata": {
     "version": "3.0",
     "description": "Monthly Progress Update Template - October 2025",
-    "created_by": "Project Manager",
+    "created_by": "Ryan Smith",
     "created_date": "2025-10-21",
     "notes": "Template for monthly progress reporting and milestone updates. Updated for vehicle_platform_id foreign keys. Includes optional document_url field for documentation links."
   },
