@@ -30,8 +30,7 @@ PF-CHE-3.1
 PF-CHE-3.2
 PF-DCK-1.1
 PF-DCK-2.1
-PF-DCK-3.1
-PF-DCK-4.1"
+PF-DCK-3.1"
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -99,7 +98,6 @@ PF-CGO-4.4
 PF-CGO-5.1
 PF-CGO-5.2
 PF-TOW-1.1
-PF-TOW-2.1
 PF-TOW-3.1
 PF-HCH-1.1
 PF-HCH-2.1"
@@ -117,12 +115,10 @@ PF-CGO-4.4
 PF-CGO-5.1
 PF-CGO-5.2
 PF-TOW-1.1
-PF-TOW-2.1
 PF-TOW-3.1
 PF-REV-1.1
 PF-REV-2.1
 PF-REV-3.1
-PF-REV-4.1
 PF-HCH-1.1
 PF-HCH-2.1"
 ,,,,,,,,,
@@ -153,7 +149,7 @@ PF-CE-1.1"
 ,,,,,,,,,
 ,CA-TOW,Towing,,,,,,,
 ,CA-TOW-1.1,"Tow a semi-trailer while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-1.1
-,CA-TOW-2.1,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-2.1
+,CA-TOW-2.1,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-1.1
 ,CA-TOW-3.1,"Change lanes while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-3.1
 ,,,N/A,,,,,,
 ,CA-REV,Reversing,,,,,,,

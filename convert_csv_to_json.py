@@ -41,6 +41,48 @@ def get_capability_dates(cap_label, ca_list):
             return cap_entity.get('planned_start_date'), cap_entity.get('planned_end_date')
     return None, None
 
+def get_start_and_end_dates_from_product_features(pf_labels, product_features_raw):
+    """Get start / end dates for product features."""
+
+    min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
+    max_end_date = date(1, 1, 1)         # Initialize with a date far in the past 
+
+    for pf_label in pf_labels:
+
+        # IMPORTANT: Make sure this value exists!
+        if pf_label not in product_features_raw:
+            print("WARNING: Could not find " + pf_label + " in product "
+                  "features. This means it is linked in a capability, but "
+                  "does not actually exist in the product features.")
+            continue
+
+        # 1. Get the date string from the raw data
+        start_date_str = product_features_raw[pf_label]['start_date']
+        end_date_str = product_features_raw[pf_label]['end_date']
+        
+        # 2. Convert the string to a datetime.date object
+        try:
+            start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
+        except ValueError:
+            # Handle cases where the string might not be a valid date, 
+            # or log an error and skip/assign a default.
+            print(f"WARNING: Could not parse start_date '{start_date_str}' for feature '{pf_label}'")
+            continue # Skip this feature if the date is invalid
+
+        if start_date < min_start_date:
+            min_start_date = start_date
+
+        try:
+            end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
+        except ValueError:
+            print(f"WARNING: Could not parse end_date '{end_date_str}' for feature '{pf_label}'")
+            continue # Skip this feature if the date is invalid
+
+        if end_date > max_end_date:
+            max_end_date = end_date
+
+    return min_start_date.strftime("%d-%m-%Y"), max_end_date.strftime("%d-%m-%Y")
+
 # --- Loading and Linking Functions ---
 
 def load_product_features(file_path):
@@ -77,6 +119,12 @@ def load_product_features(file_path):
                 label = row[IDX_LABEL].strip()
                 name = row[IDX_NAME].strip()
 
+                # IMPORTANT: Format the date to min_start_date.strftime("%d-%m-%Y")
+                start_date = datetime.strptime(row[IDX_START_DATE].strip(), "%b %Y").date()
+                end_date = datetime.strptime(row[IDX_END_DATE].strip(), "%b %Y").date()
+                start_date_str = start_date.strftime("%d-%m-%Y")
+                end_date_str = end_date.strftime("%d-%m-%Y")
+
                 if label and name:
                     product_features[label] = {
                         'name': name,
@@ -86,8 +134,8 @@ def load_product_features(file_path):
                         'odd': row[IDX_ODD].strip() or '',
                         'environment': row[IDX_ENVIRONMENT].strip() or '',
                         'trailer': row[IDX_TRAILER].strip() or '',
-                        'start_date': row[IDX_START_DATE].strip() or '',
-                        'end_date': row[IDX_END_DATE].strip() or '',
+                        'start_date':  start_date_str,
+                        'end_date': end_date_str,
                         'details': row[IDX_DETAILS].strip() or '',
                         'next': row[IDX_NEXT].strip() or 'N', 
                         'capabilities': []
@@ -138,6 +186,11 @@ def load_capabilities(file_path):
                                 pf_label = item.split(' ')[0].strip()
                                 cap_to_pf.append(pf_label)
 
+                if len(cap_to_pf) == 0:
+                    print("WARNING: Could not find any linked product features "
+                          "for capability: " + label + ". Skipping.")
+                    continue
+
                 if label:
                     capabilities[label] = {
                         'name': row[IDX_NAME].strip() or '',
@@ -179,48 +232,6 @@ def load_fake_technical_functions(capabilities):
 
     return technical_functions
 
-def get_start_and_end_dates_from_product_features(pf_labels, product_features_raw):
-    """Get start / end dates for product features."""
-
-    min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
-    max_end_date = date(1, 1, 1)         # Initialize with a date far in the past 
-
-    for pf_label in pf_labels:
-
-        # IMPORTANT: Make sure this value exists!
-        if pf_label not in product_features_raw:
-            print("Warning: Could not find " + pf_label + " in product "
-                  "features. This means it is linked in a capability, but "
-                  "does not actually exist in the product features.")
-            continue
-
-        # 1. Get the date string from the raw data
-        start_date_str = product_features_raw[pf_label]['start_date']
-        end_date_str = product_features_raw[pf_label]['end_date']
-        
-        # 2. Convert the string to a datetime.date object
-        try:
-            start_date = datetime.strptime(start_date_str, "%b %Y").date()
-        except ValueError:
-            # Handle cases where the string might not be a valid date, 
-            # or log an error and skip/assign a default.
-            print(f"Warning: Could not parse start_date '{start_date_str}' for feature '{pf_label}'")
-            continue # Skip this feature if the date is invalid
-
-        if start_date < min_start_date:
-            min_start_date = start_date
-
-        try:
-            end_date = datetime.strptime(end_date_str, "%b %Y").date()
-        except ValueError:
-            print(f"Warning: Could not parse end_date '{end_date_str}' for feature '{pf_label}'")
-            continue # Skip this feature if the date is invalid
-
-        if end_date > max_end_date:
-            max_end_date = end_date
-
-    return min_start_date.strftime("%Y-%m-%d"), max_end_date.strftime("%Y-%m-%d")
-
 # --- Final Transformation Function ---
 
 def construct_repository_update_schema(product_features_raw, 
@@ -261,6 +272,10 @@ def construct_repository_update_schema(product_features_raw,
         # IMPORTANT: Get the start / end date from the product features.
         min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
             pf_labels, product_features_raw)
+        
+        # Find the name of the linked product feature
+        product_feature_label = random.choice(list(pf_labels))
+        product_feature_name = product_features_raw[product_feature_label]['name']
 
         cap_entity = {
             "_comment": f"=== CREATING CAPABILITY: {cap_label} ===",
@@ -274,6 +289,7 @@ def construct_repository_update_schema(product_features_raw,
             "planned_end_date": max_end_date,
             "tmos": "", 
             "progress_relative_to_tmos": "0.0", 
+            "product_feature": product_feature_name,
             "technical_functions": [t['label'] for t in cap_data['tech_features']],
             "product_features": pf_labels, # PF Labels
         }
@@ -349,7 +365,7 @@ def construct_repository_update_schema(product_features_raw,
             "version": "0.0", # Incrementing version
             "description": f"Repository Update Template with reordered entities (PF, CA, TF) for dependency resolution.",
             "created_by": "OCTO",
-            "created_date": datetime.now().strftime('%Y-%m-%d'),
+            "created_date": datetime.now().strftime('%d-%m-%Y'),
             "notes": "Layer cake roadmap of product/capability/technology."
         },
         "entities": entities
