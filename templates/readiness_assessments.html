@@ -17,7 +17,7 @@
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-3">
-                <label class="form-label">Product Capability</label>
+                <label class="form-label">Product Feature</label>
                 <select name="product_id" class="form-select">
                     <option value="">All Products</option>
                     {% for product in product_features %}
@@ -79,7 +79,7 @@
                 <thead>
                     <tr>
                         <th>Technical Function</th>
-                        <th>Product Capability</th>
+                        <th>Product Feature</th>
                         <th>Proposed TRL</th>
                         <th>Platform</th>
                         <th>ODD</th>
@@ -100,7 +100,22 @@
                             <br><small class="text-muted">{{ assessment.notes[:50] }}{% if assessment.notes|length > 50 %}...{% endif %}</small>
                             {% endif %}
                         </td>
-                        <td>{{ assessment.technical_function.product_feature.name }}</td>
+                        <td>
+                            {% set product_features = [] %}
+                            {% for capability in assessment.technical_function.capabilities %}
+                                {% if capability.product_feature and capability.product_feature not in product_features %}
+                                    {% set _ = product_features.append(capability.product_feature) %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if product_features %}
+                                {{ product_features[0].name }}
+                                {% if product_features|length > 1 %}
+                                    <br><small class="text-muted">+{{ product_features|length - 1 }} more</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">No Product Feature</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <span class="badge {% if assessment.readiness_level.level >= 7 %}trl-high{% elif assessment.readiness_level.level >= 4 %}trl-medium{% else %}trl-low{% endif %}">
                                 TRL {{ assessment.readiness_level.level }}

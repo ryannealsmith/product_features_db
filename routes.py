@@ -488,8 +488,8 @@ def api_readiness_data():
      .join(Capabilities, ProductFeature.id == Capabilities.product_feature_id)\
      .join(capability_technical_functions, Capabilities.id == capability_technical_functions.c.capability_id)\
      .join(TechnicalFunction, TechnicalFunction.id == capability_technical_functions.c.technical_function_id)\
-     .join(ReadinessAssessment, TechnicalFunction.id == ReadinessAssessment.technical_function_id)\
-     .join(TechnicalReadinessLevel, ReadinessAssessment.technical_readiness_level_id == TechnicalReadinessLevel.id)\
+     .join(ReadinessAssessment, TechnicalFunction.id == ReadinessAssessment.technical_capability_id)\
+     .join(TechnicalReadinessLevel, ReadinessAssessment.readiness_level_id == TechnicalReadinessLevel.id)\
      .group_by(ProductFeature.name).all()
     
     return jsonify({
@@ -1041,3 +1041,191 @@ def delete_config_item(config_type, item_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/download/database.json')
+def download_database_json():
+    """Download complete database as JSON file"""
+    from datetime import datetime
+    import json
+    import tempfile
+    import os
+    
+    try:
+        # Collect all data from the database
+        database_export = {
+            "meta": {
+                "export_date": datetime.now().isoformat(),
+                "export_type": "complete_database",
+                "description": "Complete Product Features Database export"
+            },
+            "product_features": [],
+            "capabilities": [],
+            "technical_functions": [],
+            "readiness_assessments": [],
+            "technical_readiness_levels": [],
+            "vehicle_platforms": [],
+            "odds": [],
+            "environments": [],
+            "trailers": []
+        }
+        
+        # Export Product Features
+        for pf in ProductFeature.query.all():
+            database_export["product_features"].append({
+                "id": pf.id,
+                "name": pf.name,
+                "description": pf.description,
+                "vehicle_platform_id": pf.vehicle_platform_id,
+                "vehicle_platform_name": pf.vehicle_platform.name if pf.vehicle_platform else None,
+                "swimlane_decorators": pf.swimlane_decorators,
+                "label": pf.label,
+                "tmos": pf.tmos,
+                "status_relative_to_tmos": pf.status_relative_to_tmos,
+                "planned_start_date": pf.planned_start_date.isoformat() if pf.planned_start_date else None,
+                "planned_end_date": pf.planned_end_date.isoformat() if pf.planned_end_date else None,
+                "active_flag": pf.active_flag,
+                "document_url": pf.document_url,
+                "created_at": pf.created_at.isoformat()
+            })
+        
+        # Export Capabilities
+        for cap in Capabilities.query.all():
+            database_export["capabilities"].append({
+                "id": cap.id,
+                "name": cap.name,
+                "success_criteria": cap.success_criteria,
+                "product_feature_id": cap.product_feature_id,
+                "product_feature_name": cap.product_feature.name if cap.product_feature else None,
+                "vehicle_platform_id": cap.vehicle_platform_id,
+                "vehicle_platform_name": cap.vehicle_platform.name if cap.vehicle_platform else None,
+                "planned_start_date": cap.planned_start_date.isoformat() if cap.planned_start_date else None,
+                "planned_end_date": cap.planned_end_date.isoformat() if cap.planned_end_date else None,
+                "tmos": cap.tmos,
+                "progress_relative_to_tmos": cap.progress_relative_to_tmos,
+                "document_url": cap.document_url,
+                "technical_function_ids": [tf.id for tf in cap.technical_functions]
+            })
+        
+        # Export Technical Functions
+        for tf in TechnicalFunction.query.all():
+            database_export["technical_functions"].append({
+                "id": tf.id,
+                "name": tf.name,
+                "description": tf.description,
+                "success_criteria": tf.success_criteria,
+                "vehicle_platform_id": tf.vehicle_platform_id,
+                "vehicle_platform_name": tf.vehicle_platform.name if tf.vehicle_platform else None,
+                "tmos": tf.tmos,
+                "status_relative_to_tmos": tf.status_relative_to_tmos,
+                "planned_start_date": tf.planned_start_date.isoformat() if tf.planned_start_date else None,
+                "planned_end_date": tf.planned_end_date.isoformat() if tf.planned_end_date else None,
+                "document_url": tf.document_url,
+                "capability_ids": [cap.id for cap in tf.capabilities]
+            })
+        
+        # Export Readiness Assessments
+        for ra in ReadinessAssessment.query.all():
+            database_export["readiness_assessments"].append({
+                "id": ra.id,
+                "technical_capability_id": ra.technical_capability_id,
+                "technical_function_name": ra.technical_function.name,
+                "technical_readiness_level_id": ra.technical_readiness_level_id,
+                "readiness_level": ra.readiness_level.level,
+                "readiness_level_name": ra.readiness_level.name,
+                "vehicle_platform_id": ra.vehicle_platform_id,
+                "vehicle_platform_name": ra.vehicle_platform.name,
+                "odd_id": ra.odd_id,
+                "odd_name": ra.odd.name,
+                "environment_id": ra.environment_id,
+                "environment_name": ra.environment.name,
+                "trailer_id": ra.trailer_id,
+                "trailer_name": ra.trailer.name if ra.trailer else None,
+                "assessor": ra.assessor,
+                "notes": ra.notes,
+                "current_status": ra.current_status,
+                "assessment_date": ra.assessment_date.isoformat(),
+                "scheduled_completion_date": ra.scheduled_completion_date.isoformat() if ra.scheduled_completion_date else None
+            })
+        
+        # Export Technical Readiness Levels
+        for trl in TechnicalReadinessLevel.query.all():
+            database_export["technical_readiness_levels"].append({
+                "id": trl.id,
+                "level": trl.level,
+                "name": trl.name,
+                "description": trl.description
+            })
+        
+        # Export Vehicle Platforms
+        for vp in VehiclePlatform.query.all():
+            database_export["vehicle_platforms"].append({
+                "id": vp.id,
+                "name": vp.name,
+                "description": vp.description,
+                "vehicle_type": vp.vehicle_type,
+                "max_payload": vp.max_payload
+            })
+        
+        # Export ODDs
+        for odd in ODD.query.all():
+            database_export["odds"].append({
+                "id": odd.id,
+                "name": odd.name,
+                "description": odd.description,
+                "max_speed": odd.max_speed,
+                "direction": odd.direction,
+                "lanes": odd.lanes,
+                "intersections": odd.intersections,
+                "traction": odd.traction
+            })
+        
+        # Export Environments
+        for env in Environment.query.all():
+            database_export["environments"].append({
+                "id": env.id,
+                "name": env.name,
+                "description": env.description,
+                "region": env.region,
+                "climate": env.climate,
+                "terrain": env.terrain
+            })
+        
+        # Export Trailers
+        for trailer in Trailer.query.all():
+            database_export["trailers"].append({
+                "id": trailer.id,
+                "name": trailer.name,
+                "description": trailer.description,
+                "trailer_type": trailer.trailer_type,
+                "length": trailer.length,
+                "max_weight": trailer.max_weight,
+                "axle_count": trailer.axle_count
+            })
+        
+        # Create temporary JSON file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.json', prefix='database_export_')
+        
+        try:
+            # Write JSON content to temporary file
+            with os.fdopen(temp_fd, 'w', encoding='utf-8') as temp_file:
+                json.dump(database_export, temp_file, indent=2, ensure_ascii=False)
+            
+            # Generate filename with timestamp
+            filename = f"product_features_database_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            
+            # Send file as download
+            return send_file(
+                temp_path,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/json'
+            )
+        except Exception as e:
+            # Clean up temp file if error occurs
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise e
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to export database: {str(e)}'}), 500

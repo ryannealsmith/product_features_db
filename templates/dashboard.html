@@ -39,6 +39,42 @@
     </div>
 </div>
 
+<!-- Quick Actions Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tools"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-grid">
+                            <a href="{{ url_for('add_assessment') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New Assessment
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid">
+                            <a href="{{ url_for('export_info') }}" class="btn btn-info">
+                                <i class="fas fa-download"></i> Export Data
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid">
+                            <a href="{{ url_for('download_database_json') }}" class="btn btn-success" download>
+                                <i class="fas fa-database"></i> Download Database (JSON)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Product Features Overview -->
     <div class="col-md-8">

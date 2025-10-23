@@ -17,7 +17,13 @@
                             <option value="">Select Technical Function</option>
                             {% for tech_cap in technical_functions %}
                             <option value="{{ tech_cap.id }}">
-                                {{ tech_cap.name }} ({{ tech_cap.product_feature.name }})
+                                {% set product_features = [] %}
+                                {% for capability in tech_cap.capabilities %}
+                                    {% if capability.product_feature and capability.product_feature not in product_features %}
+                                        {% set _ = product_features.append(capability.product_feature) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ tech_cap.name }}{% if product_features %} ({{ product_features[0].name }}{% if product_features|length > 1 %} +{{ product_features|length - 1 }} more{% endif %}){% endif %}
                             </option>
                             {% endfor %}
                         </select>
