@@ -272,10 +272,6 @@ def construct_repository_update_schema(product_features_raw,
         # IMPORTANT: Get the start / end date from the product features.
         min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
             pf_labels, product_features_raw)
-        
-        # Find the name of the linked product feature
-        product_feature_label = random.choice(list(pf_labels))
-        product_feature_name = product_features_raw[product_feature_label]['name']
 
         cap_entity = {
             "_comment": f"=== CREATING CAPABILITY: {cap_label} ===",
@@ -288,10 +284,9 @@ def construct_repository_update_schema(product_features_raw,
             "planned_start_date": min_start_date,
             "planned_end_date": max_end_date,
             "tmos": "", 
-            "progress_relative_to_tmos": "0.0", 
-            "product_feature": product_feature_name,
+            "progress_relative_to_tmos": random.randint(0, 100),
             "technical_functions": [t['label'] for t in cap_data['tech_features']],
-            "product_features": pf_labels, # PF Labels
+            "product_feature_ids": pf_labels, # PF Labels
         }
         ca_entities_list.append(cap_entity)
 
@@ -323,7 +318,7 @@ def construct_repository_update_schema(product_features_raw,
             "success_criteria": "",
             "vehicle_platform_id": 8,
             "tmos": "",
-            "status_relative_to_tmos": "0.0",
+            "status_relative_to_tmos": random.randint(0, 100),
             "planned_start_date": min_start_date,
             "planned_end_date": max_end_date,
             "product_feature_dependencies": list(pf_labels),
@@ -349,7 +344,7 @@ def construct_repository_update_schema(product_features_raw,
             "planned_end_date": pf_data['end_date'],
             "active_flag": "next" if pf_data.get('next', '').upper() == 'Y' else 'current',
             "tmos": "",
-            "status_relative_to_tmos": "0.0",
+            "status_relative_to_tmos": random.randint(0, 100),
             "capabilities_required": cap_labels, # CA Labels
             "document_url": "",
             # "dependencies": dependencies # PF Labels

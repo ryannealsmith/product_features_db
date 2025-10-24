@@ -273,13 +273,13 @@ def create_capability(data):
         product_features_to_link = []
         
         if 'product_feature_ids' in data and data['product_feature_ids']:
-            # New M:N format - array of product feature names
-            for pf_name in data['product_feature_ids']:
-                pf = ProductFeature.query.filter_by(name=pf_name).first()
+            # New M:N format - array of product feature labels
+            for pf_label in data['product_feature_ids']:
+                pf = ProductFeature.query.filter_by(label=pf_label).first()
                 if pf:
                     product_features_to_link.append(pf)
                 else:
-                    print(f"Warning: Product feature '{pf_name}' not found for capability")
+                    print(f"Warning: Product feature '{pf_label}' not found for capability")
         elif 'product_feature' in data and data['product_feature']:
             # Old 1:N format compatibility - single product feature name
             pf = ProductFeature.query.filter_by(name=data['product_feature']).first()
