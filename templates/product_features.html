@@ -64,33 +64,42 @@
                 </div>
                 {% endif %}
                 
-                {% if feature.capabilities_required and feature.capabilities_required|length > 0 %}
+                {% if feature.capabilities and feature.capabilities|length > 0 %}
                 <div class="mb-3">
                     <h6 id="capabilities-{{ feature.id }}">Required Capabilities:</h6>
-                    {% if feature.capabilities_required|length > 5 %}
+                    {% if feature.capabilities|length > 5 %}
                         <div class="dependency-badges" role="group" aria-labelledby="capabilities-{{ feature.id }}">
-                            {% for capability in feature.capabilities_required[:3] %}
+                            {% for capability in feature.capabilities[:3] %}
                                 <span class="badge bg-info" role="text">
                                     <i class="fas fa-cog" aria-hidden="true"></i> {{ capability.name or 'Unnamed Capability' }}
+                                    {% if capability.label %}
+                                        <small class="ms-1">({{ capability.label }})</small>
+                                    {% endif %}
                                 </span>
                             {% endfor %}
                             <div class="collapse" id="moreCapabilities{{ feature.id }}">
-                                {% for capability in feature.capabilities_required[3:] %}
+                                {% for capability in feature.capabilities[3:] %}
                                     <span class="badge bg-info" role="text">
                                         <i class="fas fa-cog" aria-hidden="true"></i> {{ capability.name or 'Unnamed Capability' }}
+                                        {% if capability.label %}
+                                            <small class="ms-1">({{ capability.label }})</small>
+                                        {% endif %}
                                     </span>
                                 {% endfor %}
                             </div>
                             <button class="btn btn-sm btn-outline-secondary mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#moreCapabilities{{ feature.id }}" aria-expanded="false" aria-controls="moreCapabilities{{ feature.id }}" aria-label="Toggle additional required capabilities">
-                                <span class="when-collapsed">Show {{ feature.capabilities_required|length - 3 }} more</span>
+                                <span class="when-collapsed">Show {{ feature.capabilities|length - 3 }} more</span>
                                 <span class="when-expanded">Show less</span>
                             </button>
                         </div>
                     {% else %}
                         <div class="dependency-badges" role="group" aria-labelledby="capabilities-{{ feature.id }}">
-                            {% for capability in feature.capabilities_required %}
+                            {% for capability in feature.capabilities %}
                                 <span class="badge bg-info" role="text">
                                     <i class="fas fa-cog" aria-hidden="true"></i> {{ capability.name or 'Unnamed Capability' }}
+                                    {% if capability.label %}
+                                        <small class="ms-1">({{ capability.label }})</small>
+                                    {% endif %}
                                 </span>
                             {% endfor %}
                         </div>
@@ -131,41 +140,7 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                
-                <h6 class="mt-3 mb-2">Technical Capabilities:</h6>
-                {% if feature.technical_capabilities and feature.technical_capabilities|length > 0 %}
-                <div class="list-group list-group-flush">
-                    {% for tech_cap in feature.technical_capabilities %}
-                    <div class="list-group-item px-0">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong>{{ tech_cap.name or 'Unnamed Technical Capability' }}</strong>
-                                <br><small class="text-muted">{{ tech_cap.description or 'No description available.' }}</small>
-                            </div>
-                            <div class="text-end">
-                                {% if tech_cap.readiness_assessments and tech_cap.readiness_assessments|length > 0 %}
-                                    {% set assessment_count = tech_cap.readiness_assessments|length %}
-                                    {% set valid_assessments = tech_cap.readiness_assessments | selectattr('readiness_level') | list %}
-                                    {% if valid_assessments|length > 0 %}
-                                        {% set avg_trl = (valid_assessments | map(attribute='readiness_level.level') | sum / valid_assessments|length) | round(1) %}
-                                        <span class="badge {% if avg_trl >= 7 %}trl-high{% elif avg_trl >= 4 %}trl-medium{% else %}trl-low{% endif %}">
-                                            TRL {{ avg_trl }}
-                                        </span>
-                                        <br><small class="text-muted">{{ assessment_count }} assessment{{ 's' if assessment_count != 1 else '' }}</small>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Invalid Data</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge bg-secondary">No Data</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">No technical capabilities defined yet.</p>
-                {% endif %}
+
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between align-items-center">
