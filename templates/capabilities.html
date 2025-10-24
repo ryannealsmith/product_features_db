@@ -20,21 +20,32 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-gear"></i> {{ capability.name }}
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1 me-2">
+                        <h5 class="mb-0 text-truncate" title="{{ capability.name }}">
+                            <i class="fas fa-gear"></i> {{ capability.name }}
+                        </h5>
+                        {% if capability.label %}
+                            <small class="text-muted">{{ capability.label }}</small>
+                        {% endif %}
+                        {% if capability.vehicle_platform %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-truck"></i> {{ capability.vehicle_platform.name }}
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
                     {% if capability.product_features %}
-                        <div class="float-end">
+                        <div class="flex-shrink-0">
                             {% for pf in capability.product_features %}
-                                <span class="badge bg-primary me-1">{{ pf.name }}</span>
+                                <span class="badge bg-primary mb-1 d-block text-truncate" 
+                                      style="max-width: 150px;" 
+                                      title="{{ pf.name }}">{{ pf.name }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
-                </h5>
-                {% if capability.vehicle_platform %}
-                    <small class="text-muted">
-                        <i class="fas fa-truck"></i> {{ capability.vehicle_platform.name }}
-                    </small>
-                {% endif %}
+                </div>
             </div>
             <div class="card-body">
                 <p class="card-text">{{ capability.description or 'No description provided.' }}</p>
@@ -100,7 +111,9 @@
                     <h6 class="text-secondary">Required Technical Functions:</h6>
                     <div class="dependency-badges">
                         {% for tech_func in capability.technical_functions %}
-                            <span class="badge bg-light text-dark border">{{ tech_func.name }}</span>
+                            <span class="badge bg-light text-dark border me-1 mb-1 text-truncate d-inline-block" 
+                                  style="max-width: 200px;" 
+                                  title="{{ tech_func.name }}">{{ tech_func.name }}</span>
                         {% endfor %}
                     </div>
                     <small class="text-muted d-block mt-1">{{ capability.technical_functions|length }} technical function(s)</small>

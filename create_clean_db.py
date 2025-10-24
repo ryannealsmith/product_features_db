@@ -107,7 +107,7 @@ def create_demo_data():
     with app.app_context():
         # Create demo ProductFeature
         demo_pf = ProductFeature(
-            name="Autonomous Port Operations",
+            name="DEMO: Autonomous Port Operations",
             description="DEMO DATA: Complete autonomous vehicle operations for a port environment",
             vehicle_platform_id=1,  # Truck Platform
             swimlane_decorators="Port, Autonomous, Safety",
@@ -167,7 +167,7 @@ def create_demo_data():
         
         # Create a second ProductFeature to demonstrate shared capabilities
         demo_pf2 = ProductFeature(
-            name="Highway Autonomous Driving",
+            name="DEMO: Highway Autonomous Driving",
             description="DEMO DATA: Autonomous driving capabilities for highway environments",
             vehicle_platform_id=1,  # Truck Platform
             swimlane_decorators="Highway, Autonomous, ADAS",

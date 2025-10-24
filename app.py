@@ -241,7 +241,8 @@ class ReadinessAssessment(db.Model):
     __tablename__ = 'readiness_assessments'
     
     id = db.Column(db.Integer, primary_key=True)
-    technical_capability_id = db.Column(db.Integer, db.ForeignKey('technical_capabilities.id'), nullable=False)
+    technical_capability_id = db.Column(db.Integer, db.ForeignKey('technical_capabilities.id'), nullable=True)
+    capability_id = db.Column(db.Integer, db.ForeignKey('capabilities.id'), nullable=True)
     readiness_level_id = db.Column(db.Integer, db.ForeignKey('technical_readiness_levels.id'), nullable=False)
     vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=False)
     odd_id = db.Column(db.Integer, db.ForeignKey('odds.id'), nullable=False)
@@ -258,6 +259,7 @@ class ReadinessAssessment(db.Model):
     
     # Relationships
     technical_function = db.relationship('TechnicalFunction', back_populates='readiness_assessments')
+    capability = db.relationship('Capabilities', backref='readiness_assessments')
     readiness_level = db.relationship('TechnicalReadinessLevel', back_populates='readiness_assessments')
     vehicle_platform = db.relationship('VehiclePlatform', back_populates='readiness_assessments')
     odd = db.relationship('ODD', back_populates='readiness_assessments')

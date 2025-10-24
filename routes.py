@@ -152,6 +152,7 @@ def capabilities():
     return render_template('capabilities.html', capabilities=capabilities)
 
 @app.route('/technical_capabilities')
+@app.route('/technical_functions')  # Alias for backward compatibility
 def technical_capabilities():
     """Technical capabilities management page"""
     technical_functions = TechnicalFunction.query.all()
@@ -254,7 +255,7 @@ def add_assessment():
             scheduled_completion_date = datetime.strptime(request.form['scheduled_completion_date'], '%Y-%m-%d').date()
         
         assessment = ReadinessAssessment(
-            technical_capability_id=request.form['technical_capability_id'],
+            capability_id=request.form['capability_id'],
             readiness_level_id=request.form['readiness_level_id'],
             vehicle_platform_id=request.form['vehicle_platform_id'],
             odd_id=request.form['odd_id'],
@@ -272,15 +273,15 @@ def add_assessment():
         return redirect(url_for('readiness_assessments'))
     
     # GET request - show form
-    technical_functions = TechnicalFunction.query.all()
+    capabilities = Capabilities.query.order_by(Capabilities.label).all()
     readiness_levels = TechnicalReadinessLevel.query.order_by(TechnicalReadinessLevel.level).all()
     vehicle_platforms = VehiclePlatform.query.all()
     odds = ODD.query.all()
     environments = Environment.query.all()
     trailers = Trailer.query.all()
-    
+
     return render_template('add_assessment.html',
-                         technical_functions=technical_functions,
+                         capabilities=capabilities,
                          readiness_levels=readiness_levels,
                          vehicle_platforms=vehicle_platforms,
                          odds=odds,

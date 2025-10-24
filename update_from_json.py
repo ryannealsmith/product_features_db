@@ -146,12 +146,17 @@ def get_vehicle_platform_id(vehicle_type_or_id):
     return platform_id
 
 def create_product_feature(data):
-    """Create a new product feature"""
+    """Create a new product feature with robust M:N capability linking"""
     try:
-        # Check if already exists
-        existing = ProductFeature.query.filter_by(name=data['name']).first()
+        # Check if already exists by name or label
+        existing = None
+        if 'name' in data and data['name']:
+            existing = ProductFeature.query.filter_by(name=data['name']).first()
+        if not existing and 'label' in data and data['label']:
+            existing = ProductFeature.query.filter_by(label=data['label']).first()
+        
         if existing:
-            print(f"Product feature '{data['name']}' already exists, skipping creation")
+            print(f"Product feature '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
             return False
         
         # Handle both old and new vehicle field formats
@@ -178,17 +183,30 @@ def create_product_feature(data):
         db.session.add(product_feature)
         db.session.flush()  # Get the ID
         
-        # Handle relationships - support both 'capabilities' and 'capabilities_required'
+        # Handle M:N relationships with capabilities - use robust matching
         capabilities_list = data.get('capabilities') or data.get('capabilities_required', [])
-        if capabilities_list:
-            capabilities = find_or_create_references(capabilities_list, 'capability')
-            product_feature.capabilities.extend(capabilities)
+        linked_capabilities = []
         
+        if capabilities_list:
+            for cap_ref in capabilities_list:
+                # Try finding by label first (more reliable), then by name
+                cap = Capabilities.query.filter_by(label=cap_ref).first()
+                if not cap:
+                    cap = Capabilities.query.filter_by(name=cap_ref).first()
+                
+                if cap:
+                    if cap not in product_feature.capabilities:
+                        product_feature.capabilities.append(cap)
+                        linked_capabilities.append(cap)
+                else:
+                    print(f"⚠️  Capability '{cap_ref}' not found for product feature '{product_feature.label or product_feature.name}'")
+        
+        # Handle dependencies (other product features)
         if 'dependencies' in data:
             dependencies = find_or_create_references(data['dependencies'], 'product_feature')
             product_feature.dependencies.extend(dependencies)
         
-        print(f"Created product feature: {product_feature.name}")
+        print(f"Created product feature: {product_feature.name} (linked to {len(linked_capabilities)} capabilities)")
         return True
         
     except Exception as e:
@@ -196,11 +214,17 @@ def create_product_feature(data):
         return False
 
 def update_product_feature(data):
-    """Update an existing product feature"""
+    """Update an existing product feature with robust M:N capability linking"""
     try:
-        product_feature = ProductFeature.query.filter_by(name=data['name']).first()
+        # Find product feature by name or label
+        product_feature = None
+        if 'name' in data and data['name']:
+            product_feature = ProductFeature.query.filter_by(name=data['name']).first()
+        if not product_feature and 'label' in data and data['label']:
+            product_feature = ProductFeature.query.filter_by(label=data['label']).first()
+        
         if not product_feature:
-            print(f"Product feature '{data['name']}' not found for update")
+            print(f"Product feature '{data.get('name', data.get('label', 'unknown'))}' not found for update")
             return False
         
         # Update fields if provided
@@ -230,13 +254,26 @@ def update_product_feature(data):
                 setattr(product_feature, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
-        # Update relationships - support both 'capabilities' and 'capabilities_required'
+        # Update M:N relationships with capabilities - use robust matching
         capabilities_list = data.get('capabilities') or data.get('capabilities_required')
-        if capabilities_list:
+        if capabilities_list is not None:  # Check for None to allow empty lists
             product_feature.capabilities.clear()
-            capabilities = find_or_create_references(capabilities_list, 'capability')
-            product_feature.capabilities.extend(capabilities)
-            updates_made.append('capabilities')
+            linked_capabilities = []
+            
+            for cap_ref in capabilities_list:
+                # Try finding by label first (more reliable), then by name
+                cap = Capabilities.query.filter_by(label=cap_ref).first()
+                if not cap:
+                    cap = Capabilities.query.filter_by(name=cap_ref).first()
+                
+                if cap:
+                    if cap not in product_feature.capabilities:
+                        product_feature.capabilities.append(cap)
+                        linked_capabilities.append(cap)
+                else:
+                    print(f"⚠️  Capability '{cap_ref}' not found for product feature update")
+            
+            updates_made.append(f'capabilities ({len(linked_capabilities)} linked)')
         
         if 'dependencies' in data:
             product_feature.dependencies.clear()
@@ -254,10 +291,15 @@ def update_product_feature(data):
 def create_capability(data):
     """Create a new capability with many-to-many ProductFeature relationships"""
     try:
-        # Check if already exists
-        existing = Capabilities.query.filter_by(name=data['name']).first()
+        # Check if already exists by name or label
+        existing = None
+        if 'name' in data and data['name']:
+            existing = Capabilities.query.filter_by(name=data['name']).first()
+        if not existing and 'label' in data and data['label']:
+            existing = Capabilities.query.filter_by(label=data['label']).first()
+        
         if existing:
-            print(f"Capability '{data['name']}' already exists, skipping creation")
+            print(f"Capability '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
             return False
         
         # Handle both old and new vehicle field formats
@@ -282,29 +324,38 @@ def create_capability(data):
         db.session.add(capability)
         db.session.flush()  # Get the ID
         
-        # Handle M:N relationships with ProductFeatures
-        # Support both old format (single product_feature) and new format (product_feature_ids array)
+        # Handle M:N relationships with ProductFeatures - use robust matching
         product_features_to_link = []
         
         if 'product_feature_ids' in data and data['product_feature_ids']:
-            # New M:N format - array of product feature names
-            for pf_name in data['product_feature_ids']:
-                pf = ProductFeature.query.filter_by(name=pf_name).first()
+            # New M:N format - array of product feature names/labels
+            for pf_ref in data['product_feature_ids']:
+                # Try finding by label first (more reliable), then by name
+                pf = ProductFeature.query.filter_by(label=pf_ref).first()
+                if not pf:
+                    pf = ProductFeature.query.filter_by(name=pf_ref).first()
+                
                 if pf:
                     product_features_to_link.append(pf)
                 else:
-                    print(f"Warning: Product feature '{pf_name}' not found for capability")
+                    print(f"⚠️  Product Feature '{pf_ref}' not found for capability '{capability.label or capability.name}'")
+                    
         elif 'product_feature' in data and data['product_feature']:
-            # Old 1:N format compatibility - single product feature name
-            pf = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            # Old 1:N format compatibility - single product feature name/label
+            pf_ref = data['product_feature']
+            pf = ProductFeature.query.filter_by(label=pf_ref).first()
+            if not pf:
+                pf = ProductFeature.query.filter_by(name=pf_ref).first()
+            
             if pf:
                 product_features_to_link.append(pf)
             else:
-                print(f"Warning: Product feature '{data['product_feature']}' not found for capability")
+                print(f"⚠️  Product Feature '{pf_ref}' not found for capability '{capability.label or capability.name}'")
         
         # Link to ProductFeatures using the many-to-many relationship
         for pf in product_features_to_link:
-            pf.capabilities.append(capability)
+            if capability not in pf.capabilities:
+                pf.capabilities.append(capability)
         
         # Handle relationships with TechnicalFunctions
         if 'technical_functions' in data:
@@ -321,9 +372,15 @@ def create_capability(data):
 def update_capability(data):
     """Update an existing capability with M:N ProductFeature relationships"""
     try:
-        capability = Capabilities.query.filter_by(name=data['name']).first()
+        # Find capability by name or label
+        capability = None
+        if 'name' in data and data['name']:
+            capability = Capabilities.query.filter_by(name=data['name']).first()
+        if not capability and 'label' in data and data['label']:
+            capability = Capabilities.query.filter_by(label=data['label']).first()
+        
         if not capability:
-            print(f"Capability '{data['name']}' not found for update")
+            print(f"Capability '{data.get('name', data.get('label', 'unknown'))}' not found for update")
             return False
         
         # Update fields if provided
@@ -352,32 +409,43 @@ def update_capability(data):
                 setattr(capability, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
-        # Update M:N relationships with ProductFeatures
+        # Update M:N relationships with ProductFeatures - use robust matching
         if 'product_feature_ids' in data:
-            # New M:N format - clear existing and add new relationships
+            # New M:N format - clear existing and add new relationships with robust matching
             # Clear existing relationships by removing this capability from all product features
-            for pf in capability.product_features:
+            for pf in list(capability.product_features):  # Use list() to avoid modification during iteration
                 pf.capabilities.remove(capability)
             
-            # Add new relationships
-            for pf_name in data['product_feature_ids']:
-                pf = ProductFeature.query.filter_by(name=pf_name).first()
+            # Add new relationships with robust matching
+            for pf_ref in data['product_feature_ids']:
+                # Try finding by label first (more reliable), then by name
+                pf = ProductFeature.query.filter_by(label=pf_ref).first()
+                if not pf:
+                    pf = ProductFeature.query.filter_by(name=pf_ref).first()
+                
                 if pf:
-                    pf.capabilities.append(capability)
+                    if capability not in pf.capabilities:
+                        pf.capabilities.append(capability)
                 else:
-                    print(f"Warning: Product feature '{pf_name}' not found")
+                    print(f"⚠️  Product Feature '{pf_ref}' not found for capability update")
             updates_made.append('product_feature_ids')
+            
         elif 'product_feature' in data:
             # Old 1:N format compatibility - clear existing and add single relationship
-            for pf in capability.product_features:
+            for pf in list(capability.product_features):
                 pf.capabilities.remove(capability)
             
-            pf = ProductFeature.query.filter_by(name=data['product_feature']).first()
+            pf_ref = data['product_feature']
+            pf = ProductFeature.query.filter_by(label=pf_ref).first()
+            if not pf:
+                pf = ProductFeature.query.filter_by(name=pf_ref).first()
+            
             if pf:
-                pf.capabilities.append(capability)
+                if capability not in pf.capabilities:
+                    pf.capabilities.append(capability)
                 updates_made.append('product_feature')
             else:
-                print(f"Warning: Product feature '{data['product_feature']}' not found")
+                print(f"⚠️  Product Feature '{pf_ref}' not found for capability update")
         
         # Update relationships with TechnicalFunctions
         if 'technical_functions' in data:
@@ -1211,6 +1279,71 @@ def cleanup_demo_data():
         return False
 
 
+def fix_missing_relationships(json_data):
+    """Fix missing M:N relationships after main import process"""
+    print("\n🔧 Post-processing: Fix missing M:N relationships...")
+    
+    relationships_added = 0
+    
+    # Process all capability entities in the JSON to establish missing relationships
+    for entity in json_data.get('entities', []):
+        if entity.get('entity_type') == 'capability' and entity.get('operation') == 'create':
+            cap_label = entity.get('label')
+            if not cap_label:
+                continue
+            
+            # Find the capability in the database
+            capability = Capabilities.query.filter_by(label=cap_label).first()
+            if not capability:
+                continue
+            
+            # Get the product feature IDs this capability should link to
+            product_feature_ids = entity.get('product_feature_ids', [])
+            
+            for pf_label in product_feature_ids:
+                # Find the product feature by label
+                product_feature = ProductFeature.query.filter_by(label=pf_label).first()
+                
+                if product_feature:
+                    # Check if relationship already exists
+                    if capability not in product_feature.capabilities:
+                        product_feature.capabilities.append(capability)
+                        relationships_added += 1
+                        print(f"✅ Fixed missing link: {pf_label} ↔ {cap_label}")
+    
+    # Also fix relationships from product feature side
+    for entity in json_data.get('entities', []):
+        if entity.get('entity_type') == 'product_feature' and entity.get('operation') == 'create':
+            pf_label = entity.get('label')
+            if not pf_label:
+                continue
+            
+            # Find the product feature in the database
+            product_feature = ProductFeature.query.filter_by(label=pf_label).first()
+            if not product_feature:
+                continue
+            
+            # Get the capabilities this product feature should link to
+            capabilities_required = entity.get('capabilities_required', []) or entity.get('capabilities', [])
+            
+            for cap_label in capabilities_required:
+                # Find the capability by label
+                capability = Capabilities.query.filter_by(label=cap_label).first()
+                
+                if capability:
+                    # Check if relationship already exists
+                    if capability not in product_feature.capabilities:
+                        product_feature.capabilities.append(capability)
+                        relationships_added += 1
+                        print(f"✅ Fixed missing link: {pf_label} ↔ {cap_label}")
+    
+    if relationships_added > 0:
+        print(f"🎉 Post-processing complete: Fixed {relationships_added} missing relationships")
+    else:
+        print("✅ Post-processing complete: No missing relationships found")
+    
+    return relationships_added
+
 def update_from_json(json_file_path):
     """Update entities and configurations from JSON file"""
     
@@ -1324,7 +1457,13 @@ def update_from_json(json_file_path):
                             print(f"Configuration {config_index + 1}: Error processing configuration - {str(e)}")
                             total_errors += 1
             
-            # Commit all changes
+            # Post-processing: Fix any missing M:N relationships
+            if has_entities:
+                fixed_relationships = fix_missing_relationships(data)
+            else:
+                fixed_relationships = 0
+            
+            # Commit all changes including relationship fixes
             db.session.commit()
             
             print("-" * 60)
@@ -1332,7 +1471,21 @@ def update_from_json(json_file_path):
             print(f"Created: {total_created} items")
             print(f"Updated: {total_updated} items")
             print(f"Deleted: {total_deleted} items")
+            print(f"Fixed relationships: {fixed_relationships}")
             print(f"Errors encountered: {total_errors}")
+            
+            # Final verification of relationships
+            if has_entities and (total_created > 0 or total_updated > 0 or fixed_relationships > 0):
+                print("\n📊 Final relationship verification:")
+                total_pfs = ProductFeature.query.count()
+                linked_pfs = ProductFeature.query.filter(ProductFeature.capabilities.any()).count()
+                total_caps = Capabilities.query.count()
+                linked_caps = Capabilities.query.filter(Capabilities.product_features.any()).count()
+                total_relationships = db.session.execute(db.text('SELECT COUNT(*) FROM product_feature_capabilities')).scalar()
+                
+                print(f"   Product features with capabilities: {linked_pfs}/{total_pfs}")
+                print(f"   Capabilities with product features: {linked_caps}/{total_caps}")
+                print(f"   Total M:N relationships: {total_relationships}")
             
             return total_errors == 0
             
@@ -1464,8 +1617,11 @@ def main():
         print("- Capabilities") 
         print("- Technical Functions")
         print("")
-        print("New Database Structure (v4.0):")
+        print("Database Structure (v4.1 - Enhanced M:N Relationships):")
         print("  ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction")
+        print("  • Robust label-based entity matching")
+        print("  • Automatic relationship fix post-processing")
+        print("  • Backward compatibility with old formats")
         print("")
         print("JSON Structure:")
         print("  {")
@@ -1556,11 +1712,11 @@ def generate_template_json():
     """Generate a template JSON file with examples"""
     template_data = {
         "metadata": {
-            "version": "4.0",
-            "description": "Template for updating Product Feature Readiness Database - Many-to-Many Relationships",
+            "version": "4.1",
+            "description": "Template for updating Product Feature Readiness Database - Enhanced M:N Relationships",
             "created_by": "Ryan Smith",
             "created_date": datetime.now().strftime('%Y-%m-%d'),
-            "notes": "Updated for M:N relationship structure: ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction"
+            "notes": "Enhanced with robust relationship handling and automatic post-processing fixes"
         },
         "entities": [
             {
@@ -1666,8 +1822,10 @@ def generate_template_json():
             json.dump(template_data, jsonfile, indent=2, ensure_ascii=False)
         
         print(f"Template JSON file generated: {output_file}")
-        print("Updated for Many-to-Many database structure:")
+        print("Enhanced v4.1 Database Structure:")
         print("- ProductFeature (M:N) ↔ Capabilities (M:N) ↔ TechnicalFunction")
+        print("- Robust label-based entity matching")
+        print("- Automatic relationship fix post-processing")
         print("- Use product_feature_ids array for M:N capability relationships")
         print("- Use vehicle_platform_id instead of vehicle_type")
         print("- Capabilities can be shared across multiple ProductFeatures")

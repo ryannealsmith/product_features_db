@@ -102,6 +102,42 @@
             margin-right: 5px;
             margin-bottom: 5px;
         }
+        
+        /* Text overflow handling */
+        .text-truncate-badge {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        
+        .card-title-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Responsive badge containers */
+        .badge-container {
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+        
+        .badge-container .badge {
+            word-break: break-word;
+            white-space: normal;
+            max-width: 100%;
+        }
+        
+        /* Better responsive layout for cards */
+        @media (max-width: 768px) {
+            .badge-container .badge {
+                display: block;
+                margin-bottom: 5px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>

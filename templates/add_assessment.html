@@ -12,18 +12,12 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="technical_capability_id" class="form-label">Technical Function *</label>
-                        <select name="technical_capability_id" id="technical_capability_id" class="form-select" required>
-                            <option value="">Select Technical Function</option>
-                            {% for tech_cap in technical_functions %}
-                            <option value="{{ tech_cap.id }}">
-                                {% set product_features = [] %}
-                                {% for capability in tech_cap.capabilities %}
-                                    {% if capability.product_feature and capability.product_feature not in product_features %}
-                                        {% set _ = product_features.append(capability.product_feature) %}
-                                    {% endif %}
-                                {% endfor %}
-                                {{ tech_cap.name }}{% if product_features %} ({{ product_features[0].name }}{% if product_features|length > 1 %} +{{ product_features|length - 1 }} more{% endif %}){% endif %}
+                        <label for="capability_id" class="form-label">Capability *</label>
+                        <select name="capability_id" id="capability_id" class="form-select" required>
+                            <option value="">Select Capability</option>
+                            {% for capability in capabilities %}
+                            <option value="{{ capability.id }}">
+                                {{ capability.label }} {% if capability.product_features %}({% for pf in capability.product_features %}{{ pf.name }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}
                             </option>
                             {% endfor %}
                         </select>

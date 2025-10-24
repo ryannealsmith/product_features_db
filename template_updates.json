@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "version": "4.1",
+    "description": "Template for updating Product Feature Readiness Database - Enhanced M:N Relationships",
+    "created_by": "Ryan Smith",
+    "created_date": "2025-10-24",
+    "notes": "Enhanced with robust relationship handling and automatic post-processing fixes"
+  },
+  "entities": [
+    {
+      "entity_type": "product_feature",
+      "operation": "create",
+      "name": "Example Product Feature",
+      "description": "This is an example product feature",
+      "vehicle_platform_id": 5,
+      "swimlane_decorators": "ADAS",
+      "label": "PF-ADAS-1.1",
+      "tmos": "Achieve 99.9% uptime in highway conditions",
+      "status_relative_to_tmos": 75.0,
+      "planned_start_date": "2025-01-15",
+      "planned_end_date": "2025-12-31",
+      "active_flag": "next",
+      "document_url": "https://docs.example.com/product-feature",
+      "capabilities": [
+        "Highway Navigation"
+      ],
+      "dependencies": []
+    },
+    {
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Highway Navigation",
+      "success_criteria": "Successfully navigate highway routes with 99.9% accuracy",
+      "product_feature_ids": [
+        "Example Product Feature"
+      ],
+      "vehicle_platform_id": 5,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-11-30",
+      "tmos": "Complete highway navigation capability",
+      "progress_relative_to_tmos": 60.0,
+      "document_url": "https://docs.example.com/highway-nav",
+      "technical_functions": [
+        "Path Planning",
+        "Lane Detection"
+      ]
+    },
+    {
+      "entity_type": "capability",
+      "operation": "create",
+      "name": "Shared Safety Monitoring",
+      "success_criteria": "Advanced safety monitoring shared across multiple product features",
+      "product_feature_ids": [
+        "Example Product Feature",
+        "Another Product Feature"
+      ],
+      "vehicle_platform_id": 5,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-11-30",
+      "tmos": "Universal safety monitoring capability",
+      "progress_relative_to_tmos": 45.0,
+      "document_url": "https://docs.example.com/safety-monitoring",
+      "technical_functions": [
+        "Collision Detection",
+        "Emergency Stop"
+      ]
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Path Planning",
+      "description": "Generate optimal paths for vehicle navigation",
+      "success_criteria": "Generate paths within 100ms with 99% success rate",
+      "vehicle_platform_id": 5,
+      "tmos": "Real-time path planning for highway navigation",
+      "status_relative_to_tmos": 80.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-08-31",
+      "document_url": "https://docs.example.com/path-planning",
+      "capabilities": [
+        "Highway Navigation"
+      ]
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "create",
+      "name": "Lane Detection",
+      "description": "Computer vision system for lane boundary detection",
+      "success_criteria": "Detect lane boundaries with 99.5% accuracy in daylight",
+      "vehicle_platform_id": 5,
+      "tmos": "Reliable lane detection for highway navigation",
+      "status_relative_to_tmos": 85.0,
+      "planned_start_date": "2025-01-01",
+      "planned_end_date": "2025-07-31",
+      "document_url": "https://docs.example.com/lane-detection",
+      "capabilities": [
+        "Highway Navigation"
+      ]
+    },
+    {
+      "entity_type": "product_feature",
+      "operation": "update",
+      "name": "Example Product Feature",
+      "status_relative_to_tmos": 85.0,
+      "description": "Updated description for the product feature"
+    },
+    {
+      "entity_type": "capability",
+      "operation": "update",
+      "name": "Highway Navigation",
+      "progress_relative_to_tmos": 70.0,
+      "tmos": "Updated TMOS for highway navigation",
+      "product_feature_ids": [
+        "Example Product Feature",
+        "Another Product Feature"
+      ]
+    },
+    {
+      "entity_type": "technical_function",
+      "operation": "delete",
+      "name": "Obsolete Technical Function",
+      "force_delete": false
+    }
+  ]
+}
