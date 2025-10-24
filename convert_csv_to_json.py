@@ -11,33 +11,8 @@ DATE_FORMAT = '%m-%d-%Y'
 CURRENT_DATE = datetime.now().date()
 DEFAULT_PF_CSV = 'example-csvs/product_features.csv'
 DEFAULT_CA_CSV = 'example-csvs/capabilities_to_product_features.csv'
-DEFAULT_TF_CSV = 'example-csvs/capability_to_tech.csv'
+DEFAULT_TF_CSV = 'example-csvs/techncal_functions_to_capabilities.csv'
 DEFAULT_OUTPUT_JSON = 'repository_update_data_final.json'
-
-#------------------------------------------------------------------------------
-def get_random_subset(collection, min_count=2, max_count=5):
-    """Randomly selects a subset of capability labels."""
-    all_labels = list(collection.keys())
-    
-    # Ensure the random subset size doesn't exceed the total number of capabilities
-    if not all_labels:
-        return []
-    
-    # Determine a random size for the subset
-    subset_size = random.randint(min_count, min(max_count, len(all_labels)))
-    
-    # Select a random subset of labels without replacement
-    return random.sample(all_labels, subset_size)
-
-#------------------------------------------------------------------------------
-def get_capability_dates(cap_label, ca_list):
-    """Retrieves the planned start and end dates for a given capability label."""
-    for cap_entity in ca_list:
-        if cap_entity.get('label') == cap_label:
-            # Note: Dates are stored as strings in YYYY-MM-DD format
-            return (cap_entity.get('planned_start_date'), 
-                    cap_entity.get('planned_end_date'))
-    return None, None
 
 #------------------------------------------------------------------------------
 def get_start_and_end_dates_from_product_features(pf_labels, 
@@ -176,7 +151,6 @@ def load_product_features(file_path):
             IDX_ODD = 4
             IDX_ENVIRONMENT = 5
             IDX_TRAILER = 6
-            IDX_DETAILS = 7
             IDX_NEXT = 8
             IDX_START_DATE = 10
             IDX_END_DATE = 11
@@ -194,21 +168,18 @@ def load_product_features(file_path):
                 start_date = robust_get_date(row[IDX_START_DATE].strip())
                 end_date = robust_get_date(row[IDX_END_DATE].strip())
 
-                if label and name:
-                    product_features[label] = {
-                        'name': name,
-                        'label': label,
-                        'swimlane': swimlane or '',
-                        'platform': row[IDX_PLATFORM].strip() or '',
-                        'odd': row[IDX_ODD].strip() or '',
-                        'environment': row[IDX_ENVIRONMENT].strip() or '',
-                        'trailer': row[IDX_TRAILER].strip() or '',
-                        'start_date':  start_date,
-                        'end_date': end_date,
-                        'details': row[IDX_DETAILS].strip() or '',
-                        'next': row[IDX_NEXT].strip() or 'N', 
-                        'capabilities': []
-                    }
+                product_features[label] = {
+                    'name': name,
+                    'label': label,
+                    'swimlane': swimlane or '',
+                    'platform': row[IDX_PLATFORM].strip() or '',
+                    'odd': row[IDX_ODD].strip() or '',
+                    'environment': row[IDX_ENVIRONMENT].strip() or '',
+                    'trailer': row[IDX_TRAILER].strip() or '',
+                    'start_date':  start_date,
+                    'end_date': end_date,
+                    'next': row[IDX_NEXT].strip() or 'N',
+                }
     except Exception as e:
         print(f"An error occurred while reading {file_path}: {e}")
     return product_features
@@ -279,7 +250,6 @@ def load_capabilities(file_path, product_features_raw):
                         'environment': row[IDX_ENVIRONMENT].strip() or '',
                         'trailer': row[IDX_TRAILER].strip() or '',
                         'next': row[IDX_NEXT].strip() or 'N',
-                        'tech_features': [], 
                         'product_features_linked': list(set(cap_to_pf))
                     }
 
@@ -289,26 +259,77 @@ def load_capabilities(file_path, product_features_raw):
     return capabilities
 
 #------------------------------------------------------------------------------
-def load_fake_technical_functions(capabilities):
+def load_technical_functions(file_path, capabilities):
     """Loads technical functions."""
-    technical_functions = {}
+    technical_functions = {}            
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            try:
+                next(reader) 
+            except StopIteration:
+                return capabilities
+                
+            IDX_SWIMLANE = 0
+            IDX_LABEL = 4
+            IDX_NAME = 5
+            IDX_PLATFORM = 6
+            IDX_ODD = 7
+            IDX_ENVIRONMENT = 8
+            IDX_TRAILER = 9
+            IDX_NEXT = 11
+            IDX_CAPABILITIES_START = 12
 
-    idx = 0
-    for cap_label, cap_data in capabilities.items():
-        label = "TECH-FUNCTION-" + str(idx)
-        idx += 1
-        technical_functions[label] = {
-            'name': label,
-            'swimlane': cap_data['swimlane'],
-            'label': label,
-            'platform': cap_data['platform'] if cap_data['platform'] != 'N/A' else '',
-            'odd': cap_data['odd'],
-            'environment': cap_data['environment'],
-            'trailer': cap_data['trailer'],
-            'next': cap_data['next'],
-            'capabilities': cap_label
-        }
+            previous_swimlane = ""
+            for row in reader:
+                if not row or not row[IDX_LABEL].strip():
+                    if row and row[IDX_SWIMLANE].strip():
+                        current_swimlane = row[IDX_SWIMLANE].strip()
+                    continue
 
+                label = row[IDX_LABEL].strip()
+                swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
+                if swimlane != '': previous_swimlane = swimlane
+
+                tech_to_cap = []
+                for i in range(IDX_CAPABILITIES_START, len(row)):
+                    if row[i].strip():
+                        for item in row[i].split('\n'):
+                            item = item.strip()
+                            if item:
+                                cap_label = item.split(' ')[0].strip()
+                                # IMPORTANT: It is possible this CA label does 
+                                #            not exist in the product feature
+                                #            list because of a typo.
+                                if cap_label in capabilities:
+                                    tech_to_cap.append(cap_label)
+                                else:
+                                    print("WARNING: Could not find " + cap_label + 
+                                          " in technical functions for tech ID: " + 
+                                          label + ". Skipping.")
+
+                # IMPORTANT: If we have no linked product features, skip.
+                if len(tech_to_cap) == 0:
+                    print("WARNING: Could not find any linked capabilities "
+                          "for tech function: " + label + ". Skipping.")
+                    continue
+
+                if label:
+                    technical_functions[label] = {
+                        'name': row[IDX_NAME].strip() or '',
+                        'swimlane': swimlane,
+                        'label': label,
+                        'platform': row[IDX_PLATFORM].strip() or '',
+                        'odd': row[IDX_ODD].strip() or '',
+                        'environment': row[IDX_ENVIRONMENT].strip() or '',
+                        'trailer': row[IDX_TRAILER].strip() or '',
+                        'next': row[IDX_NEXT].strip() or 'N',
+                        'capabilities': list(set(tech_to_cap))
+                    }
+
+    except Exception as e:
+        print(f"An error occurred while reading {file_path}: {e}")
+        
     return technical_functions
 
 #------------------------------------------------------------------------------
@@ -324,28 +345,15 @@ def construct_repository_update_schema(product_features_raw,
     tf_entities_list = []
     ca_entities_list = []
 
-    # To store mapping of product features to capability labels.
-    pf_to_cap_labels = defaultdict(list)
-    tf_to_cap_labels = defaultdict(list)
-    
     # 1. Process Capabilities.
+    pf_to_cap_labels = defaultdict(list)
     for cap_label, cap_data in capabilities_raw.items():
 
-        # HACK: If cap lables are empty, then select a random one.
+        # IMPORTANT: As we go through the capabilities, save a map from pf_label
+        #            to all associated cap_labels.
         pf_labels = cap_data['product_features_linked']
-        if not pf_labels:
-            print(f"INFO: Capability Feature {cap_label} has no linked capabilities. Assigning random subset.")
-            # Assign a random subset of 2 to 5 capabilities as a fallback
-            pf_labels = get_random_subset(product_features_raw, 2, 5)
-        tf_labels = cap_data['tech_features']
-        if not tf_labels:
-            print(f"INFO: Capability Feature {cap_label} has no linked technical functions. Assigning random subset.")
-            tf_labels = get_random_subset(technical_functions_raw, 2, 5)
-        
         for pf_label in pf_labels:
             pf_to_cap_labels[pf_label].append(cap_label)
-        for tf_label in tf_labels:
-            tf_to_cap_labels[tf_label].append(cap_label)
 
         # IMPORTANT: Get the start / end date from the product features.
         min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
@@ -364,16 +372,15 @@ def construct_repository_update_schema(product_features_raw,
             "tmos": "Delivery Progress (Target = 100%)", 
             "progress_relative_to_tmos": calculate_progress(
                 min_start_date, max_end_date),
-            "technical_functions": [t['label'] for t in cap_data['tech_features']],
-            "product_feature_ids": pf_labels, # PF Labels
+            "product_feature_ids": pf_labels
         }
         ca_entities_list.append(cap_entity)
 
     # 2. Process Technical Functions (TFs)
-    for tf_lable, tf_data in technical_functions_raw.items():
+    for _, tf_data in technical_functions_raw.items():
 
         # Determine all product feature dependencies.
-        capabilities = tf_to_cap_labels[tf_label]
+        capabilities = tf_data['capabilities']
         pf_labels = set()
         for pf_label, cap_labels in pf_to_cap_labels.items():
             for cap_label in capabilities:
@@ -410,7 +417,7 @@ def construct_repository_update_schema(product_features_raw,
         tf_entities_list.append(tf_entity)
         
     # 3. Process Product Features (PF)
-    for pf_label, pf_data in product_features_raw.items():                        
+    for pf_label, pf_data in product_features_raw.items():                  
         pf_entity = {
             "_comment": f"=== CREATING PRODUCT FEATURE: {pf_label} ===",
             "entity_type": "product_feature",
@@ -425,7 +432,7 @@ def construct_repository_update_schema(product_features_raw,
             "active_flag": "next" if pf_data.get('next', '').upper() == 'Y' else 'current',
             "tmos": "Delivery Progress (Target = 100%)",
             "status_relative_to_tmos": calculate_progress(pf_data['start_date'], pf_data['end_date']),
-            "capabilities_required": cap_labels, # CA Labels # <--------- check this
+            "capabilities_required": pf_to_cap_labels[pf_label],
             "document_url": "",
         }
         pf_entities_list.append(pf_entity)
@@ -453,7 +460,7 @@ def main():
     Parses command-line arguments, runs the data processing pipeline, and saves the output.
     """
     parser = argparse.ArgumentParser(
-        description="Transform three roadmap CSV files into a structured JSON update file, calculating TRLs.",
+        description="Transform three roadmap CSV files into a structured JSON update file.",
         formatter_class=argparse.RawTextHelpFormatter
     )
     
@@ -461,19 +468,19 @@ def main():
         '--pf-csv',
         type=str,
         default=DEFAULT_PF_CSV,
-        help=f"Path to the Product Feature CSV (product_to_capability.csv). Default: {DEFAULT_PF_CSV}"
+        help=f"Path to the Product Feature CSV. Default: {DEFAULT_PF_CSV}"
     )
     parser.add_argument(
         '--ca-csv',
         type=str,
         default=DEFAULT_CA_CSV,
-        help=f"Path to the Capabilities CSV (capabilities.csv). Default: {DEFAULT_CA_CSV}"
+        help=f"Path to the Capabilities CSV. Default: {DEFAULT_CA_CSV}"
     )
     parser.add_argument(
         '--tf-csv',
         type=str,
         default=DEFAULT_TF_CSV,
-        help=f"Path to the Capability-to-Tech CSV (capability_to_tech.csv). Default: {DEFAULT_TF_CSV}"
+        help=f"Path to the Capability-to-Tech CSV. Default: {DEFAULT_TF_CSV}"
     )
     parser.add_argument(
         '-o', '--output',
@@ -488,7 +495,7 @@ def main():
     print(f"Starting data processing: {CURRENT_DATE.strftime(DATE_FORMAT)}.")
     product_features_raw = load_product_features(args.pf_csv)
     capabilities_raw = load_capabilities(args.ca_csv, product_features_raw)
-    technical_functions_raw = load_fake_technical_functions(capabilities_raw)
+    technical_functions_raw = load_technical_functions(args.tf_csv, capabilities_raw)
     
     print("\n--- Final Schema Transformation ---")
     # 2. Transform the intermediate structure into the new repository update schema
