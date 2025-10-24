@@ -81,26 +81,37 @@ def validate_entity_data(entity_data, entity_index):
     return True
 
 def find_or_create_references(reference_data, entity_type):
-    """Find or create reference entities based on names"""
+    """Find or create reference entities based on names or labels"""
     references = []
     
     if not reference_data:
         return references
     
     for ref_name in reference_data:
+        ref_entity = None
+        
         if entity_type == 'product_feature':
+            # Try by name first, then by label
             ref_entity = ProductFeature.query.filter_by(name=ref_name).first()
+            if not ref_entity:
+                ref_entity = ProductFeature.query.filter_by(label=ref_name).first()
         elif entity_type == 'capability':
+            # Try by name first, then by label
             ref_entity = Capabilities.query.filter_by(name=ref_name).first()
+            if not ref_entity:
+                ref_entity = Capabilities.query.filter_by(label=ref_name).first()
         elif entity_type == 'technical_function':
+            # Try by name first, then by label
             ref_entity = TechnicalFunction.query.filter_by(name=ref_name).first()
+            if not ref_entity:
+                ref_entity = TechnicalFunction.query.filter_by(label=ref_name).first()
         else:
             continue
         
         if ref_entity:
             references.append(ref_entity)
         else:
-            print(f"Warning: Referenced {entity_type} '{ref_name}' not found, skipping")
+            print(f"Warning: Referenced {entity_type} '{ref_name}' not found by name or label, skipping")
     
     return references
 
@@ -167,9 +178,10 @@ def create_product_feature(data):
         db.session.add(product_feature)
         db.session.flush()  # Get the ID
         
-        # Handle relationships
-        if 'capabilities' in data:
-            capabilities = find_or_create_references(data['capabilities'], 'capability')
+        # Handle relationships - support both 'capabilities' and 'capabilities_required'
+        capabilities_list = data.get('capabilities') or data.get('capabilities_required', [])
+        if capabilities_list:
+            capabilities = find_or_create_references(capabilities_list, 'capability')
             product_feature.capabilities.extend(capabilities)
         
         if 'dependencies' in data:
@@ -218,10 +230,11 @@ def update_product_feature(data):
                 setattr(product_feature, date_field, parse_date(data[date_field]))
                 updates_made.append(date_field)
         
-        # Update relationships
-        if 'capabilities' in data:
+        # Update relationships - support both 'capabilities' and 'capabilities_required'
+        capabilities_list = data.get('capabilities') or data.get('capabilities_required')
+        if capabilities_list:
             product_feature.capabilities.clear()
-            capabilities = find_or_create_references(data['capabilities'], 'capability')
+            capabilities = find_or_create_references(capabilities_list, 'capability')
             product_feature.capabilities.extend(capabilities)
             updates_made.append('capabilities')
         
@@ -256,6 +269,7 @@ def create_capability(data):
         
         capability = Capabilities(
             name=data['name'],
+            label=data.get('label', ''),
             success_criteria=data.get('success_criteria', ''),
             vehicle_platform_id=vehicle_platform_id,
             planned_start_date=parse_date(data.get('planned_start_date')),
@@ -313,7 +327,7 @@ def update_capability(data):
             return False
         
         # Update fields if provided
-        fields_to_update = ['success_criteria', 'tmos', 'progress_relative_to_tmos', 'document_url']
+        fields_to_update = ['label', 'success_criteria', 'tmos', 'progress_relative_to_tmos', 'document_url']
         
         updates_made = []
         for field in fields_to_update:

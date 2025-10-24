@@ -192,6 +192,7 @@ class Capabilities(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
+    label = db.Column(db.String(50), nullable=True, unique=True)  # Unique identifier like CA-CHE-1.1
     success_criteria = db.Column(db.Text, nullable=False)
     vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=True)
     planned_start_date = db.Column(db.Date, nullable=True)
