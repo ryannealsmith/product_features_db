@@ -4,11 +4,11 @@ Actors,PF-ACT-1.1,Road vehicles: operate around/ regular interactions (baseline)
 ,PF-ACT-3.1,Motorcycles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,?,,Oct 2025,Dec 2025
 ,PF-ACT-4.1,Pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,Y,,Oct 2025,Dec 2025
 ,PF-ACT-5.1,Non-pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,?,,Oct 2025,Dec 2025
-,PF-ACT-6.1,Articulated vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,Y,,Oct 2025,Mar 2025
+,PF-ACT-6.1,Articulated vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,Y,,Oct 2025,Mar 2026
 ,PF-ACT-7.1,Mobile CHE vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Nominal behaviour
 * Types:
   ** Reach stacker
-  ** Empty handler",Y,,Oct 2025,Mar 2025
+  ** Empty handler",Y,,Oct 2025,Mar 2026
 ,,,,,,,,,,,
 Infrastructure,PF-INF-1.1,Localise into map: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Camera
 * Radar
@@ -118,10 +118,10 @@ Forward Driving,PF-FWD-1.1,Stay in lane: AV only,Terberg,CFG-ODD-1,CFG-ENV-2.1,N
 ,PF-TOW-1.1,Tow a semi-trailer: account for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Jan 2026
 ,,,,,,,,,,,
 Reverse Driving,PF-REV-1.1,Reverse the AV (Terberg),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Oct 2025,Dec 2025
-,PF-REV-2.1,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Apr 2025
-,PF-REV-2.2,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Apr 2025
-,PF-REV-3.1,Reverse with a Semi-Trailer: isolated prescribed parking bay (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Oct 2025,Apr 2025
-,PF-REV-3.2,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Oct 2025,Apr 2025
+,PF-REV-2.1,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Apr 2026
+,PF-REV-2.2,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Apr 2026
+,PF-REV-3.1,Reverse with a Semi-Trailer: isolated prescribed parking bay (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Oct 2025,Apr 2026
+,PF-REV-3.2,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Oct 2025,Apr 2026
 ,,,,,,,,,,,
 Docking,PF-DCK-1.1,Initial approach of a prescribed isolated dock (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
 ,PF-DCK-1.2,Initial approach of a prescribed isolated dock (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
