@@ -1,77 +1,130 @@
-Swimlane,Label,Capability,Platform,ODD,Environment,Trailer,Details,Next,Product Features
-Operational Environment,CA-CHE-1.1,"CHE Perc: Reach Stacker detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-1.1
+Swimlane,SL,Maj,Min,Label,Capability,Platform,ODD,Environment,Trailer,Details/ comments,Next,Product Features
+,ACT,1,1,CA-ACT-1.1,Road vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-1.1
+,ACT,2,1,CA-ACT-2.1,Large vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-2.1
+,ACT,3,1,CA-ACT-3.1,Motorcycles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-3.1
+,ACT,4,1,CA-ACT-4.1,Pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1.2,CFG-ENV-1.1,N/A,,,PF-ACT-4.1
+,ACT,5,1,CA-ACT-5.1,Non-pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-5.1
+,ACT,6,1,CA-ACT-6.1,"Articulated vehicles: Detect, classify and track",Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-6.1
+,ACT,6,2,CA-ACT-6.2,Articulated vehicles: exhibit appropriate yield/ no-yield interactions,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-6.1
+,ACT,7,1,CA-ACT-7.1,Mobile CHE vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-ACT-7.1
+,,,,,,,,,,,,
+,ENV,1,1,CA-ENV-1.1,Perc: Extend actor perception algs to support higher ambient temperatures,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,Break down further?,,PF-ENV-1.2
+,ENV,2,1,CA-ENV-2.1,Loc: Extend localisation algs to support higher ambient temperatures,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,Break down further?,,PF-ENV-1.2
+,,,,,,,,,,,,
+,LOC,1,1,CA-LOC-1.1,Localise into map: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-1.1
+,LOC,2,1,CA-LOC-2.1,Localise with pseudo-static container stacks,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-1.2
+,LOC,3,1,CA-LOC-3.1,"Localise while ego tows a large, obstructing trailer",Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,PF-INF-1.4
+,LOC,4,1,CA-LOC-4.1,Localise in a GPS denied environment,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-1.3
+,LOC,4,2,CA-LOC-4.2,Localise in a GPS degraded environment,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-1.3
+,,,,CA--.,,,,,,,,
+,MAP,1,1,CA-MAP-1.1,Build map of the environment: baseline,N/A,N/A,N/A,N/A,"* Lanes
+* Intersections
+* Multiple routes
+* Reference paths",,PF-INF-2.1
+,MAP,2,1,CA-MAP-2.1,"Auto-annotate features: lane markings, intersection topology from overhead mapping",N/A,N/A,N/A,N/A,,,
+,MAP,3,1,CA-MAP-3.1,Localisation map: add localisation experience onto semantic map,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-2.1
+,,,,,,,,,,,,
+,,,,CA--.,,,,,,,,
+,INF,1,1,CA-INF-1.1,Traffic light detection: City Terminals,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-5.2
+,INF,1,2,CA-INF-1.2,Traffic light detection: Jebel Ali,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-5.3
+,INF,2,1,CA-INF-2.1,Gated intersections: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* No explicit handling
+* Slow down and rely on obstacle avoidance rather than estimating the explicit state of the gate",,PF-INF-6.1
+,INF,2,2,CA-INF-2.2,Gated intersections: controlled intersection,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,Necessary?,,PF-INF-6.1
+,INF,2,3,CA-INF-2.3,Gated intersections: City Terminals,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-6.2
+,INF,3,1,CA-INF-3.1,Inclines: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-11.1
+,,,,CA--.,,,,,,,,
+,STA,1,1,CA-STA-1.1,Avoided (ie drive around) static objects: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,PF-INF-9.1
+,,,,CA--.,,,,,,,,
+,CGO,1,1,CA-CGO-1.1,"Trailer state: Estimate the ego trailer pose for a known trailer, fixed configuration",Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,PF-CGO-1.1
+,CGO,1,2,CA-CGO-1.2,"Trailer state: Estimate the ego trailer pose for a known trailer, variable configuration",Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,PF-CGO-3.2
+,CGO,2,1,CA-CGO-2.1,Estimate and compensate for trailer weight during towing and reversing manoeuvres,Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,PF-CGO-2.2
+,CGO,3,1,CA-CGO-3.1,"Multiple trailers: Support multiple known trailers per platform, single trailer per deployment",Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,PF-CGO-3.2
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,VEH,1,1,CA-VEH-1.1,Vehicle Interface: Extend LUT functionality to compensate for vehicle-vehicle differences and load conditions,Terberg,CFG-ODD-1,CFG-ENV-1.1,CFG-CGO-1,,,"PF-CGO-1.1
+PF-CGO-2.1"
+,,,,,,,,,,,,
+,SV,1,1,CA-SV-1.1,Remote Assist: Low-latency situational awareness info to a single remote operation station,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+Perception,PRC,1,0,CA-PRC-1.0,"Perc: CHE Reach Stacker detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-1.1
 PF-ACT-7.1"
-,CA-CHE-2.1,"CHE Perc: Mobile Tracked Gantry detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-2.1
+,PRC,2,0,CA-PRC-2.0,"Perc: CHE Mobile Tracked Gantry detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-2.1
 PF-ACT-7.1"
-,CA-CHE-3.1,"CHE Perc: STS detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-3.1
+,PRC,3,0,CA-PRC-3.0,"Perc: CHE STS detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-CHE-3.1
 PF-CHE-3.2
 PF-ACT-7.1"
-,CA-PRC-1.1,"Obj Perc: Articulated Actor detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-ACT-6.1
+,PRC,4,0,CA-PRC-4.0,"Perc: Articulated Actor detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,"PF-ACT-6.1
 PF-ACT-7.1"
-,CA-PRC-2.1,"Obj Perc: Pedestrian detection, classification, tracking",Terberg,PF-ODD-1.2,PF-ENV-1.1,N/A,,,"PF-ACT-4.1
+,PRC,5,0,CA-PRC-5.0,"Perc: Pedestrian detection, classification, tracking",Terberg,PF-ODD-1.2,PF-ENV-1.1,N/A,,,"PF-ACT-4.1
 PF-HRI-1.1
 PF-HRI-2.1
 PF-HRI-3.1"
-,CA-PRC-3.1,"Obj Perc: Cyclist detection, classification, tracking",Terberg,PF-ODD-1.2,PF-ENV-1.1,N/A,,,PF-ACT-3.1
-,CA-LOC-1.1,"Loc: Robust localisation in psuedo-static infra (cranes, container stacks, etc.)",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,PF-INF-1.2
-,CA-LOC-2.1,Loc: Robust localisation with ego trailer towing,Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,PF-INF-1.4
-,CA-PRC-1.1,"Infra Perc: Detect, classify, and track pinning station (in ROI)",Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,PF-INF-7.1
-,CA-HMI-1.1,HRI: External HMI interface to switch out of SAFESTATE and continue mission,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,PF-HRI-3.1
-,CA-MSN-1.1,Set target mission Named Point relative to a tracked object,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-XMS-1.1
+,PRC,7,0,CA-PRC-7.0,"Perc: Detect, classify, and track pinning station (in ROI)",Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,PF-INF-7.1
+,PRC,8,0,CA-PRC-8.0,"Perc: Large vehicle detection, classification, tracking",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,PF-ACT-2.1
+,,,,,,,,,,,,
+HMI,HMI,1,0,CA-HMI-1.0,HRI: External HMI interface to switch out of SAFESTATE and continue mission,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,PF-HRI-3.1
+,HMI,,0,CA-HMI-.0,,,,,,,,
+Mission management,MSN,1,0,CA-MSN-1.0,Set target mission Named Point relative to a tracked object,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-XMS-1.1
 PF-XMS-2.1
 PF-XMS-2.2
 PF-XMS-3.1
 PF-XMS-3.2
 PF-XMS-4.1
 PF-XMS-5.1"
-,CA-MSN-2.1,Switch to SAFESTATE during mission task sequence,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-CHE-1.1
+,MSN,2,0,CA-MSN-2.0,Switch to SAFESTATE during mission task sequence,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-CHE-1.1
 PF-CHE-2.1
 PF-CHE-3.1
 PF-CHE-3.2
 PF-DCK-1.1
 PF-DCK-2.1
-PF-DCK-3.1"
-,,,,,,,,,
-,,,,,,,,,
-,,,,,,,,,
-Environmental conditions,CA-WEA-1.1,Rain: detect and classify rain percipitation rate online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
+PF-DCK-3.1
+PF-DCK-4.1"
+,,,,,,,,,,,,
+Localisation,LOC,1,0,CA-LOC-1.0,"Loc: Robust localisation in psuedo-static infra (cranes, container stacks, etc.)",Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,PF-INF-1.2
+,LOC,1,1,CA-LOC-1.1,Loc: Robust localisation with ego trailer towing,Terberg,PF-ODD-1.1,PF-ENV-1.1,N/A,,,PF-INF-1.4
+,LOC,2,0,CA-LOC-2.0,Evaluate the effects of mirages during localisation algs,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,"PF-ENV-2.1
+PF-ENV-4.1
+PF-ENV-5.1"
+,,,,,,,,,,,,
+Environmental conditions,ENV,1,0,CA-ENV-1.0,Rain: detect and classify rain percipitation rate online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
 PF-ENV-1.2
 PF-ENV-2.1"
-,CA-WEA-1.2,Rain: Estimate visibility online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-ENV-1.1
+ENV,ENV,1,1,CA-ENV-1.1,Rain: Estimate visibility online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-ENV-1.1
 PF-ENV-1.2
 PF-ENV-2.1"
-,CA-WEA-2.1,Wind: Track conditions in real time,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
+,ENV,1,2,CA-ENV-1.2,Wind: Track conditions in real time,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
 PF-ENV-7.1"
-,CA-WEA-3.1,Temp: Track ambient temp in real time,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
+,ENV,1,3,CA-ENV-1.3,Temp: Track ambient temp in real time,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
 PF-ENV-1.2"
-,CA-WEA-4.1,Sand: Estimate visibility online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
+,ENV,1,4,CA-ENV-1.4,Sand: Estimate visibility online,Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,Y,"PF-ENV-1.1
 PF-ENV-4.1"
-,CA-SURF-1.1,Detect standing water (?),Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-ENV-1.1
+,ENV,1,5,CA-ENV-1.5,Detect standing water (?),Terberg,PF-ODD-1.3,PF-ENV-1.1,N/A,,,"PF-ENV-1.1
 PF-ENV-5.1"
-,CA-HW-1.1,Harden Terberg for ambient temps up to 55C,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,PF-ENV-1.2
-,CA-PRC-4.1,Evaluate the effects of mirages during perception algs,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,"PF-ENV-2.1
+,ENV,1,6,CA-ENV-1.6,Harden Terberg for ambient temps up to 55C,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,PF-ENV-1.2
+,ENV,2,0,CA-ENV-2.0,Evaluate the effects of mirages during perception algs,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,"PF-ENV-2.1
 PF-ENV-4.1
 PF-ENV-5.1"
-,CA-LOC-3.1,Evaluate the effects of mirages during localisation algs,Terberg,PF-ODD-1.3,PF-ENV-2.1,N/A,,,"PF-ENV-2.1
-PF-ENV-4.1
-PF-ENV-5.1"
-,CA-HW-2.1,"Mitigate sand penetration, damage to sensors during sand storms",Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-3.1
+,ENV,2,1,CA-ENV-2.1,"Mitigate sand penetration, damage to sensors during sand storms",Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-3.1
 PF-ENV-4.1"
-,CA-PRC-5.1,Evaluate the effects of dust and sand storms on perception algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,PF-ENV-4.1
-,CA-PRC-5.2,Mitigate the effects of dust and sand storms on perception algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,PF-ENV-4.1
-,CA-LOC-4.1,Evaluate the effects of dust and sand storms on localisation algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-4.1
+,ENV,2,2,CA-ENV-2.2,Evaluate the effects of dust and sand storms on perception algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,PF-ENV-4.1
+,ENV,2,3,CA-ENV-2.3,Mitigate the effects of dust and sand storms on perception algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,PF-ENV-4.1
+,ENV,2,4,CA-ENV-2.4,Evaluate the effects of dust and sand storms on localisation algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-4.1
 PF-INF-1.1"
-,CA-LOC-4.2,Mitigate the effects of dust and sand storms on localisation algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-4.1
+,ENV,2,5,CA-ENV-2.5,Mitigate the effects of dust and sand storms on localisation algs (related to CA-WEA-4.1),Terberg,PF-ODD-1.3,PF-ENV-3.1,N/A,,,"PF-ENV-4.1
 PF-INF-1.1"
-,CA-PRC-6.1,Evaluate the effects of heavy rain on perception algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
-,CA-PRC-6.2,Mitigate the effects of heavy rain on perception algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
-,CA-LOC-5.1,Evaluate the effects of heavy rain on localisation algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
-,CA-LOC-5.2,Mitigate the effects of heavy rain on localisation algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
-,,,,,,,,,
-,,,,,,,,,
-,,,,,,,,,
-,,,,,,,,,
-Trailers,CA-CGO-1.1,"Estimate trailer state for City Terminals trailers (pose, weight, config)",Terberg,,,,,,"PF-CGO-1.1
+,ENV,2,6,CA-ENV-2.6,Evaluate the effects of heavy rain on perception algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
+,ENV,2,7,CA-ENV-2.7,Mitigate the effects of heavy rain on perception algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
+,ENV,2,8,CA-ENV-2.8,Evaluate the effects of heavy rain on localisation algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
+,ENV,2,9,CA-ENV-2.9,Mitigate the effects of heavy rain on localisation algs (related to CA-WEA-1.2),Terberg,PF-ODD-1.3,PF-ENV-4.1,N/A,,,PF-ENV-4.1
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+Trailers,CGO,1,0,CA-CGO-1.0,"Estimate trailer state for City Terminals trailers (pose, weight, config)",Terberg,,,,,,"PF-CGO-1.1
 PF-CGO-1.2
 PF-CGO-2.1
 PF-CGO-2.2
@@ -84,7 +137,7 @@ PF-CGO-4.3
 PF-CGO-4.4
 PF-CGO-5.1
 PF-CGO-5.2"
-,CA-CGO-1.2,Support Towing with City Terminals trailer,,,,,,,"PF-CGO-1.1
+,CGO,1,1,CA-CGO-1.1,Support Towing with City Terminals trailer,,,,,,,"PF-CGO-1.1
 PF-CGO-1.2
 PF-CGO-2.1
 PF-CGO-2.2
@@ -98,10 +151,11 @@ PF-CGO-4.4
 PF-CGO-5.1
 PF-CGO-5.2
 PF-TOW-1.1
+PF-TOW-2.1
 PF-TOW-3.1
 PF-HCH-1.1
 PF-HCH-2.1"
-,CA-CGO-1.3,Support Reversing with City Terminals trailer,,,,,,,"PF-CGO-1.1
+,CGO,1,2,CA-CGO-1.2,Support Reversing with City Terminals trailer,,,,,,,"PF-CGO-1.1
 PF-CGO-1.2
 PF-CGO-2.1
 PF-CGO-2.2
@@ -115,65 +169,67 @@ PF-CGO-4.4
 PF-CGO-5.1
 PF-CGO-5.2
 PF-TOW-1.1
+PF-TOW-2.1
 PF-TOW-3.1
 PF-REV-1.1
 PF-REV-2.1
 PF-REV-3.1
+PF-REV-4.1
 PF-HCH-1.1
 PF-HCH-2.1"
-,,,,,,,,,
-,,,,,,,,,
-,,,,,,,,,
-,,,,,,,,,
-Features,CA-SC,Safety Concept,,,,,,,
-,CA-SC-1.1.1,Terberg: Driver-in operations (semi-trailer),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
-,CA-SC-1.2.1,"Terberg: Driver-Out, AV only, FWD",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-CE-1.1
-,CA-SC-1.2.2,"Terberg: Driver-Out, AV only, REV",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-CE-1.1
-,CA-SC-1.3.1,Terberg: Driver-Out; AV + Semi-Trailer; FWD,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
-,CA-SC-1.3.2,Terberg: Driver-Out; AV + Semi-Trailer; REV,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
-,,,,,,,,,
-,CA-SV,Supervision,,,,,,,
-,CA-SV-1.1,Internal Supervision,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-1.1
-,CA-SV-2.1,External Supervision (Line-of-Sight),Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-2.1
-,CA-SV-3.1,Remote Monitoring,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-3.1
-,CA-SV-4.1,Remote Supervision (including Remote Intervention and Remote Driving),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,"PF-SV-4.1
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+Features,CE,0,0,CA-CE-0.0,Safety Concept,,,,,,,
+,CE,1,0,CA-CE-1.0,Terberg: Driver-in operations (semi-trailer),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
+,CE,2,0,CA-CE-2.0,"Terberg: Driver-Out, AV only, FWD",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-CE-1.1
+,CE,2,1,CA-CE-2.1,"Terberg: Driver-Out, AV only, REV",Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-CE-1.1
+,CE,2,2,CA-CE-2.2,Terberg: Driver-Out; AV + Semi-Trailer; FWD,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
+,CE,2,3,CA-CE-2.3,Terberg: Driver-Out; AV + Semi-Trailer; REV,Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,PF-CE-1.1
+,,,,,,,,,,,,
+,SV,0,0,CA-SV-0.0,Supervision,,,,,,,
+,SV,1,0,CA-SV-1.0,Internal Supervision,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-1.1
+,SV,2,0,CA-SV-2.0,External Supervision (Line-of-Sight),Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-2.1
+,SV,3,0,CA-SV-3.0,Remote Monitoring,Terberg,PF-ODD-1,PF-ENV-4.1,N/A,,Y,PF-SV-3.1
+,SV,4,0,CA-SV-4.0,Remote Supervision (including Remote Intervention and Remote Driving),Terberg,PF-ODD-1,PF-ENV-4.1,PF-CGO-1,,Y,"PF-SV-4.1
 PF-SV-5.1
 PF-SV-6.1
 PF-SV-7.1"
-,,,,,,,,,
-,CA-HRI,Human-Robot Interactions,,,,,,,
-,CA-HRI-1.1,Proximal human: Switch into and out of SAFESTATE when human close to AV,Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,"PF-HRI-2.1
+,,,,,,,,,,,,
+,HRI,0,0,CA-HRI-0.0,Human-Robot Interactions,,,,,,,
+,HRI,1,0,CA-HRI-1.0,Proximal human: Switch into and out of SAFESTATE when human close to AV,Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,"PF-HRI-2.1
 PF-CE-1.1"
-,CA-HRI-2.1,External HMI: HMI to continue mission (and switch out of SAFESTATE),Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,"PF-HRI-3.1
+,HRI,1,1,CA-HRI-1.1,External HMI: HMI to continue mission (and switch out of SAFESTATE),Terberg,PF-ODD-1,PF-ENV-4,N/A,,Y,"PF-HRI-3.1
 PF-CE-1.1"
-,,,,,,,,,
-,CA-TOW,Towing,,,,,,,
-,CA-TOW-1.1,"Tow a semi-trailer while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-1.1
-,CA-TOW-2.1,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-1.1
-,CA-TOW-3.1,"Change lanes while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-3.1
-,,,N/A,,,,,,
-,CA-REV,Reversing,,,,,,,
-,CA-REV-1.1,Reverse the AV (Terberg),Terberg,PF-ODD-1,PF-ENV-1,N/A,,Y,PF-REV-1.1
-,CA-REV-2.1,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-REV-2.1
-,CA-REV-3.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-REV-2.2
-,CA-REV-4.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-REV-3.1
-,,,,,,,,,
-,CA-DCK,Docking,,,,,,,
-,CA-DCK-1.1,Initial approach of a prescribed isolated dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-1.1
-,CA-DCK-2.1,Initial approach of a prescribed isolated dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-1.2
-,CA-DCK-3.1,Final approach of a prescribed crowded dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-2.1
-,CA-DCK-4.1,Final approach of a prescribed crowded dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-2.1
-,,,,,,,,,
-,CA-CHE,CHE Interactions,,,,,,,
-,CA-CHE-1.1,"Rendevous with a mobile Reach Stacker at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.1
+,,,,,,,,,,,,
+,TOW,0,0,CA-TOW-0.0,Towing,,,,,,,
+,TOW,1,0,CA-TOW-1.0,"Tow a semi-trailer while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-1.1
+,TOW,2,0,CA-TOW-2.0,"Borrow adjacent lane while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-2.1
+,TOW,3,0,CA-TOW-3.0,"Change lanes while accounting for trailer kinematics, dynamics",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,PF-TOW-3.1
+,,,,,,N/A,,,,,,
+,REV,0,0,CA-REV-0.0,Reversing,,,,,,,
+,REV,1,0,CA-REV-1.0,Reverse the AV (Terberg),Terberg,PF-ODD-1,PF-ENV-1,N/A,,Y,PF-REV-1.1
+,REV,2,0,CA-REV-2.0,Reverse with a Semi-Trailer: isolated presribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-REV-2.1
+,REV,2,1,CA-REV-2.1,Reverse with a Semi-Trailer: crowded prescribed parking bay (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-REV-2.2
+,REV,3,0,CA-REV-3.0,Reverse with a Semi-Trailer: crowded prescribed parking bay (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-REV-3.1
+,,,,,,,,,,,,
+,DCK,0,0,CA-DCK-0.0,Docking,,,,,,,
+,DCK,1,0,CA-DCK-1.0,Initial approach of a prescribed isolated dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-1.1
+,DCK,1,1,CA-DCK-1.1,Initial approach of a prescribed isolated dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-1.2
+,DCK,2,0,CA-DCK-2.0,Final approach of a prescribed crowded dock (small set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-2.1
+,DCK,2,1,CA-DCK-2.1,Final approach of a prescribed crowded dock (large set),Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,,PF-DCK-2.1
+,,,,,,,,,,,,
+,CHE,0,0,CA-CHE-0.0,CHE Interactions,,,,,,,
+,CHE,1,0,CA-CHE-1.0,"Rendevous with a mobile Reach Stacker at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.1
 PF-CHE-1.2"
-,CA-CHE-2.1,"Rendevous with a mobile Gantry at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.3
+,CHE,1,1,CA-CHE-1.1,"Rendevous with a mobile Gantry at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.3
 PF-CHE-1.4"
-,CA-CHE-3.1,"Rendevous with an STS crane at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.5
+,CHE,2,0,CA-CHE-2.0,"Rendevous with an STS crane at an a priori mapped location, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.5
 PF-CHE-2.1"
-,CA-CHE-3.2,"Rendevous with an STS crane at a location relative to the crane, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.5
+,CHE,2,1,CA-CHE-2.1,"Rendevous with an STS crane at a location relative to the crane, with an external (RA, TOS) confirmation of task completion",Terberg,PF-ODD-1,PF-ENV-4,PF-CGO-1,,Y,"PF-CHE-1.5
 PF-CHE-2.1"
-,,,,,,,,,
-,CA-HCH,Hitching/ Unhitching,,,,,,,
-,CA-HCH-1.1,Hitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-HCH-1.1
-,CA-HCH-2.1,Unhitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-HCH-2.1
+,,,,,,,,,,,,
+,HCH,0,0,CA-HCH-0.0,Hitching/ Unhitching,,,,,,,
+,HCH,1,0,CA-HCH-1.0,Hitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-HCH-1.1
+,HCH,2,0,CA-HCH-2.0,Unhitch a semi-trailer with a controllable 5th wheel,Terberg,PF-ODD-1,PF-ENV-1,PF-CGO-1,,Y,PF-HCH-2.1
