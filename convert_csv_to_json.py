@@ -4,21 +4,17 @@ import argparse
 import random
 from collections import defaultdict
 from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
 
-# --- Configuration & Defaults ---
-DATE_FORMAT = '%m/%d/%Y'
+#------------------------------------------------------------------------------
+# Configuration & Defaults
+DATE_FORMAT = '%m-%d-%Y'
 CURRENT_DATE = datetime.now().date()
-DEFAULT_MIN_TRL = 1
-
-# Default file paths
 DEFAULT_PF_CSV = 'example-csvs/product_features.csv'
 DEFAULT_CA_CSV = 'example-csvs/capabilities_to_product_features.csv'
 DEFAULT_TF_CSV = 'example-csvs/capability_to_tech.csv'
 DEFAULT_OUTPUT_JSON = 'repository_update_data_final.json'
 
-# --- Utilities ---
-
+#------------------------------------------------------------------------------
 def get_random_subset(collection, min_count=2, max_count=5):
     """Randomly selects a subset of capability labels."""
     all_labels = list(collection.keys())
@@ -33,15 +29,19 @@ def get_random_subset(collection, min_count=2, max_count=5):
     # Select a random subset of labels without replacement
     return random.sample(all_labels, subset_size)
 
+#------------------------------------------------------------------------------
 def get_capability_dates(cap_label, ca_list):
     """Retrieves the planned start and end dates for a given capability label."""
     for cap_entity in ca_list:
         if cap_entity.get('label') == cap_label:
             # Note: Dates are stored as strings in YYYY-MM-DD format
-            return cap_entity.get('planned_start_date'), cap_entity.get('planned_end_date')
+            return (cap_entity.get('planned_start_date'), 
+                    cap_entity.get('planned_end_date'))
     return None, None
 
-def get_start_and_end_dates_from_product_features(pf_labels, product_features_raw):
+#------------------------------------------------------------------------------
+def get_start_and_end_dates_from_product_features(pf_labels, 
+                                                  product_features_raw):
     """Get start / end dates for product features."""
 
     min_start_date = date(9999, 12, 31)  # Initialize with a date far in the future
@@ -62,7 +62,7 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
         
         # 2. Convert the string to a datetime.date object
         try:
-            start_date = datetime.strptime(start_date_str, "%m-%d-%Y").date()
+            start_date = datetime.strptime(start_date_str, DATE_FORMAT).date()
         except ValueError:
             # Handle cases where the string might not be a valid date, 
             # or log an error and skip/assign a default.
@@ -73,7 +73,7 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
             min_start_date = start_date
 
         try:
-            end_date = datetime.strptime(end_date_str, "%m-%d-%Y").date()
+            end_date = datetime.strptime(end_date_str, DATE_FORMAT).date()
         except ValueError:
             print(f"WARNING: Could not parse end_date '{end_date_str}' for feature '{pf_label}'")
             continue # Skip this feature if the date is invalid
@@ -81,10 +81,83 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
         if end_date > max_end_date:
             max_end_date = end_date
 
-    return min_start_date.strftime("%m-%d-%Y"), max_end_date.strftime("%m-%d-%Y")
+    return min_start_date.strftime(DATE_FORMAT), max_end_date.strftime(DATE_FORMAT)
 
-# --- Loading and Linking Functions ---
+#------------------------------------------------------------------------------
+def calculate_progress(start_date_str, end_date_str):
+    """
+    Calculates the progress as a rounded percentage based on the current date 
+    relative to the start and end dates. Returns an integer [0, 100].
+    """
+    try:
+        # Convert date strings to datetime objects
+        start_date = datetime.strptime(start_date_str, DATE_FORMAT).date()
+        end_date = datetime.strptime(end_date_str, DATE_FORMAT).date()
 
+        # Check for invalid date range
+        if end_date <= start_date:
+            # If the end date is on or before the start date, return 0% or 100% based on current date
+            return 100 if CURRENT_DATE >= end_date else 0
+
+        # Calculate the total duration of the task
+        total_duration = (end_date - start_date).days
+
+        # Calculate the duration passed so far
+        duration_passed = (CURRENT_DATE - start_date).days
+
+        # Ensure we don't divide by zero, though checked above, it's good practice.
+        if total_duration <= 0:
+            return 100 if CURRENT_DATE >= end_date else 0
+
+        # Calculate the raw progress percentage
+        progress_raw = (duration_passed / total_duration) * 100
+
+        # Clamp the value between 0 and 100
+        if progress_raw < 0:
+            progress = 0
+        elif progress_raw >= 100:
+            progress = 100
+        else:
+            # Round the percentage to the nearest integer
+            progress = round(progress_raw)
+
+        return int(progress)
+
+    except ValueError:
+        # Handle cases where date strings are not in the expected format (e.g., '%Y-%m-%d')
+        print(f"Error: Invalid date format provided. Start: {start_date_str}, End: {end_date_str}")
+        return 0
+
+#------------------------------------------------------------------------------
+def robust_get_date(date_str):
+    """
+    Attempts to parse a date string using both full (%B) and abbreviated (%b) 
+    month names, assuming the format includes the year (%Y).
+
+    Raises:
+        ValueError: If the date string does not match any expected format.
+    """
+    # 1. Define the possible formats to try, starting with the full month (%B)
+    #    and then the abbreviated month (%b).
+    possible_formats = [
+        '%B %Y',  # e.g., 'June 2026'
+        '%b %Y'   # e.g., 'Jun 2026'
+    ]
+    # 2. Iterate through the formats and try to parse
+    for fmt in possible_formats:
+        try:
+            # datetime.datetime.strptime returns a full datetime object.
+            # We use .date() to get just the date part, matching what's usually needed.
+            return datetime.strptime(date_str, fmt).date().strftime(DATE_FORMAT)
+        except ValueError:
+            # If parsing fails with the current format, continue to the next one.
+            continue
+            
+    # 3. If the loop completes without a successful return, raise an error
+    #    indicating that none of the formats worked.
+    raise ValueError(f"Time data '{date_str}' does not match any expected format.")
+
+#------------------------------------------------------------------------------
 def load_product_features(file_path):
     """Loads product features and initializes TRL."""
     product_features = {}
@@ -118,12 +191,8 @@ def load_product_features(file_path):
 
                 label = row[IDX_LABEL].strip()
                 name = row[IDX_NAME].strip()
-
-                # IMPORTANT: Format the date to min_start_date.strftime("%m-%d-%Y")
-                start_date = datetime.strptime(row[IDX_START_DATE].strip(), "%b %Y").date()
-                end_date = datetime.strptime(row[IDX_END_DATE].strip(), "%b %Y").date()
-                start_date_str = start_date.strftime("%m-%d-%Y")
-                end_date_str = end_date.strftime("%m-%d-%Y")
+                start_date = robust_get_date(row[IDX_START_DATE].strip())
+                end_date = robust_get_date(row[IDX_END_DATE].strip())
 
                 if label and name:
                     product_features[label] = {
@@ -134,8 +203,8 @@ def load_product_features(file_path):
                         'odd': row[IDX_ODD].strip() or '',
                         'environment': row[IDX_ENVIRONMENT].strip() or '',
                         'trailer': row[IDX_TRAILER].strip() or '',
-                        'start_date':  start_date_str,
-                        'end_date': end_date_str,
+                        'start_date':  start_date,
+                        'end_date': end_date,
                         'details': row[IDX_DETAILS].strip() or '',
                         'next': row[IDX_NEXT].strip() or 'N', 
                         'capabilities': []
@@ -144,7 +213,8 @@ def load_product_features(file_path):
         print(f"An error occurred while reading {file_path}: {e}")
     return product_features
 
-def load_capabilities(file_path):
+#------------------------------------------------------------------------------
+def load_capabilities(file_path, product_features_raw):
     """Loads capabilities."""
     capabilities = {}            
     try:
@@ -156,15 +226,14 @@ def load_capabilities(file_path):
                 return capabilities
                 
             IDX_SWIMLANE = 0
-            IDX_LABEL = 1
-            IDX_NAME = 2 
-            IDX_PLATFORM = 3
-            IDX_ODD = 4
-            IDX_ENVIRONMENT = 5
-            IDX_TRAILER = 6
-            IDX_DETAILS = 7
-            IDX_NEXT = 8
-            IDX_PRODUCT_FEATURES_START = 9
+            IDX_LABEL = 4
+            IDX_NAME = 5
+            IDX_PLATFORM = 6
+            IDX_ODD = 7
+            IDX_ENVIRONMENT = 8
+            IDX_TRAILER = 9
+            IDX_NEXT = 11
+            IDX_PRODUCT_FEATURES_START = 12
 
             previous_swimlane = ""
             for row in reader:
@@ -184,8 +253,17 @@ def load_capabilities(file_path):
                             item = item.strip()
                             if item:
                                 pf_label = item.split(' ')[0].strip()
-                                cap_to_pf.append(pf_label)
+                                # IMPORTANT: It is possible this PF label does 
+                                #            not exist in the product feature
+                                #            list because of a typo.
+                                if pf_label in product_features_raw:
+                                    cap_to_pf.append(pf_label)
+                                else:
+                                    print("WARNING: Could not find " + pf_label + 
+                                          " in product features for capability: " + 
+                                          label + ". Skipping.")
 
+                # IMPORTANT: If we have no linked product features, skip.
                 if len(cap_to_pf) == 0:
                     print("WARNING: Could not find any linked product features "
                           "for capability: " + label + ". Skipping.")
@@ -210,6 +288,7 @@ def load_capabilities(file_path):
         
     return capabilities
 
+#------------------------------------------------------------------------------
 def load_fake_technical_functions(capabilities):
     """Loads technical functions."""
     technical_functions = {}
@@ -232,8 +311,7 @@ def load_fake_technical_functions(capabilities):
 
     return technical_functions
 
-# --- Final Transformation Function ---
-
+#------------------------------------------------------------------------------
 def construct_repository_update_schema(product_features_raw, 
                                        capabilities_raw, 
                                        technical_functions_raw):
@@ -283,8 +361,9 @@ def construct_repository_update_schema(product_features_raw,
             "vehicle_platform_id": 8,
             "planned_start_date": min_start_date,
             "planned_end_date": max_end_date,
-            "tmos": "", 
-            "progress_relative_to_tmos": random.randint(0, 100),
+            "tmos": "Delivery Progress (Target = 100%)", 
+            "progress_relative_to_tmos": calculate_progress(
+                min_start_date, max_end_date),
             "technical_functions": [t['label'] for t in cap_data['tech_features']],
             "product_feature_ids": pf_labels, # PF Labels
         }
@@ -317,8 +396,9 @@ def construct_repository_update_schema(product_features_raw,
             "description": "",
             "success_criteria": "",
             "vehicle_platform_id": 8,
-            "tmos": "",
-            "status_relative_to_tmos": random.randint(0, 100),
+            "tmos": "Delivery Progress (Target = 100%)",
+            "status_relative_to_tmos": calculate_progress(
+                min_start_date, max_end_date),
             "planned_start_date": min_start_date,
             "planned_end_date": max_end_date,
             "product_feature_dependencies": list(pf_labels),
@@ -343,11 +423,10 @@ def construct_repository_update_schema(product_features_raw,
             "planned_start_date": pf_data['start_date'],
             "planned_end_date": pf_data['end_date'],
             "active_flag": "next" if pf_data.get('next', '').upper() == 'Y' else 'current',
-            "tmos": "",
-            "status_relative_to_tmos": random.randint(0, 100),
-            "capabilities_required": cap_labels, # CA Labels
+            "tmos": "Delivery Progress (Target = 100%)",
+            "status_relative_to_tmos": calculate_progress(pf_data['start_date'], pf_data['end_date']),
+            "capabilities_required": cap_labels, # CA Labels # <--------- check this
             "document_url": "",
-            # "dependencies": dependencies # PF Labels
         }
         pf_entities_list.append(pf_entity)
 
@@ -360,7 +439,7 @@ def construct_repository_update_schema(product_features_raw,
             "version": "0.0", # Incrementing version
             "description": f"Repository Update Template with reordered entities (PF, CA, TF) for dependency resolution.",
             "created_by": "OCTO",
-            "created_date": datetime.now().strftime('%m-%d-%Y'),
+            "created_date": datetime.now().strftime('DATE_FORMAT'),
             "notes": "Layer cake roadmap of product/capability/technology."
         },
         "entities": entities
@@ -368,8 +447,7 @@ def construct_repository_update_schema(product_features_raw,
     
     return output_json
 
-# --- Main Execution (remains the same) ---
-
+#------------------------------------------------------------------------------
 def main():
     """
     Parses command-line arguments, runs the data processing pipeline, and saves the output.
@@ -409,7 +487,7 @@ def main():
     # 1. Load data from CSVs
     print(f"Starting data processing: {CURRENT_DATE.strftime(DATE_FORMAT)}.")
     product_features_raw = load_product_features(args.pf_csv)
-    capabilities_raw = load_capabilities(args.ca_csv)
+    capabilities_raw = load_capabilities(args.ca_csv, product_features_raw)
     technical_functions_raw = load_fake_technical_functions(capabilities_raw)
     
     print("\n--- Final Schema Transformation ---")
@@ -427,7 +505,6 @@ def main():
     except Exception as e:
         print(f"\nError saving to JSON file: {e}")
 
+#------------------------------------------------------------------------------
 if __name__ == "__main__":
-    # Ensure the main execution part is present
-    # To run: python your_script_name.py
     main()
