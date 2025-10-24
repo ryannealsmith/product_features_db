@@ -62,7 +62,7 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
         
         # 2. Convert the string to a datetime.date object
         try:
-            start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
+            start_date = datetime.strptime(start_date_str, "%m-%d-%Y").date()
         except ValueError:
             # Handle cases where the string might not be a valid date, 
             # or log an error and skip/assign a default.
@@ -73,7 +73,7 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
             min_start_date = start_date
 
         try:
-            end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
+            end_date = datetime.strptime(end_date_str, "%m-%d-%Y").date()
         except ValueError:
             print(f"WARNING: Could not parse end_date '{end_date_str}' for feature '{pf_label}'")
             continue # Skip this feature if the date is invalid
@@ -81,7 +81,7 @@ def get_start_and_end_dates_from_product_features(pf_labels, product_features_ra
         if end_date > max_end_date:
             max_end_date = end_date
 
-    return min_start_date.strftime("%d-%m-%Y"), max_end_date.strftime("%d-%m-%Y")
+    return min_start_date.strftime("%m-%d-%Y"), max_end_date.strftime("%m-%d-%Y")
 
 # --- Loading and Linking Functions ---
 
@@ -119,11 +119,11 @@ def load_product_features(file_path):
                 label = row[IDX_LABEL].strip()
                 name = row[IDX_NAME].strip()
 
-                # IMPORTANT: Format the date to min_start_date.strftime("%d-%m-%Y")
+                # IMPORTANT: Format the date to min_start_date.strftime("%m-%d-%Y")
                 start_date = datetime.strptime(row[IDX_START_DATE].strip(), "%b %Y").date()
                 end_date = datetime.strptime(row[IDX_END_DATE].strip(), "%b %Y").date()
-                start_date_str = start_date.strftime("%d-%m-%Y")
-                end_date_str = end_date.strftime("%d-%m-%Y")
+                start_date_str = start_date.strftime("%m-%d-%Y")
+                end_date_str = end_date.strftime("%m-%d-%Y")
 
                 if label and name:
                     product_features[label] = {
@@ -365,7 +365,7 @@ def construct_repository_update_schema(product_features_raw,
             "version": "0.0", # Incrementing version
             "description": f"Repository Update Template with reordered entities (PF, CA, TF) for dependency resolution.",
             "created_by": "OCTO",
-            "created_date": datetime.now().strftime('%d-%m-%Y'),
+            "created_date": datetime.now().strftime('%m-%d-%Y'),
             "notes": "Layer cake roadmap of product/capability/technology."
         },
         "entities": entities
