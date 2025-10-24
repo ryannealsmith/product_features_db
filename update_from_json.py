@@ -493,9 +493,19 @@ def delete_entity(data):
         # Check for dependencies before deletion
         dependencies = []
         if entity_type == 'product_feature':
-            tech_functions = TechnicalFunction.query.filter_by(product_feature_id=entity.id).count()
-            if tech_functions > 0:
-                dependencies.append(f"{tech_functions} technical functions")
+            # Check for capabilities linked to this product feature (M:N relationship)
+            capabilities_count = len(entity.capabilities)
+            if capabilities_count > 0:
+                dependencies.append(f"{capabilities_count} capabilities")
+        elif entity_type == 'capability':
+            # Check for technical functions linked to this capability (M:N relationship)
+            tech_functions_count = len(entity.technical_functions)
+            if tech_functions_count > 0:
+                dependencies.append(f"{tech_functions_count} technical functions")
+            # Check for product features linked to this capability (M:N relationship)
+            product_features_count = len(entity.product_features)
+            if product_features_count > 0:
+                dependencies.append(f"{product_features_count} product features")
         elif entity_type == 'technical_function':
             assessments = ReadinessAssessment.query.filter_by(technical_capability_id=entity.id).count()
             if assessments > 0:
@@ -1113,6 +1123,80 @@ def process_configuration(config_data, config_index):
         return False
 
 
+def cleanup_demo_data():
+    """Automatically detect and delete demo data containing 'DEMO' in their names"""
+    
+    try:
+        # Find demo entities
+        demo_product_features = ProductFeature.query.filter(ProductFeature.name.contains('DEMO')).all()
+        demo_capabilities = Capabilities.query.filter(Capabilities.name.contains('DEMO')).all()
+        demo_technical_functions = TechnicalFunction.query.filter(TechnicalFunction.name.contains('DEMO')).all()
+        
+        total_demo_entities = len(demo_product_features) + len(demo_capabilities) + len(demo_technical_functions)
+        
+        if total_demo_entities == 0:
+            print("No demo data found containing 'DEMO' in names")
+            return True
+        
+        print(f"Found {total_demo_entities} demo entities to clean up:")
+        print(f"  - {len(demo_product_features)} demo Product Features")
+        print(f"  - {len(demo_capabilities)} demo Capabilities")
+        print(f"  - {len(demo_technical_functions)} demo Technical Functions")
+        print("-" * 60)
+        
+        # Delete in reverse dependency order to avoid foreign key constraints
+        # 1. Clear many-to-many relationships first
+        for tf in demo_technical_functions:
+            # Clear the relationship with capabilities (M:N)
+            tf.capabilities.clear()
+            print(f"Cleared relationships for Technical Function '{tf.name}'")
+        
+        for cap in demo_capabilities:
+            # Clear relationships with product features and technical functions (M:N)
+            cap.product_features.clear()
+            cap.technical_functions.clear()
+            print(f"Cleared relationships for Capability '{cap.name}'")
+        
+        for pf in demo_product_features:
+            # Clear the relationship with capabilities (M:N)
+            pf.capabilities.clear()
+            print(f"Cleared relationships for Product Feature '{pf.name}'")
+        
+        # Commit relationship changes
+        db.session.commit()
+        
+        # 2. Re-query entities after committing relationship changes to avoid stale references
+        demo_product_features = ProductFeature.query.filter(ProductFeature.name.contains('DEMO')).all()
+        demo_capabilities = Capabilities.query.filter(Capabilities.name.contains('DEMO')).all()
+        demo_technical_functions = TechnicalFunction.query.filter(TechnicalFunction.name.contains('DEMO')).all()
+        
+        # 3. Now delete the entities in safe order
+        # Delete Technical Functions first (no foreign keys pointing to them)
+        for tf in demo_technical_functions:
+            db.session.delete(tf)
+            print(f"Deleted Technical Function '{tf.name}'")
+        
+        # Delete Capabilities next
+        for cap in demo_capabilities:
+            db.session.delete(cap)
+            print(f"Deleted Capability '{cap.name}'")
+        
+        # Delete Product Features last
+        for pf in demo_product_features:
+            db.session.delete(pf)
+            print(f"Deleted Product Feature '{pf.name}'")
+        
+        db.session.commit()
+        print("-" * 60)
+        print("Demo data cleanup completed successfully!")
+        return True
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error during demo data cleanup: {str(e)}")
+        return False
+
+
 def update_from_json(json_file_path):
     """Update entities and configurations from JSON file"""
     
@@ -1122,6 +1206,11 @@ def update_from_json(json_file_path):
                 data = json.load(jsonfile)
             
             print(f"Processing JSON file: {json_file_path}")
+            
+            # Automatically clean up demo data before processing
+            print("\nChecking for demo data to clean up...")
+            cleanup_demo_data()
+            print()
             
             # Validate JSON structure
             if 'metadata' not in data:
@@ -1350,6 +1439,7 @@ def main():
         print("  python update_from_json.py --export [output_file]     # Export current data")
         print("  python update_from_json.py --help                     # Show detailed help")
         print("  python update_from_json.py --template                 # Generate template JSON")
+        print("  python update_from_json.py --clean-demo               # Clean up demo data only")
         return
     
     if sys.argv[1] == '--help':
@@ -1426,6 +1516,17 @@ def main():
     if sys.argv[1] == '--export':
         output_file = sys.argv[2] if len(sys.argv) > 2 else 'current_data.json'
         export_current_data(output_file)
+        return
+    
+    if sys.argv[1] == '--clean-demo':
+        print("Manual demo data cleanup initiated...")
+        with app.app_context():
+            success = cleanup_demo_data()
+            if success:
+                print("Demo data cleanup completed successfully!")
+            else:
+                print("Demo data cleanup completed with errors.")
+                sys.exit(1)
         return
     
     json_file_path = sys.argv[1]

@@ -564,8 +564,9 @@ def export_miro_roadmap():
         # Find product features through capabilities
         product_features = []
         for capability in tech_func.capabilities:
-            if capability.product_feature:
-                product_features.append(capability.product_feature)
+            for pf in capability.product_features:
+                if pf not in product_features:
+                    product_features.append(pf)
         
         # Use the technical function as the swim lane if no product features found
         if not product_features:
@@ -618,7 +619,7 @@ def export_miro_roadmap():
         }
         
         roadmap_data["items"].append(item)
-        roadmap_data["swim_lanes"][product_name]["items"].append(item["id"])
+        roadmap_data["swim_lanes"][lane_name]["items"].append(item["id"])
     
     # Add milestones based on scheduled completion dates
     milestones = generate_milestones(assessments)
@@ -666,8 +667,9 @@ def export_miro_csv():
         # Find product features through capabilities
         product_features = []
         for capability in tech_func.capabilities:
-            if capability.product_feature:
-                product_features.append(capability.product_feature)
+            for pf in capability.product_features:
+                if pf not in product_features:
+                    product_features.append(pf)
         
         # Use first product feature or technical function name
         product_feature_name = product_features[0].name if product_features else f"Technical Function: {tech_func.name}"
@@ -675,12 +677,12 @@ def export_miro_csv():
         
         timeline_pos = calculate_timeline_position(assessment)
         
-        # Get product features associated with this technical function
-        product_features = [pf.name for pf in assessment.technical_function.capabilities]
-        product_feature_name = ", ".join(product_features) if product_features else "No Product Feature"
+        # Get all product feature names for display
+        pf_names = [pf.name for pf in product_features]
+        product_feature_name = ", ".join(pf_names) if pf_names else "No Product Feature"
         
-        # Get document URLs
-        doc_urls = [pf.document_url for pf in assessment.technical_function.capabilities if pf.document_url]
+        # Get document URLs from product features
+        doc_urls = [pf.document_url for pf in product_features if pf.document_url]
         doc_url = ", ".join(doc_urls) if doc_urls else ""
         
         writer.writerow([
@@ -840,7 +842,7 @@ def capabilities_timeline():
             'duration_days': None,
             'progress_color': 'success' if capability.progress_relative_to_tmos >= 80 else 'warning' if capability.progress_relative_to_tmos >= 50 else 'danger',
             'technical_functions_count': len(capability.technical_functions),
-            'product_features_count': 1 if capability.product_feature else 0
+            'product_features_count': len(capability.product_features)
         }
         
         # Calculate duration if both dates exist
@@ -906,14 +908,29 @@ def technical_functions_timeline():
             'planned_start_date': func.planned_start_date.isoformat() if func.planned_start_date else None,
             'planned_end_date': func.planned_end_date.isoformat() if func.planned_end_date else None,
             'document_url': func.document_url,
-            'product_feature_name': func.capabilities[0].product_feature.name if func.capabilities and func.capabilities[0].product_feature else 'No Product Feature',
-            'product_feature_id': func.capabilities[0].product_feature.id if func.capabilities and func.capabilities[0].product_feature else None,
+            'product_feature_name': 'No Product Feature',  # Default value
+            'product_feature_id': None,
             'duration_days': None,
             'progress_color': 'success' if func.status_relative_to_tmos >= 80 else 'warning' if func.status_relative_to_tmos >= 50 else 'danger',
             'current_trl': None,
             'current_status': None,
             'assessments_count': len(func.readiness_assessments)
         }
+        
+        # Get product features through capabilities (M:N relationship)
+        product_features = []
+        for capability in func.capabilities:
+            for pf in capability.product_features:
+                if pf not in product_features:
+                    product_features.append(pf)
+        
+        if product_features:
+            # Use the first product feature found
+            item['product_feature_name'] = product_features[0].name
+            item['product_feature_id'] = product_features[0].id
+            # If multiple product features, show count
+            if len(product_features) > 1:
+                item['product_feature_name'] += f" (+{len(product_features)-1} more)"
         
         # Add latest assessment info if available
         if latest_assessment:
