@@ -24,7 +24,8 @@ def get_start_and_end_dates_from_product_features(pf_labels,
 
     for pf_label in pf_labels:
 
-        # IMPORTANT: Make sure this value exists!
+        # IMPORTANT: Make sure this value exists! It's possible it does not because
+        #            someone had a typo in the spreadsheet.
         if pf_label not in product_features_raw:
             print("WARNING: Could not find " + pf_label + " in product "
                   "features. This means it is linked in a capability, but "
@@ -107,7 +108,8 @@ def calculate_progress(start_date_str, end_date_str):
 def robust_get_date(date_str):
     """
     Attempts to parse a date string using both full (%B) and abbreviated (%b) 
-    month names, assuming the format includes the year (%Y).
+    month names, assuming the format includes the year (%Y). This is a common
+    occurance in a spreadsheet (e.g., someone might type June 2026 or Jun 2026).
 
     Raises:
         ValueError: If the date string does not match any expected format.
@@ -135,6 +137,18 @@ def robust_get_date(date_str):
 #------------------------------------------------------------------------------
 def load_product_features(file_path):
     """Loads product features and initializes TRL."""
+
+    IDX_SWIMLANE = 0
+    IDX_LABEL = 1
+    IDX_NAME = 2 
+    IDX_PLATFORM = 3
+    IDX_ODD = 4
+    IDX_ENVIRONMENT = 5
+    IDX_TRAILER = 6
+    IDX_NEXT = 8
+    IDX_START_DATE = 10
+    IDX_END_DATE = 11
+
     product_features = {}
     try:
         with open(file_path, mode='r', newline='', encoding='utf-8') as file:
@@ -143,17 +157,6 @@ def load_product_features(file_path):
                 next(reader) 
             except StopIteration:
                 return product_features 
-            
-            IDX_SWIMLANE = 0
-            IDX_LABEL = 1
-            IDX_NAME = 2 
-            IDX_PLATFORM = 3
-            IDX_ODD = 4
-            IDX_ENVIRONMENT = 5
-            IDX_TRAILER = 6
-            IDX_NEXT = 8
-            IDX_START_DATE = 10
-            IDX_END_DATE = 11
 
             previous_swimlane = ''
             for row in reader:
@@ -162,7 +165,6 @@ def load_product_features(file_path):
 
                 swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
                 if swimlane != '': previous_swimlane = swimlane
-
                 label = row[IDX_LABEL].strip()
                 name = row[IDX_NAME].strip()
                 start_date = robust_get_date(row[IDX_START_DATE].strip())
@@ -185,152 +187,76 @@ def load_product_features(file_path):
     return product_features
 
 #------------------------------------------------------------------------------
-def load_capabilities(file_path, product_features_raw):
-    """Loads capabilities."""
-    capabilities = {}            
+# TODO: This function has a lot of overlap with load_product_features() -- we
+#       can probably consolidate the two.
+def load_capabilities_or_technical_functions(file_path, dependencies):
+    """Loads capabilities to technical functions."""
+
+    IDX_SWIMLANE = 0
+    IDX_LABEL = 4
+    IDX_NAME = 5
+    IDX_PLATFORM = 6
+    IDX_ODD = 7
+    IDX_ENVIRONMENT = 8
+    IDX_TRAILER = 9
+    IDX_NEXT = 11
+    IDX_DEPENDENCIES_START = 12
+
+    functions = {}            
     try:
         with open(file_path, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
             try:
                 next(reader) 
             except StopIteration:
-                return capabilities
-                
-            IDX_SWIMLANE = 0
-            IDX_LABEL = 4
-            IDX_NAME = 5
-            IDX_PLATFORM = 6
-            IDX_ODD = 7
-            IDX_ENVIRONMENT = 8
-            IDX_TRAILER = 9
-            IDX_NEXT = 11
-            IDX_PRODUCT_FEATURES_START = 12
+                return functions
 
             previous_swimlane = ""
             for row in reader:
                 if not row or not row[IDX_LABEL].strip():
-                    if row and row[IDX_SWIMLANE].strip():
-                        current_swimlane = row[IDX_SWIMLANE].strip()
                     continue
 
                 label = row[IDX_LABEL].strip()
                 swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
                 if swimlane != '': previous_swimlane = swimlane
 
-                cap_to_pf = []
-                for i in range(IDX_PRODUCT_FEATURES_START, len(row)):
+                # NOTE: This is only necessary for now if we missed depenencies or made a typo.
+                functions_to_deps = []
+                for i in range(IDX_DEPENDENCIES_START, len(row)):
                     if row[i].strip():
                         for item in row[i].split('\n'):
                             item = item.strip()
                             if item:
-                                pf_label = item.split(' ')[0].strip()
-                                # IMPORTANT: It is possible this PF label does 
-                                #            not exist in the product feature
-                                #            list because of a typo.
-                                if pf_label in product_features_raw:
-                                    cap_to_pf.append(pf_label)
+                                dep_label = item.split(' ')[0].strip()
+                                # IMPORTANT: It is possible this label does not exist in the product 
+                                #            feature list because of a typo.
+                                if dep_label in dependencies:
+                                    functions_to_deps.append(dep_label)
                                 else:
-                                    print("WARNING: Could not find " + pf_label + 
-                                          " in product features for capability: " + 
-                                          label + ". Skipping.")
-
+                                    print("WARNING: Could not find " + dep_label + " in " + 
+                                          file_path + " for " + label + ". Skipping.")
                 # IMPORTANT: If we have no linked product features, skip.
-                if len(cap_to_pf) == 0:
-                    print("WARNING: Could not find any linked product features "
-                          "for capability: " + label + ". Skipping.")
+                if len(functions_to_deps) == 0:
+                    print("WARNING: Could not find any linked dependencies "
+                          "for " + label + ". Skipping.")
                     continue
 
-                if label:
-                    capabilities[label] = {
-                        'name': row[IDX_NAME].strip() or '',
-                        'swimlane': swimlane,
-                        'label': label,
-                        'platform': row[IDX_PLATFORM].strip() or '',
-                        'odd': row[IDX_ODD].strip() or '',
-                        'environment': row[IDX_ENVIRONMENT].strip() or '',
-                        'trailer': row[IDX_TRAILER].strip() or '',
-                        'next': row[IDX_NEXT].strip() or 'N',
-                        'product_features_linked': list(set(cap_to_pf))
-                    }
+                functions[label] = {
+                    'name': row[IDX_NAME].strip() or '',
+                    'swimlane': swimlane,
+                    'label': label,
+                    'platform': row[IDX_PLATFORM].strip() or '',
+                    'odd': row[IDX_ODD].strip() or '',
+                    'environment': row[IDX_ENVIRONMENT].strip() or '',
+                    'trailer': row[IDX_TRAILER].strip() or '',
+                    'next': row[IDX_NEXT].strip() or 'N',
+                    'dependencies': list(set(functions_to_deps))
+                }
 
     except Exception as e:
         print(f"An error occurred while reading {file_path}: {e}")
         
-    return capabilities
-
-#------------------------------------------------------------------------------
-def load_technical_functions(file_path, capabilities):
-    """Loads technical functions."""
-    technical_functions = {}            
-    try:
-        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            try:
-                next(reader) 
-            except StopIteration:
-                return capabilities
-                
-            IDX_SWIMLANE = 0
-            IDX_LABEL = 4
-            IDX_NAME = 5
-            IDX_PLATFORM = 6
-            IDX_ODD = 7
-            IDX_ENVIRONMENT = 8
-            IDX_TRAILER = 9
-            IDX_NEXT = 11
-            IDX_CAPABILITIES_START = 12
-
-            previous_swimlane = ""
-            for row in reader:
-                if not row or not row[IDX_LABEL].strip():
-                    if row and row[IDX_SWIMLANE].strip():
-                        current_swimlane = row[IDX_SWIMLANE].strip()
-                    continue
-
-                label = row[IDX_LABEL].strip()
-                swimlane = row[IDX_SWIMLANE].strip() or previous_swimlane
-                if swimlane != '': previous_swimlane = swimlane
-
-                tech_to_cap = []
-                for i in range(IDX_CAPABILITIES_START, len(row)):
-                    if row[i].strip():
-                        for item in row[i].split('\n'):
-                            item = item.strip()
-                            if item:
-                                cap_label = item.split(' ')[0].strip()
-                                # IMPORTANT: It is possible this CA label does 
-                                #            not exist in the product feature
-                                #            list because of a typo.
-                                if cap_label in capabilities:
-                                    tech_to_cap.append(cap_label)
-                                else:
-                                    print("WARNING: Could not find " + cap_label + 
-                                          " in technical functions for tech ID: " + 
-                                          label + ". Skipping.")
-
-                # IMPORTANT: If we have no linked product features, skip.
-                if len(tech_to_cap) == 0:
-                    print("WARNING: Could not find any linked capabilities "
-                          "for tech function: " + label + ". Skipping.")
-                    continue
-
-                if label:
-                    technical_functions[label] = {
-                        'name': row[IDX_NAME].strip() or '',
-                        'swimlane': swimlane,
-                        'label': label,
-                        'platform': row[IDX_PLATFORM].strip() or '',
-                        'odd': row[IDX_ODD].strip() or '',
-                        'environment': row[IDX_ENVIRONMENT].strip() or '',
-                        'trailer': row[IDX_TRAILER].strip() or '',
-                        'next': row[IDX_NEXT].strip() or 'N',
-                        'capabilities': list(set(tech_to_cap))
-                    }
-
-    except Exception as e:
-        print(f"An error occurred while reading {file_path}: {e}")
-        
-    return technical_functions
+    return functions
 
 #------------------------------------------------------------------------------
 def construct_repository_update_schema(product_features_raw, 
@@ -351,11 +277,11 @@ def construct_repository_update_schema(product_features_raw,
 
         # IMPORTANT: As we go through the capabilities, save a map from pf_label
         #            to all associated cap_labels.
-        pf_labels = cap_data['product_features_linked']
+        pf_labels = cap_data['dependencies']
         for pf_label in pf_labels:
             pf_to_cap_labels[pf_label].append(cap_label)
 
-        # IMPORTANT: Get the start / end date from the product features.
+        # Get the start / end date from the product features.
         min_start_date, max_end_date = get_start_and_end_dates_from_product_features(
             pf_labels, product_features_raw)
 
@@ -380,7 +306,7 @@ def construct_repository_update_schema(product_features_raw,
     for _, tf_data in technical_functions_raw.items():
 
         # Determine all product feature dependencies.
-        capabilities = tf_data['capabilities']
+        capabilities = tf_data['dependencies']
         pf_labels = set()
         for pf_label, cap_labels in pf_to_cap_labels.items():
             for cap_label in capabilities:
@@ -494,8 +420,8 @@ def main():
     # 1. Load data from CSVs
     print(f"Starting data processing: {CURRENT_DATE.strftime(DATE_FORMAT)}.")
     product_features_raw = load_product_features(args.pf_csv)
-    capabilities_raw = load_capabilities(args.ca_csv, product_features_raw)
-    technical_functions_raw = load_technical_functions(args.tf_csv, capabilities_raw)
+    capabilities_raw = load_capabilities_or_technical_functions(args.ca_csv, product_features_raw)
+    technical_functions_raw = load_capabilities_or_technical_functions(args.tf_csv, capabilities_raw)
     
     print("\n--- Final Schema Transformation ---")
     # 2. Transform the intermediate structure into the new repository update schema
