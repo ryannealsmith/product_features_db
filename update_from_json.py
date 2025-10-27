@@ -157,7 +157,7 @@ def create_product_feature(data):
         
         if existing:
             print(f"Product feature '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
-            return update_product_feature(data)
+            return False
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
@@ -300,7 +300,7 @@ def create_capability(data):
         
         if existing:
             print(f"Capability '{data.get('name', data.get('label', 'unknown'))}' already exists, skipping creation")
-            return update_capability(data)
+            return False
         
         # Handle both old and new vehicle field formats
         vehicle_platform_id = None
@@ -842,7 +842,7 @@ def create_vehicle_platform(data):
         platform = VehiclePlatform(
             name=data['name'],
             description=data.get('description', ''),
-            vehicle_platform=data.get('vehicle_platform', ''),
+            vehicle_type=data.get('vehicle_type', ''),
             max_payload=float(data['max_payload']) if 'max_payload' in data else None
         )
         
@@ -863,7 +863,7 @@ def update_vehicle_platform(data):
             return False
         
         updates_made = []
-        fields_to_update = ['description', 'vehicle_platform', 'max_payload']
+        fields_to_update = ['description', 'vehicle_type', 'max_payload']
         
         for field in fields_to_update:
             if field in data:
