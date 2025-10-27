@@ -199,6 +199,16 @@
                     <hr>
                     
                     <div class="mb-2">
+                        <small class="text-muted fw-bold">DATA MANAGEMENT</small>
+                    </div>
+                    
+                    <a href="{{ url_for('json_editor') }}" class="nav-link {% if request.endpoint == 'json_editor' %}active{% endif %}">
+                        <i class="fas fa-edit"></i> JSON Editor
+                    </a>
+                    
+                    <hr>
+                    
+                    <div class="mb-2">
                         <small class="text-muted fw-bold">EXPORT</small>
                     </div>
                     

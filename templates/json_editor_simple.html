@@ -1,0 +1,763 @@
+{% extends "base.html" %}
+
+{% block title %}JSON Editor - Simple{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-edit text-primary"></i>
+                JSON Editor
+            </h2>
+
+            <!-- Action Buttons -->
+            <div class="text-center mb-4">
+                <button class="btn btn-success btn-lg me-2" onclick="showAddModal()">
+                    <i class="fas fa-plus"></i> Add New Entity
+                </button>
+                <button class="btn btn-info btn-lg me-2" onclick="saveToServer()">
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+                <button class="btn btn-secondary btn-lg" onclick="exportJson()">
+                    <i class="fas fa-download"></i> Export JSON
+                </button>
+            </div>
+            
+            <!-- Summary Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 id="total-count">0</h5>
+                            <small>Total Entities</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 id="features-count">0</h5>
+                            <small>Product Features</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 id="capabilities-count">0</h5>
+                            <small>Capabilities</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 id="functions-count">0</h5>
+                            <small>Technical Functions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Controls -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search entities..." onkeyup="filterEntities()">
+                </div>
+                <div class="col-md-3">
+                    <select id="type-filter" class="form-control" onchange="filterEntities()">
+                        <option value="">All Types</option>
+                        <option value="product_feature">Product Features</option>
+                        <option value="capability">Capabilities</option>
+                        <option value="technical_function">Technical Functions</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary" onclick="loadData()">Reload Data</button>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="status-message" class="alert alert-info">
+                Loading entities...
+            </div>
+
+            <!-- Entities Container -->
+            <div id="entities-container">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="entityModal" tabindex="-1" aria-labelledby="entityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="entityModalLabel">Add New Entity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="entityForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="entity-type" class="form-label">Entity Type *</label>
+                            <select class="form-select" id="entity-type" required onchange="updateFormFields()">
+                                <option value="">Select type...</option>
+                                <option value="product_feature">Product Feature</option>
+                                <option value="capability">Capability</option>
+                                <option value="technical_function">Technical Function</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="entity-operation" class="form-label">Operation *</label>
+                            <select class="form-select" id="entity-operation" required>
+                                <option value="create">Create</option>
+                                <option value="update">Update</option>
+                                <option value="delete">Delete</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="entity-name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="entity-name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="entity-label" class="form-label">Label</label>
+                            <input type="text" class="form-control" id="entity-label">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="entity-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="entity-description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="entity-start-date" class="form-label">Planned Start Date</label>
+                            <input type="date" class="form-control" id="entity-start-date">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="entity-end-date" class="form-label">Planned End Date</label>
+                            <input type="date" class="form-control" id="entity-end-date">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="entity-vehicle-platform" class="form-label">Vehicle Platform ID</label>
+                            <input type="number" class="form-control" id="entity-vehicle-platform">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="entity-tmos" class="form-label">TMOS</label>
+                            <input type="text" class="form-control" id="entity-tmos">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label for="entity-progress" class="form-label">Progress (%)</label>
+                            <input type="number" class="form-control" id="entity-progress" min="0" max="100">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="entity-document-url" class="form-label">Document URL</label>
+                            <input type="url" class="form-control" id="entity-document-url">
+                        </div>
+                    </div>
+
+                    <!-- Entity-specific fields will be added here dynamically -->
+                    <div id="specific-fields" class="mt-3" style="display: none;">
+                        <hr>
+                        <h6>Entity-Specific Fields</h6>
+                        <div id="specific-fields-content"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEntity()">Save Entity</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allEntities = [];
+
+// Simple logging function
+function log(message) {
+    console.log('[JSON Editor]', message);
+}
+
+// Load data when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    log('Page loaded, starting data fetch...');
+    loadData();
+});
+
+async function loadData() {
+    const statusDiv = document.getElementById('status-message');
+    const containerDiv = document.getElementById('entities-container');
+    
+    try {
+        statusDiv.textContent = 'Loading data from server...';
+        statusDiv.className = 'alert alert-info';
+        
+        log('Fetching data from /json_editor/data');
+        const response = await fetch('/json_editor/data');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        log('Received data:', data);
+        
+        // Extract entities
+        allEntities = data.entities || [];
+        log(`Extracted ${allEntities.length} entities`);
+        
+        if (allEntities.length === 0) {
+            statusDiv.textContent = 'No entities found in the JSON file.';
+            statusDiv.className = 'alert alert-warning';
+            containerDiv.innerHTML = '';
+            updateCounts(0, 0, 0, 0);
+            return;
+        }
+        
+        // Display entities
+        displayEntities(allEntities);
+        
+        statusDiv.textContent = `Successfully loaded ${allEntities.length} entities.`;
+        statusDiv.className = 'alert alert-success';
+        
+    } catch (error) {
+        log('Error loading data:', error);
+        statusDiv.textContent = `Error loading data: ${error.message}`;
+        statusDiv.className = 'alert alert-danger';
+        containerDiv.innerHTML = '';
+        allEntities = [];
+        updateCounts(0, 0, 0, 0);
+    }
+}
+
+function displayEntities(entities) {
+    log(`Displaying ${entities.length} entities`);
+    
+    const containerDiv = document.getElementById('entities-container');
+    if (!containerDiv) {
+        log('ERROR: entities-container not found!');
+        return;
+    }
+    
+    // Clear container
+    containerDiv.innerHTML = '';
+    
+    if (entities.length === 0) {
+        containerDiv.innerHTML = '<div class="alert alert-info">No entities match your search criteria.</div>';
+        updateCounts(0, 0, 0, 0);
+        return;
+    }
+    
+    // Count by type
+    let productFeatures = 0;
+    let capabilities = 0;
+    let technicalFunctions = 0;
+    
+    // Create entity cards
+    entities.forEach((entity, index) => {
+        try {
+            // Count entities by type
+            if (entity.entity_type === 'product_feature') productFeatures++;
+            else if (entity.entity_type === 'capability') capabilities++;
+            else if (entity.entity_type === 'technical_function') technicalFunctions++;
+            
+            // Create card
+            const card = createEntityCard(entity, index);
+            containerDiv.appendChild(card);
+            
+        } catch (error) {
+            log(`Error creating card for entity ${index}:`, error);
+        }
+    });
+    
+    // Update counts
+    updateCounts(entities.length, productFeatures, capabilities, technicalFunctions);
+    
+    log('Display complete');
+}
+
+function createEntityCard(entity, index) {
+    const card = document.createElement('div');
+    card.className = 'card mb-3';
+    
+    // Get entity info
+    const name = entity.name || entity.label || 'Unnamed Entity';
+    const type = entity.entity_type || 'unknown';
+    const operation = entity.operation || 'unknown';
+    const description = entity.description || 'No description available';
+    
+    // Get type-specific styling
+    let typeColor = 'secondary';
+    let typeIcon = 'fas fa-question';
+    
+    if (type === 'product_feature') {
+        typeColor = 'primary';
+        typeIcon = 'fas fa-star';
+    } else if (type === 'capability') {
+        typeColor = 'success';
+        typeIcon = 'fas fa-cog';
+    } else if (type === 'technical_function') {
+        typeColor = 'warning';
+        typeIcon = 'fas fa-tools';
+    }
+    
+    card.innerHTML = `
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="${typeIcon}"></i>
+                <strong>${name}</strong>
+                <span class="badge bg-${typeColor} ms-2">${type.replace('_', ' ').toUpperCase()}</span>
+                <span class="badge bg-secondary ms-1">${operation.toUpperCase()}</span>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="viewEntity(${index})" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-info" onclick="editEntity(${index})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteEntity(${index})" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-text">${description}</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <strong>Label:</strong> ${entity.label || 'N/A'}<br>
+                        <strong>Start:</strong> ${entity.planned_start_date || 'N/A'}<br>
+                        <strong>End:</strong> ${entity.planned_end_date || 'N/A'}
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <strong>Platform:</strong> ${entity.vehicle_platform_id || 'N/A'}<br>
+                        <strong>TMOS:</strong> ${entity.tmos || 'N/A'}<br>
+                        <strong>Progress:</strong> ${entity.status_relative_to_tmos || entity.progress_relative_to_tmos || 'N/A'}${(entity.status_relative_to_tmos || entity.progress_relative_to_tmos) ? '%' : ''}
+                    </small>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function updateCounts(total, features, capabilities, functions) {
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('features-count').textContent = features;
+    document.getElementById('capabilities-count').textContent = capabilities;
+    document.getElementById('functions-count').textContent = functions;
+}
+
+function filterEntities() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    const typeFilter = document.getElementById('type-filter').value;
+    
+    log(`Filtering with search: "${searchTerm}", type: "${typeFilter}"`);
+    
+    const filteredEntities = allEntities.filter(entity => {
+        // Search term match
+        const searchMatch = !searchTerm || 
+            (entity.name && entity.name.toLowerCase().includes(searchTerm)) ||
+            (entity.label && entity.label.toLowerCase().includes(searchTerm)) ||
+            (entity.description && entity.description.toLowerCase().includes(searchTerm));
+        
+        // Type filter match
+        const typeMatch = !typeFilter || entity.entity_type === typeFilter;
+        
+        return searchMatch && typeMatch;
+    });
+    
+    log(`Filtered to ${filteredEntities.length} entities`);
+    displayEntities(filteredEntities);
+}
+
+// Modal and CRUD functions
+let currentEditIndex = -1;
+let isEditing = false;
+
+function showAddModal() {
+    isEditing = false;
+    currentEditIndex = -1;
+    document.getElementById('entityModalLabel').textContent = 'Add New Entity';
+    clearForm();
+    const modal = new bootstrap.Modal(document.getElementById('entityModal'));
+    modal.show();
+}
+
+function clearForm() {
+    document.getElementById('entityForm').reset();
+    document.getElementById('specific-fields').style.display = 'none';
+}
+
+function updateFormFields() {
+    const entityType = document.getElementById('entity-type').value;
+    const specificFields = document.getElementById('specific-fields');
+    const specificContent = document.getElementById('specific-fields-content');
+    
+    if (!entityType) {
+        specificFields.style.display = 'none';
+        return;
+    }
+    
+    specificFields.style.display = 'block';
+    
+    // Add entity-specific fields based on type
+    if (entityType === 'product_feature') {
+        specificContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="capabilities-required" class="form-label">Capabilities Required</label>
+                    <textarea class="form-control" id="capabilities-required" rows="2" placeholder="Comma-separated list"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="swimlane-decorators" class="form-label">Swimlane Decorators</label>
+                    <input type="text" class="form-control" id="swimlane-decorators">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label for="active-flag" class="form-label">Active Flag</label>
+                    <select class="form-control" id="active-flag">
+                        <option value="">Select...</option>
+                        <option value="current">Current</option>
+                        <option value="next">Next</option>
+                        <option value="future">Future</option>
+                    </select>
+                </div>
+            </div>
+        `;
+    } else if (entityType === 'capability') {
+        specificContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="product-feature-ids" class="form-label">Product Feature IDs</label>
+                    <textarea class="form-control" id="product-feature-ids" rows="2" placeholder="Comma-separated list"></textarea>
+                </div>
+            </div>
+        `;
+    } else if (entityType === 'technical_function') {
+        specificContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="success-criteria" class="form-label">Success Criteria</label>
+                    <textarea class="form-control" id="success-criteria" rows="2"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="product-feature-dependencies" class="form-label">Product Feature Dependencies</label>
+                    <textarea class="form-control" id="product-feature-dependencies" rows="2" placeholder="Comma-separated list"></textarea>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function populateForm(entity) {
+    document.getElementById('entity-type').value = entity.entity_type || '';
+    document.getElementById('entity-operation').value = entity.operation || 'create';
+    document.getElementById('entity-name').value = entity.name || '';
+    document.getElementById('entity-label').value = entity.label || '';
+    document.getElementById('entity-description').value = entity.description || '';
+    document.getElementById('entity-start-date').value = entity.planned_start_date || '';
+    document.getElementById('entity-end-date').value = entity.planned_end_date || '';
+    document.getElementById('entity-vehicle-platform').value = entity.vehicle_platform_id || '';
+    document.getElementById('entity-tmos').value = entity.tmos || '';
+    document.getElementById('entity-progress').value = entity.status_relative_to_tmos || entity.progress_relative_to_tmos || '';
+    document.getElementById('entity-document-url').value = entity.document_url || '';
+    
+    // Update specific fields
+    updateFormFields();
+    
+    // Populate entity-specific fields
+    setTimeout(() => {
+        if (entity.entity_type === 'product_feature') {
+            const capReq = document.getElementById('capabilities-required');
+            const swimlane = document.getElementById('swimlane-decorators');
+            const activeFlag = document.getElementById('active-flag');
+            
+            if (capReq && entity.capabilities_required) {
+                capReq.value = Array.isArray(entity.capabilities_required) ? 
+                    entity.capabilities_required.join(', ') : entity.capabilities_required;
+            }
+            if (swimlane) swimlane.value = entity.swimlane_decorators || '';
+            if (activeFlag) activeFlag.value = entity.active_flag || '';
+            
+        } else if (entity.entity_type === 'capability') {
+            const pfIds = document.getElementById('product-feature-ids');
+            if (pfIds && entity.product_feature_ids) {
+                pfIds.value = Array.isArray(entity.product_feature_ids) ? 
+                    entity.product_feature_ids.join(', ') : entity.product_feature_ids;
+            }
+            
+        } else if (entity.entity_type === 'technical_function') {
+            const successCrit = document.getElementById('success-criteria');
+            const pfDeps = document.getElementById('product-feature-dependencies');
+            
+            if (successCrit) successCrit.value = entity.success_criteria || '';
+            if (pfDeps && entity.product_feature_dependencies) {
+                pfDeps.value = Array.isArray(entity.product_feature_dependencies) ? 
+                    entity.product_feature_dependencies.join(', ') : entity.product_feature_dependencies;
+            }
+        }
+    }, 100);
+}
+
+function saveEntity() {
+    const form = document.getElementById('entityForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Collect form data
+    const entityData = {
+        entity_type: document.getElementById('entity-type').value,
+        operation: document.getElementById('entity-operation').value,
+        name: document.getElementById('entity-name').value,
+        label: document.getElementById('entity-label').value,
+        description: document.getElementById('entity-description').value,
+        planned_start_date: document.getElementById('entity-start-date').value,
+        planned_end_date: document.getElementById('entity-end-date').value,
+        vehicle_platform_id: parseInt(document.getElementById('entity-vehicle-platform').value) || null,
+        tmos: document.getElementById('entity-tmos').value,
+        document_url: document.getElementById('entity-document-url').value
+    };
+    
+    // Add progress field
+    const progressValue = document.getElementById('entity-progress').value;
+    if (progressValue) {
+        if (entityData.entity_type === 'capability') {
+            entityData.progress_relative_to_tmos = parseInt(progressValue);
+        } else {
+            entityData.status_relative_to_tmos = parseInt(progressValue);
+        }
+    }
+    
+    // Add entity-specific fields
+    if (entityData.entity_type === 'product_feature') {
+        const capReq = document.getElementById('capabilities-required')?.value;
+        if (capReq) {
+            entityData.capabilities_required = capReq.split(',').map(s => s.trim()).filter(s => s);
+        }
+        const swimlane = document.getElementById('swimlane-decorators')?.value;
+        if (swimlane) entityData.swimlane_decorators = swimlane;
+        
+        const activeFlag = document.getElementById('active-flag')?.value;
+        if (activeFlag) entityData.active_flag = activeFlag;
+        
+    } else if (entityData.entity_type === 'capability') {
+        const pfIds = document.getElementById('product-feature-ids')?.value;
+        if (pfIds) {
+            entityData.product_feature_ids = pfIds.split(',').map(s => s.trim()).filter(s => s);
+        }
+        
+    } else if (entityData.entity_type === 'technical_function') {
+        const successCrit = document.getElementById('success-criteria')?.value;
+        if (successCrit) entityData.success_criteria = successCrit;
+        
+        const pfDeps = document.getElementById('product-feature-dependencies')?.value;
+        if (pfDeps) {
+            entityData.product_feature_dependencies = pfDeps.split(',').map(s => s.trim()).filter(s => s);
+        }
+    }
+    
+    // Save to entities array
+    if (isEditing && currentEditIndex >= 0) {
+        allEntities[currentEditIndex] = entityData;
+        log('Entity updated:', entityData);
+    } else {
+        allEntities.push(entityData);
+        log('Entity added:', entityData);
+    }
+    
+    // Refresh display
+    filterEntities();
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('entityModal'));
+    modal.hide();
+    
+    // Show success message
+    const action = isEditing ? 'updated' : 'added';
+    alert(`✅ Entity ${action} successfully!\n\n📝 Remember to click "Save All Changes" to persist to server.`);
+}
+
+// Button functions
+function viewEntity(index) {
+    const entity = allEntities[index];
+    const name = entity.name || entity.label || 'Unnamed Entity';
+    
+    // Create detailed view in a more user-friendly format
+    let details = `📋 Entity Details: ${name}\n\n`;
+    details += `🏷️  Type: ${entity.entity_type || 'Unknown'}\n`;
+    details += `⚙️  Operation: ${entity.operation || 'Unknown'}\n`;
+    details += `📝 Label: ${entity.label || 'N/A'}\n`;
+    details += `📅 Start Date: ${entity.planned_start_date || 'N/A'}\n`;
+    details += `📅 End Date: ${entity.planned_end_date || 'N/A'}\n`;
+    details += `🚗 Vehicle Platform: ${entity.vehicle_platform_id || 'N/A'}\n`;
+    details += `📊 Progress: ${entity.status_relative_to_tmos || entity.progress_relative_to_tmos || 'N/A'}${(entity.status_relative_to_tmos || entity.progress_relative_to_tmos) ? '%' : ''}\n`;
+    details += `� Description: ${entity.description || 'No description'}\n\n`;
+    details += `� Full JSON data is logged to browser console (F12 → Console)`;
+    
+    alert(details);
+    log('Full entity details:', entity);
+}
+
+function editEntity(index) {
+    isEditing = true;
+    currentEditIndex = index;
+    const entity = allEntities[index];
+    
+    document.getElementById('entityModalLabel').textContent = `Edit Entity: ${entity.name || entity.label || 'Unnamed'}`;
+    populateForm(entity);
+    
+    const modal = new bootstrap.Modal(document.getElementById('entityModal'));
+    modal.show();
+}
+
+function duplicateEntity(index) {
+    const entity = allEntities[index];
+    const name = entity.name || entity.label || 'Unnamed Entity';
+    
+    if (confirm(`📋 Create a copy of: ${name}?\n\n⚠️  Note: This will create a duplicate in the display only (not saved to file).`)) {
+        // Create a copy with modified name
+        const duplicate = { ...entity };
+        if (duplicate.name) {
+            duplicate.name = duplicate.name + ' (Copy)';
+        } else if (duplicate.label) {
+            duplicate.label = duplicate.label + ' (Copy)';
+        }
+        
+        // Add to entities array
+        allEntities.push(duplicate);
+        
+        // Refresh display
+        filterEntities(); // This will re-display with current filters
+        
+        alert(`✅ Entity duplicated successfully!\n\nNew entity: ${duplicate.name || duplicate.label}\n\n⚠️  Remember: Changes are only in display, not saved to file.`);
+        log('Entity duplicated:', duplicate);
+    }
+}
+
+function deleteEntity(index) {
+    const entity = allEntities[index];
+    const name = entity.name || entity.label || 'Unnamed Entity';
+    
+    let confirmMsg = `🗑️  Delete Entity: ${name}\n\n`;
+    confirmMsg += `Type: ${entity.entity_type || 'Unknown'}\n`;
+    confirmMsg += `Operation: ${entity.operation || 'Unknown'}\n\n`;
+    confirmMsg += `⚠️  This will remove it from the display only (not saved to file).\n\n`;
+    confirmMsg += `Are you sure you want to delete this entity?`;
+    
+    if (confirm(confirmMsg)) {
+        log('Deleting entity:', entity);
+        allEntities.splice(index, 1);
+        
+        // Refresh the current view (maintaining filters)
+        filterEntities();
+        
+        alert(`✅ Entity deleted successfully!\n\n📝 Deleted: ${name}\n\n⚠️  Remember to click "Save All Changes" to persist to server.`);
+    }
+}
+
+// Server interaction functions
+async function saveToServer() {
+    const statusDiv = document.getElementById('status-message');
+    
+    try {
+        statusDiv.textContent = 'Saving changes to server...';
+        statusDiv.className = 'alert alert-info';
+        
+        const saveData = {
+            metadata: {
+                version: "4.1",
+                description: "Product Feature Readiness Database - JSON Editor",
+                created_by: "JSON Editor",
+                created_date: new Date().toISOString().split('T')[0]
+            },
+            entities: allEntities
+        };
+        
+        log('Saving data to server:', saveData);
+        
+        const response = await fetch('/json_editor/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(saveData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        log('Save successful:', result);
+        
+        statusDiv.textContent = `✅ Successfully saved ${allEntities.length} entities to server!`;
+        statusDiv.className = 'alert alert-success';
+        
+        alert(`✅ Save Successful!\n\n📁 Saved ${allEntities.length} entities to repository_update_data_final_colin3.json\n\n🔄 All changes are now persistent on the server.`);
+        
+    } catch (error) {
+        log('Save failed:', error);
+        statusDiv.textContent = `❌ Save failed: ${error.message}`;
+        statusDiv.className = 'alert alert-danger';
+        
+        alert(`❌ Save Failed!\n\nError: ${error.message}\n\n🔧 Please check the console for details and try again.`);
+    }
+}
+
+function exportJson() {
+    const exportData = {
+        metadata: {
+            version: "4.1",
+            description: "Product Feature Readiness Database - JSON Editor Export",
+            created_by: "JSON Editor",
+            created_date: new Date().toISOString().split('T')[0],
+            exported_at: new Date().toISOString()
+        },
+        entities: allEntities
+    };
+    
+    const jsonContent = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `repository_update_data_export_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert(`📄 JSON Export Complete!\n\n💾 Downloaded: ${a.download}\n\n📊 Contains ${allEntities.length} entities`);
+    log('Exported JSON:', exportData);
+}
+</script>
+
+{% endblock %}

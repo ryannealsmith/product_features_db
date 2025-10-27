@@ -2,6 +2,8 @@ from flask import render_template, request, redirect, url_for, flash, jsonify, s
 from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities, capability_technical_functions, product_feature_capabilities
 from sqlalchemy import and_
 from datetime import datetime, date
+import json
+import os
 
 # Helper functions for export
 def get_status_color(status):
@@ -1253,3 +1255,276 @@ def download_database_json():
             
     except Exception as e:
         return jsonify({'error': f'Failed to export database: {str(e)}'}), 500
+
+@app.route('/json_editor')
+def json_editor():
+    """JSON Editor interface for managing entities"""
+    try:
+        # Try to load existing JSON file
+        json_file_path = 'repository_update_data_final_colin3.json'
+        if os.path.exists(json_file_path):
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                json_data = json.load(f)
+        else:
+            # Create default structure
+            json_data = {
+                "metadata": {
+                    "version": "4.1",
+                    "description": "Product Feature Readiness Database - JSON Editor",
+                    "created_by": "JSON Editor",
+                    "created_date": datetime.now().strftime('%Y-%m-%d')
+                },
+                "entities": []
+            }
+        
+        # Organize entities by type for display
+        entities_by_type = {
+            'product_feature': [],
+            'capability': [],
+            'technical_function': []
+        }
+        
+        for entity in json_data.get('entities', []):
+            entity_type = entity.get('entity_type', '')
+            if entity_type in entities_by_type:
+                entities_by_type[entity_type].append(entity)
+        
+        # Calculate totals
+        total_entities = sum(len(entities) for entities in entities_by_type.values())
+        
+        return render_template('json_editor_simple.html',
+                             json_data=json_data,
+                             entities=entities_by_type,
+                             metadata=json_data.get('metadata', {}),
+                             total_entities=total_entities)
+    
+    except Exception as e:
+        flash(f'Error loading JSON editor: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/json_editor/save', methods=['POST'])
+def save_json_data():
+    """Save JSON data from the editor"""
+    try:
+        json_data = request.get_json()
+        
+        if not json_data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        # Validate basic structure
+        if 'metadata' not in json_data or 'entities' not in json_data:
+            return jsonify({'error': 'Invalid JSON structure. Must contain metadata and entities'}), 400
+        
+        # Validate entities array
+        if not isinstance(json_data['entities'], list):
+            return jsonify({'error': 'Entities must be an array'}), 400
+        
+        # Update metadata with current timestamp and save info
+        json_data['metadata']['created_date'] = datetime.now().strftime('%Y-%m-%d')
+        json_data['metadata']['last_saved'] = datetime.now().isoformat()
+        json_data['metadata']['total_entities'] = len(json_data['entities'])
+        
+        output_file = 'repository_update_data_final_colin3.json'
+        
+        # Create backup of existing file
+        if os.path.exists(output_file):
+            backup_file = f'{output_file}.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+            import shutil
+            shutil.copy2(output_file, backup_file)
+            print(f"Created backup: {backup_file}")
+        
+        # Save to file with pretty formatting
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        # Log the save operation
+        entity_counts = {}
+        for entity in json_data['entities']:
+            entity_type = entity.get('entity_type', 'unknown')
+            entity_counts[entity_type] = entity_counts.get(entity_type, 0) + 1
+        
+        print(f"JSON Editor Save: {len(json_data['entities'])} entities saved to {output_file}")
+        print(f"Entity breakdown: {entity_counts}")
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Successfully saved {len(json_data["entities"])} entities to {output_file}',
+            'entities_saved': len(json_data['entities']),
+            'entity_breakdown': entity_counts,
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        print(f"JSON Editor Save Error: {str(e)}")
+        return jsonify({'error': f'Failed to save JSON data: {str(e)}'}), 500
+
+@app.route('/json_editor/export')
+def export_json_editor_data():
+    """Export current JSON editor data"""
+    try:
+        json_file_path = 'repository_update_data_final_colin3.json'
+        
+        if not os.path.exists(json_file_path):
+            return jsonify({'error': 'No JSON data file found'}), 404
+        
+        # Generate filename with timestamp
+        filename = f"entities_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        
+        return send_file(
+            json_file_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/json'
+        )
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to export JSON data: {str(e)}'}), 500
+
+@app.route('/json_editor/import', methods=['POST'])
+def import_json_data():
+    """Import JSON data file"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not file.filename.lower().endswith('.json'):
+            return jsonify({'error': 'File must be a JSON file'}), 400
+        
+        # Read and parse JSON data
+        try:
+            json_data = json.load(file)
+        except json.JSONDecodeError as e:
+            return jsonify({'error': f'Invalid JSON format: {str(e)}'}), 400
+        
+        # Validate basic structure
+        if not isinstance(json_data, dict) or 'entities' not in json_data:
+            return jsonify({'error': 'Invalid JSON structure. Must contain an entities array'}), 400
+        
+        # Ensure metadata exists
+        if 'metadata' not in json_data:
+            json_data['metadata'] = {
+                "version": "4.1",
+                "description": "Imported JSON data",
+                "created_by": "JSON Editor Import",
+                "created_date": datetime.now().strftime('%Y-%m-%d')
+            }
+        
+        # Save imported data
+        output_file = 'repository_update_data_final_colin3.json'
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        return jsonify({
+            'success': True, 
+            'message': f'JSON data imported successfully. {len(json_data.get("entities", []))} entities loaded.'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to import JSON data: {str(e)}'}), 500
+
+@app.route('/json_editor/data')
+def get_json_editor_data():
+    """Get JSON data for the editor"""
+    try:
+        json_file_path = 'repository_update_data_final_colin3.json'
+        if os.path.exists(json_file_path):
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                json_data = json.load(f)
+        else:
+            json_data = {
+                "metadata": {
+                    "version": "4.1",
+                    "description": "Product Feature Readiness Database - JSON Editor",
+                    "created_by": "JSON Editor",
+                    "created_date": datetime.now().strftime('%Y-%m-%d')
+                },
+                "entities": []
+            }
+        return jsonify(json_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/json_editor/validate')
+def validate_json_data():
+    """Validate current JSON data against database entities"""
+    try:
+        json_file_path = 'repository_update_data_final_colin3.json'
+        
+        if not os.path.exists(json_file_path):
+            return jsonify({'error': 'No JSON data file found'}), 404
+        
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+        
+        validation_results = {
+            'total_entities': len(json_data.get('entities', [])),
+            'valid_entities': 0,
+            'warnings': [],
+            'errors': [],
+            'entity_types': {
+                'product_feature': 0,
+                'capability': 0,
+                'technical_function': 0
+            }
+        }
+        
+        # Get current database entities for reference checking
+        db_product_features = {pf.label: pf.name for pf in ProductFeature.query.all() if pf.label}
+        db_capabilities = {cap.label: cap.name for cap in Capabilities.query.all() if cap.label}
+        db_technical_functions = {tf.name: tf.name for tf in TechnicalFunction.query.all()}
+        
+        for i, entity in enumerate(json_data.get('entities', [])):
+            entity_type = entity.get('entity_type', '')
+            entity_name = entity.get('name', f'Entity {i+1}')
+            
+            # Count entity types
+            if entity_type in validation_results['entity_types']:
+                validation_results['entity_types'][entity_type] += 1
+            
+            # Basic validation
+            if not entity.get('name'):
+                validation_results['errors'].append(f'{entity_type} #{i+1}: Missing name')
+                continue
+            
+            if not entity.get('operation'):
+                validation_results['errors'].append(f'{entity_name}: Missing operation')
+                continue
+            
+            if entity.get('operation') not in ['create', 'update', 'delete']:
+                validation_results['errors'].append(f'{entity_name}: Invalid operation "{entity.get("operation")}"')
+                continue
+            
+            # Check relationships
+            if entity_type == 'product_feature':
+                capabilities_required = entity.get('capabilities_required', [])
+                for cap_label in capabilities_required:
+                    if cap_label not in db_capabilities:
+                        validation_results['warnings'].append(f'{entity_name}: References unknown capability "{cap_label}"')
+            
+            elif entity_type == 'capability':
+                product_feature_ids = entity.get('product_feature_ids', [])
+                for pf_label in product_feature_ids:
+                    if pf_label not in db_product_features:
+                        validation_results['warnings'].append(f'{entity_name}: References unknown product feature "{pf_label}"')
+                
+                technical_functions = entity.get('technical_functions', [])
+                for tf_name in technical_functions:
+                    if tf_name not in db_technical_functions:
+                        validation_results['warnings'].append(f'{entity_name}: References unknown technical function "{tf_name}"')
+            
+            elif entity_type == 'technical_function':
+                capabilities = entity.get('capabilities', [])
+                for cap_label in capabilities:
+                    if cap_label not in db_capabilities:
+                        validation_results['warnings'].append(f'{entity_name}: References unknown capability "{cap_label}"')
+            
+            validation_results['valid_entities'] += 1
+        
+        return jsonify(validation_results)
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to validate JSON data: {str(e)}'}), 500
