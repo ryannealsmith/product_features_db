@@ -16,7 +16,7 @@ def check_file_for_old_references(file_path):
         old_patterns = [
             r'TechnicalCapability',
             r'technical_capability',
-            r'technical_capabilities',
+            r'technical_functions',
         ]
         
         found_old = []
@@ -67,7 +67,7 @@ def main():
         'update_from_json.py',
         'templates/dashboard.html',
         'templates/readiness_assessments.html',
-        'templates/technical_capabilities.html',
+        'templates/technical_functions.html',
         'templates/add_assessment.html',
         'templates/base.html',
         'templates/product_features.html',

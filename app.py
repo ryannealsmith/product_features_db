@@ -57,7 +57,7 @@ class ProductFeature(db.Model):
 
 class TechnicalFunction(db.Model):
     """Technical functions that implement capabilities"""
-    __tablename__ = 'technical_capabilities'
+    __tablename__ = 'technical_functions'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -222,7 +222,7 @@ class Capabilities(db.Model):
 # Association tables for many-to-many relationships
 capability_technical_functions = db.Table('capability_technical_functions',
     db.Column('capability_id', db.Integer, db.ForeignKey('capabilities.id'), primary_key=True),
-    db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_capabilities.id'), primary_key=True)
+    db.Column('technical_function_id', db.Integer, db.ForeignKey('technical_functions.id'), primary_key=True)
 )
 
 product_feature_capabilities = db.Table('product_feature_capabilities',
@@ -241,7 +241,7 @@ class ReadinessAssessment(db.Model):
     __tablename__ = 'readiness_assessments'
     
     id = db.Column(db.Integer, primary_key=True)
-    technical_capability_id = db.Column(db.Integer, db.ForeignKey('technical_capabilities.id'), nullable=True)
+    technical_capability_id = db.Column(db.Integer, db.ForeignKey('technical_functions.id'), nullable=True)
     capability_id = db.Column(db.Integer, db.ForeignKey('capabilities.id'), nullable=True)
     readiness_level_id = db.Column(db.Integer, db.ForeignKey('technical_readiness_levels.id'), nullable=False)
     vehicle_platform_id = db.Column(db.Integer, db.ForeignKey('vehicle_platforms.id'), nullable=False)

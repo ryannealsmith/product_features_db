@@ -1,6 +1,6 @@
-# CSV Update System for Product Feature Readiness Database
+# CSV Update System for Product Feature Readiness Database v4.1
 
-This system allows you to update due dates and Technical Readiness Levels (TRL) for both product capabilities and technical capabilities using CSV files.
+This system allows you to update due dates and Technical Readiness Levels (TRL) for both product features and technical functions using CSV files. Updated for the enhanced M:N relationship structure.
 
 ## Files
 
@@ -10,8 +10,8 @@ This system allows you to update due dates and Technical Readiness Levels (TRL) 
 ## CSV Format
 
 ### Required Columns
-- `capability_type` - Must be either "product" or "technical"
-- `capability_name` - Exact name of the capability as it appears in the database
+- `capability_type` - Must be "capability" for capabilities or "technical_function" for technical functions
+- `capability_name` - Exact name of the entity as it appears in the database
 
 ### Optional Columns
 - `due_date` - Target completion date (supports multiple formats)
@@ -50,15 +50,15 @@ python update_from_csv.py --help
 
 ## How It Works
 
-### For Product Capabilities
-When you update a product capability:
-- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of ALL technical capabilities under that product capability
-- **Target TRL**: Updates the TRL for ALL readiness assessments of ALL technical capabilities under that product capability
+### For Capabilities
+When you update a capability:
+- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of ALL technical functions linked to that capability
+- **Target TRL**: Updates the TRL for ALL readiness assessments of ALL technical functions linked to that capability through the M:N relationship
 
-### For Technical Capabilities
-When you update a technical capability:
-- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of that specific technical capability
-- **Target TRL**: Updates the TRL for ALL readiness assessments of that specific technical capability
+### For Technical Functions  
+When you update a technical function:
+- **Due Date**: Updates the `next_review_date` for ALL readiness assessments of that specific technical function
+- **Target TRL**: Updates the TRL for ALL readiness assessments of that specific technical function
 
 ### Assessment Updates
 When TRL is updated, the script also:
@@ -94,22 +94,33 @@ The script provides detailed feedback:
 - ❌ Errors for invalid data or missing required columns
 - 📊 Summary of updates and errors at the end
 
-## Current Capabilities in Database
+## Current Entities in Database (v4.1 Structure)
 
-### Product Capabilities
-- Terberg: Driver-in operations (semi-trailer)
-- Terberg: Driver-Out, AV only, FWD
-- Platooning
-- Remote Vehicle Operation
-- Cargo Handling Automation
-- Fleet Management
+### Product Features (7 total)
+- Autonomous Highway Driving
+- Urban Navigation and Maneuvering  
+- Platooning Capability
+- Automated Docking and Loading
+- Emergency Response System
+- Fleet Coordination
+- Remote Monitoring and Diagnostics
 
-### Technical Capabilities
-- Perception System
-- Path Planning
-- Vehicle Control
-- Localization
-- Detect proximal humans
+### Capabilities (Connected via M:N relationships)
+- Highway Navigation
+- Lane Keeping  
+- Traffic Management
+- Collision Avoidance
+- Vehicle Communication
+- Cargo Operations
+- Safety Monitoring
+
+### Technical Functions (17 total)
+- Perception System (LiDAR, Camera, Radar)
+- Localization and Mapping
+- Path Planning and Decision Making
+- Vehicle Control Systems
+- V2X Communication
+- Safety Monitoring System
 - Traffic Light Recognition
 - Pedestrian Detection
 - Intersection Handling
@@ -118,9 +129,7 @@ The script provides detailed feedback:
 - Vehicle-to-Vehicle Communication
 - Convoy Formation
 - Teleoperation Interface
-- Low-Latency Communication
 - Robotic Loading System
-- Cargo Tracking
 - Route Optimization
 - Vehicle Health Monitoring
 

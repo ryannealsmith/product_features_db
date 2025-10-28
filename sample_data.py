@@ -77,7 +77,7 @@ def initialize_sample_data():
     db.session.commit()  # Commit to get IDs
     
     # Technical Functions (formerly Technical Capabilities)
-    technical_capabilities = [
+    technical_functions = [
         # Terberg: Driver-in operations (semi-trailer)
         ("Perception System", "Camera, LiDAR, and radar sensor fusion for environment perception", 
          "Successfully detect and classify 99.9% of relevant objects within 100m range in all weather conditions", 
@@ -160,7 +160,7 @@ def initialize_sample_data():
     
     from datetime import datetime
     for (name, description, success_criteria, vehicle_type, tmos, status, 
-         start_date, end_date, product_id, document_url) in technical_capabilities:
+         start_date, end_date, product_id, document_url) in technical_functions:
         capability = TechnicalFunction(
             name=name, 
             description=description,

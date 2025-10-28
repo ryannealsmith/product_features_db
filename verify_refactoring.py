@@ -46,7 +46,7 @@ def verify_refactoring():
         'update_from_json.py',
         'templates/dashboard.html',
         'templates/readiness_assessments.html',
-        'templates/technical_capabilities.html',
+        'templates/technical_functions.html',
         'templates/add_assessment.html',
         'templates/base.html',
         'templates/product_features.html'

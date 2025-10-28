@@ -15,14 +15,17 @@ This system helps autonomous vehicle organizations assess and track the maturity
 - **Product Features**: Management of customer-facing autonomous vehicle features
 - **Technical Functions**: Technical components that enable autonomous capabilities
 - **System Configurations**: Vehicle platforms, ODDs, environments, and trailers
+- **JSON Editor**: Web-based interface for managing entities with full CRUD operations
 
 ### Advanced JSON Management System
-- **Comprehensive CRUD Operations**: Create, read, update, delete via JSON templates
-- **Entity Management**: Product Features, Technical Functions, and Readiness Assessments
+- **Web-based JSON Editor**: Interactive interface for managing entities through the browser
+- **Comprehensive CRUD Operations**: Create, read, update, delete via JSON templates and web UI
+- **Entity Management**: Product Features, Capabilities, and Technical Functions with many-to-many relationships
 - **Configuration Management**: Vehicle Platforms, ODDs, Environments, Trailers, TRL definitions
 - **Batch Processing**: Update multiple items simultaneously through structured JSON files
 - **Template Library**: Pre-built JSON templates for common operations
 - **Validation System**: Comprehensive data validation and error reporting
+- **Export/Import**: JSON file export and import capabilities with automatic backups
 
 ## Database Schema
 
@@ -39,8 +42,9 @@ This system helps autonomous vehicle organizations assess and track the maturity
 
 ### Relationships
 
-- Product Features contain multiple Technical Functions
-- Technical Functions have multiple Readiness Assessments
+- **Product Features** ↔ **Capabilities** (Many-to-Many): Product features are composed of multiple capabilities, and capabilities can be shared across product features
+- **Capabilities** ↔ **Technical Functions** (Many-to-Many): Capabilities are implemented through technical functions, with shared functionality across capabilities
+- **Technical Functions** → **Readiness Assessments** (One-to-Many): Each technical function has multiple assessments for different configurations
 - Each Assessment links a Technical Function to a specific configuration (Platform + ODD + Environment + optional Trailer) with a TRL rating and confidence level
 
 ## Installation
@@ -94,9 +98,12 @@ product_features_db/
 │   ├── readiness_assessments.html     # Assessment management
 │   ├── readiness_matrix.html          # Matrix view of readiness
 │   ├── add_assessment.html            # Assessment creation form
-│   ├── product_capabilities.html      # Product feature management
-│   ├── technical_capabilities.html    # Technical function management
-│   └── configurations.html            # System configuration management
+│   ├── product_features.html          # Product feature management
+│   ├── capabilities.html              # Capabilities management
+│   ├── technical_functions.html       # Technical function management
+│   ├── json_editor_simple.html        # Web-based JSON entity editor
+│   ├── configurations.html            # System configuration management
+│   └── add_*.html                     # Entity creation forms
 ├── JSON Templates/                     # Template library for JSON updates
 │   ├── repository_update_template.json    # Comprehensive update template
 │   ├── simple_update_template.json        # Basic operations template
@@ -111,10 +118,11 @@ product_features_db/
 ### Getting Started
 
 1. **Dashboard**: Start at the dashboard (`http://localhost:8080`) to see overall readiness statistics
-2. **View Data**: Explore existing product features and technical functions
-3. **Add Assessments**: Create new readiness assessments for different configurations
-4. **Analyze**: Use the matrix view and charts to identify readiness gaps
-5. **JSON Updates**: Use template files for batch operations
+2. **View Data**: Explore existing product features, capabilities, and technical functions
+3. **JSON Editor**: Use the web-based JSON editor (`/json_editor`) for comprehensive entity management
+4. **Add Assessments**: Create new readiness assessments for different configurations
+5. **Analyze**: Use the matrix view and charts to identify readiness gaps
+6. **JSON Updates**: Use template files for batch operations and imports
 
 ### JSON-Based Data Management
 
@@ -127,13 +135,27 @@ The system includes a powerful JSON update system for batch operations:
 - **`system_configurations_template.json`**: Configuration management
 
 #### Using JSON Updates
-```bash
-# Update entities (Product Features, Technical Functions, Assessments)
-python -c "from update_from_json import update_from_json; update_from_json('repository_update_template.json')"
 
-# Update system configurations (Platforms, ODDs, Environments, Trailers)
-python -c "from update_from_json import update_from_json; update_from_json('system_configurations_template.json')"
+**Command Line Interface:**
+```bash
+# Update entities (Product Features, Capabilities, Technical Functions)
+./.venv/bin/python update_from_json.py repository_update_data_final_colin3.json
+
+# Alternative using Python import
+python -c "from update_from_json import update_from_json; update_from_json('repository_update_data_final_colin3.json')"
+
+# Generate template files
+python update_from_json.py --template
+
+# Export current database to JSON
+python update_from_json.py --export current_backup.json
 ```
+
+**Web Interface:**
+- Navigate to `/json_editor` in your browser
+- Use the interactive interface to add, edit, or delete entities
+- Save changes directly to the server with automatic backups
+- Export/import JSON files through the web interface
 
 #### JSON Template Structure
 ```json
@@ -226,10 +248,13 @@ The system initializes with comprehensive autonomous vehicle industry sample dat
 ### Web Interface
 - `/` - Main dashboard with charts and statistics
 - `/product_features` - Product feature management
-- `/technical_capabilities` - Technical function management  
+- `/capabilities` - Capabilities management with M:N relationships
+- `/technical_functions` - Technical function management  
 - `/readiness_assessments` - Assessment tracking and creation
 - `/readiness_matrix` - Matrix view of all assessments
 - `/configurations` - System configuration management
+- `/json_editor` - Interactive JSON entity editor with full CRUD operations
+- `/export` - Data export functionality
 
 ### REST API
 - `GET /api/readiness_data` - JSON data for charts and analysis
@@ -260,19 +285,26 @@ The system initializes with comprehensive autonomous vehicle industry sample dat
 ## Database Relationships
 
 ```sql
-Product Features (1) → (N) Technical Functions
+-- Enhanced M:N Relationship Structure (v4.1)
+Product Features (M) ↔ (N) Capabilities (M) ↔ (N) Technical Functions
 Technical Functions (1) → (N) Readiness Assessments  
 Readiness Assessments (N) → (1) Technical Readiness Level
 Readiness Assessments (N) → (1) Vehicle Platform
 Readiness Assessments (N) → (1) ODD
 Readiness Assessments (N) → (1) Environment
 Readiness Assessments (N) → (0..1) Trailer
+
+-- Association Tables for M:N Relationships
+product_feature_capabilities (product_feature_id, capability_id)
+capability_technical_functions (capability_id, technical_function_id)
 ```
 
 ### Entity Relationship Details
+- **Enhanced M:N Structure**: Product Features ↔ Capabilities ↔ Technical Functions with flexible relationships
 - **Cascade Deletes**: Proper cleanup when parent entities are removed
-- **Foreign Key Constraints**: Data integrity enforcement
-- **Many-to-Many**: Product Features can share Technical Functions
+- **Foreign Key Constraints**: Data integrity enforcement with association tables
+- **Shared Capabilities**: Capabilities can be reused across multiple product features
+- **Flexible Technical Functions**: Technical functions can support multiple capabilities
 - **Optional Relationships**: Trailers are optional for some assessments
 
 ## Customization
@@ -329,7 +361,9 @@ Create custom JSON templates by:
 
 ## Version History
 
-- **v2.0** (October 2025): Added comprehensive JSON management system, enhanced UI, configuration management
+- **v4.1** (October 2025): Enhanced M:N relationship structure, JSON Editor web interface, technical_functions terminology standardization
+- **v3.0** (October 2025): Added comprehensive JSON management system, enhanced UI, configuration management  
+- **v2.0** (October 2025): JSON template system and batch operations
 - **v1.0** (Initial): Basic readiness tracking with web interface
 
 ## Repository

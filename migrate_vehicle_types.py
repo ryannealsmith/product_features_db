@@ -60,10 +60,10 @@ def migrate_vehicle_types():
         
         try:
             # Add vehicle_platform_id to TechnicalFunction
-            db.session.execute(text("ALTER TABLE technical_capabilities ADD COLUMN vehicle_platform_id INTEGER"))
-            print("  ➕ Added vehicle_platform_id to technical_capabilities")
+            db.session.execute(text("ALTER TABLE technical_functions ADD COLUMN vehicle_platform_id INTEGER"))
+            print("  ➕ Added vehicle_platform_id to technical_functions")
         except Exception:
-            print("  ℹ️  vehicle_platform_id already exists in technical_capabilities")
+            print("  ℹ️  vehicle_platform_id already exists in technical_functions")
         
         try:
             # Add vehicle_platform_id to Capabilities
@@ -100,13 +100,13 @@ def migrate_vehicle_types():
         for tf in technical_functions:
             try:
                 # Get the old vehicle_type value
-                old_type = db.session.execute(text("SELECT vehicle_type FROM technical_capabilities WHERE id = :id"), {"id": tf.id}).fetchone()
+                old_type = db.session.execute(text("SELECT vehicle_type FROM technical_functions WHERE id = :id"), {"id": tf.id}).fetchone()
                 if old_type and old_type[0]:
                     vehicle_type = old_type[0]
                     platform = platform_mapping.get(vehicle_type, platform_mapping['generic'])
                     
                     # Update with new foreign key
-                    db.session.execute(text("UPDATE technical_capabilities SET vehicle_platform_id = :platform_id WHERE id = :id"), 
+                    db.session.execute(text("UPDATE technical_functions SET vehicle_platform_id = :platform_id WHERE id = :id"), 
                                      {"platform_id": platform.id, "id": tf.id})
                     print(f"  ✅ Updated TechnicalFunction '{tf.name}': {vehicle_type} -> {platform.name}")
             except Exception as e:
@@ -136,7 +136,7 @@ def migrate_vehicle_types():
         # Step 6: Drop old columns (commented out for safety)
         print("🗑️  Old vehicle_type columns can be dropped manually if needed:")
         print("     ALTER TABLE product_features DROP COLUMN vehicle_type;")
-        print("     ALTER TABLE technical_capabilities DROP COLUMN vehicle_type;")
+        print("     ALTER TABLE technical_functions DROP COLUMN vehicle_type;")
         print("     ALTER TABLE capabilities DROP COLUMN vehicle_type;")
         
         print("✅ Migration completed successfully!")

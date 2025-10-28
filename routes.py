@@ -153,10 +153,10 @@ def capabilities():
     capabilities = Capabilities.query.all()
     return render_template('capabilities.html', capabilities=capabilities)
 
-@app.route('/technical_capabilities')
-@app.route('/technical_functions')  # Alias for backward compatibility
-def technical_capabilities():
-    """Technical capabilities management page"""
+@app.route('/technical_functions')
+@app.route('/technical_capabilities')  # Alias for backward compatibility
+def technical_functions():
+    """Technical functions management page"""
     technical_functions = TechnicalFunction.query.all()
     return render_template('technical_functions.html', technical_functions=technical_functions)
 
@@ -191,7 +191,7 @@ def readiness_assessments():
     return render_template('readiness_assessments.html', 
                          assessments=assessments,
                          product_features=product_features,
-                         technical_capabilities=technical_functions,
+                         technical_functions=technical_functions,
                          vehicle_platforms=vehicle_platforms)
 
 @app.route('/readiness_matrix')
@@ -465,7 +465,7 @@ def add_technical_function():
             
             db.session.commit()
             flash('Technical function added successfully!', 'success')
-            return redirect(url_for('technical_capabilities'))
+            return redirect(url_for('technical_functions'))
         except Exception as e:
             db.session.rollback()
             flash(f'Error adding technical function: {str(e)}', 'danger')

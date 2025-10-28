@@ -1,16 +1,19 @@
-# Enhanced JSON Update System
+# Enhanced JSON Update System v4.1
 
-This enhanced JSON update script provides comprehensive CRUD (Create, Read, Update, Delete) operations for the Product Feature Readiness Database. You can manage **Product Features**, **Capabilities**, and **Technical Functions** through structured JSON files.
+This enhanced JSON update script provides comprehensive CRUD (Create, Read, Update, Delete) operations for the Product Feature Readiness Database. You can manage **Product Features**, **Capabilities**, and **Technical Functions** through structured JSON files or the web-based JSON Editor interface.
 
 ## Features
 
+- ✅ **Web-based JSON Editor** with interactive CRUD interface at `/json_editor`
 - ✅ **Create** new entities with full relationship mapping
 - ✅ **Update** existing entities and their relationships  
 - ✅ **Delete** entities with dependency checking
 - ✅ **Export** current database state to JSON
 - ✅ **Template generation** for easy JSON creation
 - ✅ **Comprehensive validation** with detailed error reporting
-- ✅ **Relationship management** between all entity types
+- ✅ **Enhanced M:N relationships** between Product Features ↔ Capabilities ↔ Technical Functions
+- ✅ **Automatic backups** before save operations
+- ✅ **Command-line and web interface** options
 
 ## Quick Start
 
@@ -28,7 +31,11 @@ This exports the complete current database state for reference.
 
 ### 3. Update from JSON
 ```bash
-python update_from_json.py my_updates.json
+# Command line method
+./.venv/bin/python update_from_json.py repository_update_data_final_colin3.json
+
+# Or use the web interface
+# Navigate to http://localhost:8080/json_editor
 ```
 
 ### 4. Get Help
@@ -38,11 +45,11 @@ python update_from_json.py --help
 
 ## JSON Structure
 
-### Basic Structure
+### Basic Structure (v4.1)
 ```json
 {
   "metadata": {
-    "version": "2.0",
+    "version": "4.1",
     "description": "Description of your updates",
     "created_by": "Your Name",
     "created_date": "2025-10-21"
@@ -51,6 +58,7 @@ python update_from_json.py --help
     {
       "entity_type": "product_feature|capability|technical_function",
       "operation": "create|update|delete",
+      "label": "Entity Label (PF-001, CAP-001, TF-001)",
       "name": "Entity Name",
       // Additional fields based on entity type and operation
     }
@@ -324,9 +332,18 @@ Use 'force_delete': true to override
 ## Integration
 
 This system integrates with:
-- Flask web application for real-time updates
-- Database models with full relationship support
-- Sample data system for testing
-- Web interface for visualization
+- **Flask web application** for real-time updates and web interface
+- **Database models** with enhanced M:N relationship support
+- **JSON Editor** web interface at `/json_editor` for interactive management
+- **Sample data system** for testing and initialization
+- **Automatic backup system** for data safety
+- **Export/Import functionality** through both CLI and web interface
 
-The JSON update system provides a powerful, flexible way to manage your autonomous vehicle capability database programmatically while maintaining data integrity and relationships.
+### Web Interface Features
+- Interactive entity cards with edit/delete/duplicate actions
+- Modal forms for adding and editing entities
+- Real-time validation and error handling
+- Automatic save to `repository_update_data_final_colin3.json`
+- Export functionality with timestamped files
+
+The JSON update system provides a powerful, flexible way to manage your autonomous vehicle capability database both programmatically and through an intuitive web interface, while maintaining data integrity and relationships in the enhanced v4.1 structure.
