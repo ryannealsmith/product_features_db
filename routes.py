@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
 from app import app, db, ProductFeature, TechnicalFunction, TechnicalReadinessLevel, VehiclePlatform, ODD, Environment, Trailer, ReadinessAssessment, Capabilities, capability_technical_functions, product_feature_capabilities
 from sqlalchemy import and_
+from sqlalchemy.orm import joinedload
 from datetime import datetime, date
 import json
 import os
@@ -197,36 +198,39 @@ def readiness_assessments():
 @app.route('/readiness_matrix')
 def readiness_matrix():
     """Display readiness matrix view"""
-    # Get all combinations of technical functions and configurations
-    technical_functions = TechnicalFunction.query.all()
-    vehicle_platforms = VehiclePlatform.query.all()
-    odds = ODD.query.all()
-    environments = Environment.query.all()
+    # Get all readiness assessments with their related data
+    assessments = ReadinessAssessment.query.options(
+        joinedload(ReadinessAssessment.capability),
+        joinedload(ReadinessAssessment.technical_function),
+        joinedload(ReadinessAssessment.readiness_level),
+        joinedload(ReadinessAssessment.vehicle_platform),
+        joinedload(ReadinessAssessment.odd),
+        joinedload(ReadinessAssessment.environment)
+    ).all()
     
-    # Create matrix data
+    # Create matrix data from existing assessments
     matrix_data = []
-    for tech_cap in technical_functions:
-        for platform in vehicle_platforms:
-            for odd in odds:
-                for env in environments:
-                    assessment = ReadinessAssessment.query.filter_by(
-                        technical_capability_id=tech_cap.id,
-                        vehicle_platform_id=platform.id,
-                        odd_id=odd.id,
-                        environment_id=env.id
-                    ).first()
-                    
-                    if assessment:
-                        matrix_data.append({
-                            'technical_capability': tech_cap.name,
-                            'vehicle_platform': platform.name,
-                            'odd': odd.name,
-                            'environment': env.name,
-                            'trl_level': assessment.readiness_level.level,
-                            'trl_name': assessment.readiness_level.name,
-                            'current_status': assessment.current_status,
-                            'assessment_date': assessment.assessment_date
-                        })
+    for assessment in assessments:
+        # Determine the technical function name - try technical_function first, then capability
+        if assessment.technical_function:
+            technical_function_name = assessment.technical_function.name
+        elif assessment.capability:
+            technical_function_name = assessment.capability.label
+        else:
+            technical_function_name = f"Assessment #{assessment.id}"
+        
+        # Only add if we have the required relationships
+        if assessment.readiness_level and assessment.vehicle_platform and assessment.odd and assessment.environment:
+            matrix_data.append({
+                'technical_function': technical_function_name,
+                'vehicle_platform': assessment.vehicle_platform.name,
+                'odd': assessment.odd.name,
+                'environment': assessment.environment.name,
+                'trl_level': assessment.readiness_level.level,
+                'trl_name': assessment.readiness_level.name,
+                'confidence': assessment.current_status or 'medium',  # Default to medium if not set
+                'assessment_date': assessment.assessment_date
+            })
     
     return render_template('readiness_matrix.html', matrix_data=matrix_data)
 
@@ -290,6 +294,31 @@ def add_assessment():
                          environments=environments,
                          trailers=trailers)
 
+@app.route('/delete_assessment/<int:assessment_id>', methods=['POST'])
+def delete_assessment(assessment_id):
+    """Delete a readiness assessment"""
+    try:
+        assessment = ReadinessAssessment.query.get_or_404(assessment_id)
+        
+        # Store info for success message - try different sources for the name
+        if assessment.technical_function:
+            item_name = assessment.technical_function.name
+        elif assessment.capability:
+            item_name = assessment.capability.label
+        else:
+            item_name = f"Assessment #{assessment_id}"
+        
+        db.session.delete(assessment)
+        db.session.commit()
+        
+        flash(f'Successfully deleted assessment for "{item_name}"', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting assessment: {str(e)}', 'error')
+    
+    return redirect(url_for('readiness_assessments'))
+
 @app.route('/add_product_feature', methods=['GET', 'POST'])
 def add_product_feature():
     """Add new product feature"""
@@ -332,9 +361,13 @@ def add_product_feature():
             db.session.add(product_feature)
             db.session.flush()  # Get the ID before committing
             
-            # Note: With the new structure, capabilities are owned by product features
-            # This route now focuses on creating the product feature
-            # Capabilities can be added separately through a dedicated interface
+            # Handle M:N relationship with capabilities
+            capabilities_required = request.form.getlist('capabilities_required')
+            if capabilities_required:
+                for capability_id in capabilities_required:
+                    capability = Capabilities.query.get(int(capability_id))
+                    if capability:
+                        product_feature.capabilities.append(capability)
             
             db.session.commit()
             flash('Product feature added successfully!', 'success')
@@ -345,9 +378,11 @@ def add_product_feature():
     
     # GET request - show form
     vehicle_platforms = VehiclePlatform.query.all()
+    capabilities = Capabilities.query.all()
     
     return render_template('add_product_feature.html',
-                         vehicle_platforms=vehicle_platforms)
+                         vehicle_platforms=vehicle_platforms,
+                         capabilities=capabilities)
 
 @app.route('/add_capability', methods=['GET', 'POST'])
 def add_capability():

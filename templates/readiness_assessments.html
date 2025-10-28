@@ -89,6 +89,7 @@
                         <th>Assessor</th>
                         <th>Assessment Date</th>
                         <th>Scheduled Completion</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -146,10 +147,19 @@
                                 <span class="text-muted">Not set</span>
                             {% endif %}
                         </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    data-assessment-id="{{ assessment.id }}"
+                                    data-assessment-name="{% if assessment.technical_function %}{{ assessment.technical_function.name }}{% elif assessment.capability %}{{ assessment.capability.label }}{% else %}Assessment #{{ assessment.id }}{% endif %}"
+                                    onclick="confirmDeleteAssessment(this)"
+                                    title="Delete Assessment">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="11" class="text-center text-muted">No assessments found matching the filters.</td>
+                        <td colspan="12" class="text-center text-muted">No assessments found matching the filters.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -157,4 +167,45 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the readiness assessment for:</p>
+                <strong id="assessmentName"></strong>
+                <p class="mt-2 text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Assessment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteAssessment(button) {
+    const assessmentId = button.getAttribute('data-assessment-id');
+    const assessmentName = button.getAttribute('data-assessment-name');
+    
+    // Set the assessment name in the modal
+    document.getElementById('assessmentName').textContent = assessmentName;
+    
+    // Set the form action URL
+    document.getElementById('deleteForm').action = `/delete_assessment/${assessmentId}`;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+</script>
+
 {% endblock %}

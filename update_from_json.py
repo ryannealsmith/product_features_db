@@ -132,14 +132,15 @@ def get_vehicle_platform_id(vehicle_type_or_id):
     
     # Map vehicle type string to platform ID
     mapping = {
-        "truck": 5,      # Truck Platform
-        "van": 6,        # Van Platform  
-        "car": 7,        # Car Platform
+        "truck": 5,      # All (Generic Platform) - used for general truck features
+        "van": 2,        # CA500 
+        "car": 4,        # AEV
         "terberg": 1,    # Terberg ATT
         "ca500": 2,      # CA500
         "t800": 3,       # T800
         "aev": 4,        # AEV
-        "generic": 8     # Generic Platform
+        "generic": 5,    # All (Generic Platform)
+        "all": 5         # All (Generic Platform)
     }
     
     platform_id = mapping.get(str(vehicle_type_or_id).lower(), 8)  # Default to Generic Platform
