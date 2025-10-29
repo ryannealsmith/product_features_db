@@ -14,11 +14,11 @@
     {% for feature in features %}
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0">
+                        <div class="card-header">
+                <h5 class="mb-0 card-title-wrap">
                     <i class="fas fa-star"></i> {{ feature.name }}
                     {% if feature.label %}
-                        <small class="badge bg-secondary ms-2">{{ feature.label }}</small>
+                        <small class="badge bg-secondary ms-2 text-truncate-badge" title="{{ feature.label }}">{{ feature.label }}</small>
                     {% endif %}
                 </h5>
                 {% if feature.vehicle_platform %}
@@ -28,12 +28,20 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <p class="card-text">{{ feature.description or 'No description provided.' }}</p>
+                <div class="mb-3">
+                    <p class="card-text text-break-word">{{ feature.description or 'No description provided.' }}</p>
+                    {% if (feature.description or '')|length > 200 %}
+                    <button class="btn btn-sm btn-link p-0 text-muted" onclick="toggleDescription(this)" 
+                            data-bs-toggle="tooltip" title="Click to expand/collapse description">
+                        <small>Show more...</small>
+                    </button>
+                    {% endif %}
+                </div>
                 
                 {% if feature.tmos %}
                 <div class="mb-3">
                     <h6 class="text-primary">Target Measure of Success:</h6>
-                    <p class="small text-muted">{{ feature.tmos }}</p>
+                    <p class="small text-muted text-break-word">{{ feature.tmos }}</p>
                 </div>
                 {% endif %}
                 
