@@ -1,0 +1,26 @@
+Swimlane,SL,Maj,Min,Label,Technical Function,Platform,ODD,Environment,Trailer,Details/ comments,Next,Capability
+Perception,PRC,1,0,TF-PRC-1.0,Reach Stacker Sim2Real Synthetic Data Generation (500k samples),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Perception,PRC,1,1,TF-PRC-1.1,Reach Stacker Object Classification in BEV Fusion (MultiBody),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Perception,PRC,1,2,TF-PRC-1.2,SplineTracker Updated to Track ReachStacker (Account for Multibody Forks),Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Perception,PRC,1,3,TF-PRC-1.3,Synthetic Generation of Reach Stacker Scenarios for ML Planner Training,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Perception,PRC,1,4,TF-PRC-1.4,Retrain / Deploy ML Planner,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Perception,PRC,1,5,TF-PRC-1.5,Simulated Validation on +100 Reach Staker Scenarios with EMT KPIs,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0"
+Reasoning,BAR,1,0,TF-BAR-1.0,Implement BFGs in Trajectory Solver,All,CFG-ODD-1,CFG-ENV-1.1,N/A,,Y,"CA-PRC-1.0
+CA-CHE-1.0
+CA-ACT-1.1
+CA-ACT-2.1
+CA-ACT-3.1
+CA-ACT-4.1
+CA-ACT-5.1
+CA-ACT-6.1
+CA-ACT-6.2
+CA-ACT-7.1
+CA-REV-1.2
+CA-REV-2.2
+"
