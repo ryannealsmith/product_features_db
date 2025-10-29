@@ -1,0 +1,210 @@
+Swimlane,Label,Product Feature,Platform,ODD,Environment,Trailer,Details,Next,Capabilities,Start Date,End Date
+Actors,PF-ACT-1.1,Road vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Nominal behaviour
+* Types
+  ** Cars
+  ** Pickup trucks",Y,"CA-ACT-1.1
+CA-ENV-1.1",Oct 2025,Dec 2025
+,PF-ACT-2.1,Large vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Nominal behaviour
+* Types:
+  ** Tractors
+  ** Trucks (non-articulated)
+  ** Buses",?,"CA-ACT-2.1
+CA-ENV-1.1",Oct 2025,Dec 2025
+,PF-ACT-3.1,Motorcycles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,?,"CA-ACT-3.1
+CA-ENV-1.1",Oct 2025,Dec 2025
+,PF-ACT-4.1,Pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,Y,"CA-ACT-4.1
+CA-ENV-1.1",Oct 2025,Dec 2025
+,PF-ACT-5.1,Non-pedestrian VRUs: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,?,"CA-ACT-5.1
+CA-ENV-1.1",Oct 2025,Dec 2025
+,PF-ACT-6.1,Articulated vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Nominal behaviour,Y,"CA-ACT-6.1
+CA-ENV-1.1",Oct 2025,Mar 2026
+,PF-ACT-7.1,Mobile CHE vehicles: operate around/ regular interactions (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Nominal behaviour
+* Types:
+  ** Reach stacker
+  ** Empty handler",Y,"CA-ACT-7.1
+CA-ENV-1.1",Oct 2025,Jun 2026
+,,,,,,,,,,,
+Infrastructure,PF-INF-1.1,Localise into map: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Camera
+* Radar
+* Lidar
+* GPS available
+* Static infrastructure components",Y,CA-LOC-1.1,Oct 2025,Dec 2025
+,PF-INF-1.2,Localise into map: pseudo-static environmental features,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,"* Container stacks
+* Cranes",Y,CA-LOC-2.1,Jan 2025,Apr 2025
+,PF-INF-1.3,Localise into map: GPS degraded/ denied,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,,"CA-LOC-4.1
+CA-LOC-4.2",Oct 2025,Apr 2026
+,PF-INF-1.4,Localise into map: towing ego trailer,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,CA-LOC-3.1,Oct 2025,Dec 2025
+,PF-INF-2.1,Build map of the environment: baseline,Terberg,CFG-ODD-1,N/A,N/A,"* From overhead imagery
+* Multi-route",Y,"CA-MAP-1.1
+CA-MAP-3.1",Oct 2025,Dec 2025
+,PF-INF-2.2,"Auto-annotate the lane markings, intersection topology from overhead images",Terberg,CFG-ODD-1,N/A,N/A,,,TBD,Oct 2025,Mar 2026
+,PF-INF-3.1,Mapped lane infrastructure: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Multi-lane roads
+* Lane types:
+  ** Roadway
+  ** Bike lane",Y,NONE,Oct 2025,Dec 2025
+,PF-INF-4.1,Mapped uncontrolled intersections: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* T-junction
+* Major-minor intersections
+* 4-way stops",Y,NONE,Oct 2025,Dec 2025
+,PF-INF-5.1,Mapped traffic light intersections: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,NONE,Oct 2025,Dec 2025
+,PF-INF-5.2,Mapped traffic light intersections: City Terminals,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,CA-INF-1.1,Oct 2025,Nov 2025
+,PF-INF-5.3,Mapped traffic light intersections: Jebel Ali,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,CA-INF-1.2,Jan 2026,Feb 2026
+,PF-INF-6.1,Mapped gated intersections: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,"CA-INF-2.1
+CA-INF-2.2 (TBC)",Oct 2025,Jan 2026
+,PF-INF-6.2,Mapped gated intersection: City Terminals,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,CA-INF-2.3,Oct 2025,Nov 2025
+,PF-INF-7.1,Pseudo-static infrastructure: Pinning Stations,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,* Pinning station,,TBD,Jan 2026,Mar 2026
+,PF-INF-8.1,Surfaces: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Asphalt
+  ** Dry
+  ** Wet
+* Voids
+  ** NONE",Y,NONE,Oct 2025,Dec 2025
+,PF-INF-9.1,Avoided (ie drive around) static objects: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Low objects
+  ** >20cm height
+* Street Furniture
+  ** Cones > 20cm
+  ** Curbs > 10cm
+  ** Barriers >10cm",Y,CA-STA-1.1,Oct 2025,Apr 2026
+,PF-INF-10.1,Straddled static objects: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,NONE,,TBD,Oct 2025,Dec 2025
+,PF-INF-11.1,Inclines: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Inclines
+  ** <5 degrees",Y,CA-INF-3.1,Mar 2026,May 2026
+,,,,,,,,,,,
+Environment,PF-ENV-1.1,Ambient Temperature: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* Min: 5C
+* Max 40C",Y,NONE,Oct 2025,Dec 2025
+,PF-ENV-1.2,Ambient Temperature: 55C Max,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,* Max 55C,Y,"CA-ENV-1.1
+CA-ENV-2.1",Mar 2026,May 2026
+,PF-ENV-2.1,Precipitation: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* Rain
+  ** Max: Xmm/hr
+* Snow
+  ** NONE",Y,NONE,Jan 2026,Mar 2026
+,PF-ENV-3.1,Illumination: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,* Daytime,Y,NONE,Jan 2026,Mar 2026
+,PF-ENV-4.1,Visibility: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* Rain: >100m
+* Fog: >100m
+* Sand/ dust: >100m",Y,NONE,Jan 2026,Mar 2026
+,PF-ENV-5.1,Accumulation: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* Rain
+  ** NONE
+* Snow
+  ** NONE
+* Sand
+  ** NONE",Y,NONE,Jan 2026,Mar 2026
+,PF-ENV-6.1,Ground cover: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,Clear,Y,NONE,Jan 2026,Mar 2026
+,PF-ENV-7.1,Disturbances: baseline,Terberg,CFG-ODD-1,CFG-ENV-1.1,N/A,"* Wind
+  ** < X km/h",Y,NONE,Jan 2026,Mar 2026
+,,,,,,,,,,,
+Cargo,PF-CGO-1.1,Trailer type: semi-trailer (baseline),All,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Semi-trailer type
+* Kinematics only (empty trailer)
+* Known wheelbase
+* Known geometry",Y,"CA-CGO-1.1
+CA-VEH-1.1",Oct 2025,Dec 2025
+,PF-CGO-1.2,Trailer type: drawbar,T800,CFG-ODD-2,CFG-ENV-2.1,CFG-CGO-2,"* Drawbar trailer
+* Driveline offset compensation (approximate)
+* No explicit collision checking or kinematic planning",,TBD,Jan 2026,Jun 2026
+,PF-CGO-2.1,Trailer load: baseline,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,* Empty trailer,Y,CA-VEH-1.1,Oct 2025,Dec 2025
+,PF-CGO-2.2,Trailer load: variable weight,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,* 10 ton - 40 ton,Y,CA-CGO-2.1,Jan 2026,Mar 2026
+,PF-CGO-3.1,"Trailer configuration: stand-alone, empty, known geometry",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Boxcar
+* Chassis",Y,NONE,Oct 2025,Dec 2025
+,PF-CGO-3.2,"Trailer configuration: variable configuration, known geometry",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,* Chassis + container,Y,"CA-CGO-3.1
+CA-CGO-1.2",Oct 2025,Jan 2026
+,PF-CGO-3.3,Trailer configuration: trailer train,T800,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-2,,,TBD,Oct 2025,Jan 2026
+,PF-CGO-4.1,Support specific semi-trailers: Vantec trailer,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Model XX
+* Known geometry",Y,,Oct 2025,Dec 2025
+,PF-CGO-4.2,Support specific semi-trailers: City-Terminals trailer,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Model XX
+* Known geometry",Y,,Oct 2025,Dec 2025
+,PF-CGO-4.3,Support specific semi-trailers: Jebel Ali trailer,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* Model XX
+* Known geometry",Y,,Jan 2026,Apr 2026
+,PF-CGO-4.4,Support specific semi-trailers: Robotraz boat trailer,T800,CFG-ODD-2,CFG-ENV-2.1,CFG-CGO-1,"* Model XX
+* Known geometry",,,Jan 2026,Mar 2026
+,PF-CGO-5.1,Support specific drawbar trailers: single XX model trailer (BMW),T800,CFG-ODD-2,CFG-ENV-2.1,CFG-CGO-2,"* PF-CGO-1.2
+* Single",,,Jan 2026,Mar 2026
+,PF-CGO-5.2,Support specific drawbar trailers: train of XX model trailer (BMW),T800,CFG-ODD-2,CFG-ENV-2.1,CFG-CGO-2,"* PF-CGO-1.2
+* Train of up to 6 trailers",,,Jan 2026,Mar 2026
+,,,,,,,,,,,
+Supervision,PF-SV-1.1,Internal Supervision (SDIC),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Dec 2025
+,PF-SV-2.1,External Supervision (Line-of-Sight),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Oct 2025,Dec 2025
+,PF-SV-3.1,Remote Monitoring: M0,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Oct 2025,Jan 2026
+,PF-SV-4.1,Remote Supervision: Remote Intervention,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Jan 2026,May 2026
+,PF-SV-5.1,Remote Assistance: Remote Driving (M4),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Jan 2026,May 2026
+,PF-SV-6.1,Remote Mission Management (baseline),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,"* E-Stop/ Reset
+* Pause/ Resume
+* Enter/ Exit SAFESTOP
+* MRM (naive)
+* MRM (pull over - when)
+* Set trailer configuration",Y,,Oct 2025,Dec 2025
+,PF-SV-7.1,Vehicle supports passenger ride-along (ODD-related? Who is the passenger?),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Oct 2025,Dec 2025
+,,,,,,,,,,,
+Human-Robot Interactions,PF-HRI-1.1,Safe Operation: Limit motion towards nearby humans sharing operational space,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Jan 2026,Jun 2026
+,PF-HRI-2.1,Proximal human: Switch into and out of SAFESTATE when human close to AV,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,?,,Jan 2026,Mar 2026
+,PF-HRI-3.1,External HMI: HMI to continue mission (and switch out of SAFESTATE),Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,?,,Jan 2026,Mar 2026
+,,,,,,,,,,,
+Forward Driving,PF-FWD-1.1,Stay in lane: AV only,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Oct 2025,Dec 2025
+,PF-FWD-1.2,Stay in lane: tow a semi-trailer while accounting for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Oct 2025,Jan 2026
+,PF-FWD-2.1,Borrow adjacent lane: AV only,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Jan 2026,Mar 2026
+,PF-FWD-2.2,Borrow adjacent lane: tow a semi-trailer while accounting for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Jan 2026,Jun 2026
+,PF-FWD-3.1,"Change lanes: AV, single lane",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Jan 2026,Mar 2026
+,PF-FWD-3.2,Change lanes: tow a semi-trailer while accounting for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Feb 2026,Jun 2026
+,PF-FWD-4.1,Multi-lane change: AV only,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Apr 2026,Sep 2026
+,PF-FWD-4.2,Multi-lane change: tow a semi-trailer while accounting for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Oct 2025,Feb 2026
+,,,,,,,,,,,
+Parking,PF-PRK-1.1,Head-in parking: AV only,Terberg,CFG-ODD-1,CFG-ENV-2.1,N/A,,Y,,Jan 2026,Mar 2026
+,PF-PRK-1.2,Head-in parking: tow a semi-trailer while accounting for trailer kinematics,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-REV-2.1,"Parking bay: reverse a semi-trailer into an isolated, presribed bay (small set)",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Apr 2026,Aug 2026
+,PF-REV-2.2,"Parking bay: reverse a semi-trailer into a crowded, prescribed bay (small set)",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Apr 2026,Sep 2026
+,PF-REV-2.3,"Parking bay: reverse a semi-trailer into an isolated, prescribed bay (large set)",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Apr 2026,Aug 2026
+,PF-REV-2.4,"Parking bay: reverse a semi-trailer into a crowded, prescribed bay (large set)",Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Apr 2026,Sep 2026
+,,,,,,,,,,,
+Docking,PF-DCK-1.1,Initial approach of a prescribed isolated dock (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-1.2,Initial approach of a prescribed isolated dock (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-1.3,Initial approach of a prescribed crowded dock (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-1.4,Initial approach of a prescribed crowded dock (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-2.1,Dock at a prescribed isolated dock (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-2.2,Dock at a prescribed crowded dock (small set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-3.1,Dock at a prescribed isolated dock (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,PF-DCK-3.2,Dock at a prescribed crowded dock (large set),Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,Jan 2026,Apr 2026
+,,,,,,,,,,,
+CHE Interactions,PF-CHE-1.1,Rendevous with a CHE at an a priori mapped location: Reach Stacker,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Mar 2026,June 2026
+,PF-CHE-1.2,Rendevous with a CHE at an a priori mapped location: Empty Handler,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Mar 2026,June 2026
+,PF-CHE-1.3,Rendevous with a CHE at an a priori mapped location: Mobile Tracked Gantry,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Mar 2026,June 2026
+,PF-CHE-1.4,Rendevous with a CHE at an a priori mapped location: Mobile Railed Gantry,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Mar 2026,August 2026
+,PF-CHE-1.5,Rendevous with a CHE at an a priori mapped location: STS crane,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,,,May 2026,August 2026
+,PF-CHE-2.1,Rendevous with a CHE at an a relative to the CHE: STS crane,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,May 2026,August 2026
+,PF-CHE-3.1,Rendevous task completion: RA confirmation,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Jan 2026,Mar 2026
+,PF-CHE-3.2,Rendevous task completion: xMS confirmation,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,?,,Jan 2026,Mar 2026
+,,,,,,,,,,,
+Hinching/ Unhitching,PF-HCH-1.1,Hitch a semi-trailer: controllable 5th wheel,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Jan 2026,Apr 2026
+,PF-HCH-2.1,Unhitch a semi-trailer: controllable 5th wheel,Terberg,CFG-ODD-1,CFG-ENV-2.1,CFG-CGO-1,,Y,,Jan 2026,Apr 2026
+,,,,,,,,,,,
+,,,,,,,,,,,
+CE Marking,PF-CE-1.1,CE Marking,Terberg,CFG-ODD-1,CFG-ENV-1,CFG-CGO-1,"Technical conformity file is complete, and includes results from manditory testing (EMC), and validation evidence of safety functions.",,"* EMC testing;
+* Technical Conformity File completed;
+* Safety function: Avoid collision;
+* Safety function: Avoid Hazards
+* Safety function: Prevent motion during interaction",Jan 2026,Jun 2026
+,,,,,,,,,,,
+Fleet management,PF-XMS-1.1,API: Support XYZ MS at Jebel Ali,Terberg,N/A,N/A,N/A,"* Receive/acknowledge/reject/cancel jobs from TOS
+* Send vehicle state, diagnostics, alerts to TOS",,,Mar 2026,Aug 2026
+,PF-XMS-2.1,Stage tasking (baseline),Terberg,N/A,N/A,N/A,* Stage until released at Map Pt X,,,Mar 2026,August 2026
+,PF-XMS-2.2,Stage tasking: Stage until released at location relative to CHE,Terberg,N/A,N/A,N/A,,,,Mar 2026,August 2026
+,PF-XMS-3.1,CHE Tasking (baseline),Terberg,N/A,N/A,N/A,"* Receive container from CHE at Map Pt X
+* Deliver container to CHE at Map Pt X (decouple container from trailer)",,,Mar 2026,August 2026
+,PF-XMS-3.2,CHE Tasking: CHE-relative interactions,Terberg,N/A,N/A,N/A,"* Receive container from CHE at a location relative to the CHE
+* Deliver container to CHE at a location relative to the CHE (decouple container from trailer)",,,Mar 2026,August 2026
+,PF-XMS-4.1,Parking Bay Tasking (baseline),Terberg,N/A,N/A,N/A,"* Deliver trailer to Parking Bay X
+* Pick up trailer from Parking Bay X",,,Mar 2026,August 2026
+,PF-XMS-5.1,Dock Tasking (baseline),Terberg,N/A,N/A,N/A,"* Pick up trailer from Dock X
+* Dock trailer at Dock X and wait
+* Drop trailer at Dock X",,,Mar 2026,August 2026
+,,,,,,,,,,,
+Operations,PF-OPS-1.1,AV System duty cycle management (baseline),Terberg,N/A,N/A,N/A,"* Service: Automatic service activation / deactivation (based on time, schedule, system status meeting criteria for planned service hours when the AV will automatically commence jobs it is aware of)
+* Veh Admin: Remote boot and mode control
+* Veh Admin: Automatic autonomy authorisation (based on estops, system health/battery, maintenance record, allowed hours, ODD conditions, scheduled downtime)
+* Mission: Automatic retire to home
+* Mission: Automatic retire for refueling",,,Oct 2025,Dec 2025
+,PF-OPS-2-1,Remote Vehicle Management (baseline),Terberg,N/A,N/A,N/A,"* Remote restarting of ACS services and devices
+* Remote modification of vehicle config and env config
+* Remote software updates
+* Remote calibration management
+* Performance metric viewer and short term history traces.",,,Oct 2025,Mar 2026
+,PF-OPS-3-1,Remote Data Management (baseline),Terberg,N/A,N/A,N/A,"* Live telemetry state available and viewable
+* Automatic processing of HD data snippets
+* Automatic upload management (concurrent, end-of-shift)
+* Cloud access to data snippets
+* Remote request to record HD Data",,,Oct 2025,Mar 2026
+,PF-OPS-4.1,Fleet Management (baseline),Terberg,N/A,N/A,N/A,"* Continuous service, while hot-swapping vehicles",,,Oct 2025,Mar 2026
